@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+results/*.json
+results/tb/
+models/
+scenarios/*/map.osm
+scenarios/*/trips.trips.xml
+*.zip

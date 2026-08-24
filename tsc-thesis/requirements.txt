@@ -1,0 +1,30 @@
+# Versiones fijadas a propósito: la combinación pettingzoo / supersuit /
+# stable-baselines3 es frágil. Estas están verificadas funcionando juntas en
+# Ubuntu 24.04 con Python 3.11 y 3.12.
+#
+# pettingzoo >= 1.25 ROMPE sumo-rl: `agent_selector` pasó de ser una clase
+# invocable a un módulo. No subir esa pin sin correr `make test` después.
+
+eclipse-sumo==1.27.1
+traci>=1.27
+sumolib>=1.27
+libsumo>=1.27
+
+sumo-rl>=1.4.5
+gymnasium==1.3.0
+pettingzoo==1.24.3
+supersuit==3.11.0
+stable-baselines3==2.9.0
+
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11
+matplotlib>=3.8
+pyproj>=3.6
+pytest>=8.0
+
+# Opcionales, instalar cuando hagan falta:
+#   torch          build con CUDA desde https://pytorch.org (fase de entrenamiento)
+#   ray[rllib]     MAPPO / QMIX con crítico centralizado
+#   tensorboard    curvas de entrenamiento
+#   mlflow         seguimiento de experimentos

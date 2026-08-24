@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Abrir con:  sumo-gui -c scenarios/apoquindo/apoquindo.sumocfg
+     Luego pulsar Play. La velocidad se ajusta con el "Delay (ms)" de la
+     barra superior: 0 = lo más rápido posible, 50 ≈ tiempo real observable. -->
+<configuration>
+  <input>
+    <net-file value="net.net.xml"/>
+    <route-files value="routes.rou.xml"/>
+    <gui-settings-file value="gui-settings.xml"/>
+  </input>
+  <time>
+    <begin value="0"/>
+    <end value="3600"/>
+    <step-length value="1"/>
+  </time>
+  <processing>
+    <time-to-teleport value="-1"/>
+    <waiting-time-memory value="10000"/>
+  </processing>
+  <report>
+    <no-step-log value="true"/>
+    <duration-log.statistics value="true"/>
+  </report>
+</configuration>
