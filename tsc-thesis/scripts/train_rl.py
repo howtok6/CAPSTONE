@@ -40,6 +40,7 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="auto", help="auto|cpu|cuda")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--use-waze-obs", action="store_true", help="Añade datos simulados de Waze a la observación de la red")
     args = ap.parse_args()
 
     from stable_baselines3 import PPO
@@ -74,6 +75,7 @@ def main() -> None:
         min_green=args.min_green,
         max_green=args.max_green,
         seed=args.seed,
+        use_waze_obs=args.use_waze_obs,
     )
 
     model = PPO(

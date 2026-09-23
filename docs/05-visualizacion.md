@@ -35,7 +35,7 @@ real, así que el video es la ejecución auténtica. Banderas: `--controller`
 (fixed/webster/greedy/maxpressure), `--zoom`, `--center x,y`, `--begin`
 (saltar el arranque con la red vacía), `--every`, `--fps`.
 
-Corredor Apoquindo en coordenadas de red: x de 342 a 2925, y de 644 a 1551.
+Red comunal en coordenadas de red: x de 342 a 2925, y de 644 a 1551.
 Centro 1634,1097.
 
 ## Trampa encontrada
@@ -59,7 +59,7 @@ automáticamente cuando `gui=True`.
 
 ## Videos generados (24-ago-2026)
 
-Tres tomas de 15 s sobre Apoquindo, a partir del segundo 900 de simulación:
-`apoquindo_maxpressure_general` (corredor completo), y en detalle sobre la
-misma intersección `apoquindo_maxpressure_detalle` y `apoquindo_fixed_detalle`
-para contrastar. Se regeneran con `make video SCENARIO=scenarios/apoquindo`.
+Tres tomas de 15 s sobre la red comunal, a partir del segundo 900 de simulación:
+`comunal_maxpressure_general` (red completa), y en detalle sobre la
+misma intersección `comunal_maxpressure_detalle` y `comunal_fixed_detalle`
+para contrastar. Se regeneran con `make video SCENARIO=scenarios/comunal`.

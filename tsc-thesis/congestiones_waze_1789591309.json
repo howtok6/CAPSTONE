@@ -1,0 +1,19 @@
+{
+  "timestamp": 1789591309.9835067,
+  "rutas": {
+    "Apoquindo_Oeste_Este": {
+      "start_coords": "-33.4140,-70.5900",
+      "end_coords": "-33.4100,-70.5700",
+      "route_time_mins": 9.166666666666666,
+      "route_distance_km": 3.253,
+      "avg_speed_kmh": 21.29
+    },
+    "Providencia_Este_Oeste": {
+      "start_coords": "-33.4180,-70.6030",
+      "end_coords": "-33.4350,-70.6300",
+      "route_time_mins": 15.683333333333334,
+      "route_distance_km": 3.384,
+      "avg_speed_kmh": 12.95
+    }
+  }
+}

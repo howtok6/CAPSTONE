@@ -1,4 +1,4 @@
-# Fuentes de datos reales para el corredor Apoquindo
+# Fuentes de datos reales a nivel comunal para todas las comunas
 
 Investigado el 24-ago-2026.
 Página completa: https://claude.ai/code/artifact/28410e8c-42e6-4a0a-93fa-2d5090fbf678
@@ -17,7 +17,7 @@ Una tesis con calibración modesta y validación sólida se defiende. Al revés,
 | Fuente | Qué entrega | Cómo | Plazo |
 |---|---|---|---|
 | **UOCT / MTT** (Ley 20.285) | Programaciones semafóricas vigentes + registros de detectores = aforos reales | portaltransparencia.cl | 20 días hábiles + 10 |
-| **Municipalidad Las Condes** | Estudios de tránsito propios; IMIV aprobados en la comuna | Portal transparencia municipal | Mismo marco |
+| **Municipalidades de la RM** | Estudios de tránsito propios; IMIV aprobados en cada comuna | Portales de transparencia municipal | Mismo marco |
 | **IMIV / ex-EISTU** | Aforos direccionales medidos en terreno por intersección, hora punta | Transparencia a SEREMITT RM o municipio | Medio |
 | **DTPM — posicionamiento de buses** | GPS de toda la flota cada minuto → velocidades y tiempos por tramo | Formulario en dtpm.cl | ~10 días hábiles |
 | **DACoT** | Proyecto que digitalizó datos de semáforos de la UOCT RM | dacot.feriadesoftware.cl | Un correo |
@@ -47,9 +47,9 @@ Entrar a **portaltransparencia.cl**, elegir Ministerio de Transportes y
 Telecomunicaciones — Subsecretaría de Transportes, y pegar esto ajustando el tramo:
 
 ```
-Solicito la siguiente información referida a las intersecciones semaforizadas
-de Avenida Apoquindo, comuna de Las Condes, en el tramo comprendido entre
-[calle inicial] y [calle final]:
+Solicito la siguiente información referida a la red de intersecciones semaforizadas
+a nivel comunal, abarcando todas las comunas de la región,
+específicamente:
 
 1. Programación semafórica vigente de cada una de esas intersecciones,
    incluyendo: estructura de fases y movimientos habilitados en cada fase,
@@ -78,13 +78,13 @@ me entregue lo que sí lo esté, señalando qué no fue posible entregar.
 está cada detector, los conteos del punto 2 no se pueden asociar a un movimiento y
 quedan inservibles. El párrafo final evita el rechazo total por un ítem imposible.
 
-Mandar la misma solicitud, adaptada, a la Municipalidad de Las Condes por su propio
-portal, agregando un cuarto punto que pida los IMIV aprobados en el corredor en los
-últimos cinco años, con sus anexos de aforos.
+Mandar solicitudes adaptadas a cada Municipalidad a través de sus portales
+de transparencia, agregando un cuarto punto que pida los IMIV aprobados
+en los últimos cinco años en cada comuna, con sus anexos de aforos.
 
 ## Orden recomendado
 
-1. **Esta semana:** enviar solicitudes (UOCT/MTT, Las Condes), formulario DTPM,
+1. **Esta semana:** enviar solicitudes (UOCT/MTT, municipalidades), formulario DTPM,
    correo a DACoT. Los relojes legales parten al enviar.
 2. **Semanas 1–2:** definir tramo exacto y depurar geometría en netedit.
 3. **Semanas 2–3:** terreno — estructura de fases de las 11 intersecciones y conteo

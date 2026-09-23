@@ -8,8 +8,8 @@ Informática
 **Control adaptativo de semáforos mediante aprendizaje por refuerzo
 multi-agente**
 
-*Evaluación comparativa frente a estrategias clásicas de control en un
-corredor urbano de Santiago de Chile*
+*Evaluación comparativa frente a estrategias clásicas de control en una
+red a nivel comunal de Santiago de Chile*
 
 **Autor: Gabriel Ignacio Cárdenas Valdés**
 
@@ -397,7 +397,8 @@ exógenas mediante semillas aleatorias fijadas.
 
 Se trabajará sobre un corredor arterial real de Santiago con entre ocho
 y doce intersecciones semaforizadas consecutivas ---se evaluarán como
-candidatos los ejes Providencia--Apoquindo y Vicuña Mackenna---,
+candidatos diferentes ejes y redes viales a nivel comunal, abarcando 
+información de tránsito de todas las comunas de Santiago---,
 seleccionado según tres criterios: densidad de intersecciones
 semaforizadas, disponibilidad de información pública de demanda y
 presencia de congestión recurrente documentada.
@@ -634,8 +635,8 @@ perturbaciones.
 
 **7. Plan de trabajo y cronograma**
 
-El plan considera seis meses de trabajo con una dedicación aproximada de
-diez horas semanales, equivalente a unas 240 horas efectivas. Se
+El plan considera el desarrollo hasta diciembre de este año (2026), con una dedicación aproximada de
+diez horas semanales. Se
 organiza en hitos verificables, cada uno con un entregable que permite
 al profesor guía evaluar avance sin depender de la percepción del autor.
 
@@ -643,72 +644,33 @@ al profesor guía evaluar avance sin depender de la percepción del autor.
 | **M  | **Fase**          | **Actividades         | **Entregable /   |
 | es** |                   | principales**         | hito**           |
 +======+===================+=======================+==================+
-| 1    | Fundamentos y     | Revisión              | H1: Red SUMO     |
-|      | escenario         | bibliográfica         | funcional que    |
-|      |                   | dirigida.             | simula sin       |
-|      |                   |                       | errores + matriz |
-|      |                   | Instalación del       | bibliográfica.   |
-|      |                   | stack.                |                  |
-|      |                   |                       |                  |
-|      |                   | Selección del         |                  |
-|      |                   | corredor.             |                  |
-|      |                   |                       |                  |
-|      |                   | Importación desde OSM |                  |
-|      |                   | y depuración de la    |                  |
-|      |                   | red.                  |                  |
+| Sep  | Fundamentos y     | Revisión, instalación | H1: Red SUMO     |
+|      | líneas base       | del stack. Selección  | funcional y      |
+|      |                   | y depuración de red.  | baselines (FIXED |
+|      |                   | Recolección de datos  | y WEBSTER).      |
+|      |                   | y calibración.        |                  |
 +------+-------------------+-----------------------+------------------+
-| 2    | Demanda y líneas  | Recolección de datos  | H2: Escenario    |
-|      | base              | de demanda.           | calibrado y dos  |
-|      |                   |                       | baselines        |
-|      |                   | Calibración de        | operativos con   |
-|      |                   | flujos.               | métricas         |
-|      |                   |                       | reportadas.      |
-|      |                   | Implementación de     |                  |
-|      |                   | FIXED y WEBSTER.      |                  |
+| Oct  | Max-Pressure y    | Max-Pressure,         | H2: Los tres     |
+|      | entorno RL        | formulación del       | baselines        |
+|      |                   | Dec-POMDP e           | listos + entorno |
+|      |                   | integración con       | RL con           |
+|      |                   | sumo-rl y PettingZoo. | entrenamiento    |
+|      |                   | Entrenamiento MARL.   | IQL/IPPO inicial |
 +------+-------------------+-----------------------+------------------+
-| 3    | Max-Pressure y    | Implementación y      | H3: Los tres     |
-|      | entorno RL        | verificación de       | baselines        |
-|      |                   | Max-Pressure.         | comparados +     |
-|      |                   |                       | entorno RL que   |
-|      |                   | Formulación del       | entrena un       |
-|      |                   | Dec-POMDP.            | agente de        |
-|      |                   |                       | prueba.          |
-|      |                   | Integración con       |                  |
-|      |                   | sumo-rl y PettingZoo. |                  |
+| Nov  | CTDE y            | Implementación de     | H3: Tablas de    |
+|      | experimentación   | MAPPO. Ejecución de   | resultados       |
+|      |                   | la batería completa   | completas con    |
+|      |                   | con réplicas.         | análisis         |
+|      |                   | Pruebas de robustez.  | estadístico.     |
 +------+-------------------+-----------------------+------------------+
-| 4    | Entrenamiento     | Entrenamiento de      | H4: Primera      |
-|      | MARL              | IQL/IPPO.             | política         |
-|      |                   |                       | aprendida con    |
-|      |                   | Búsqueda de           | curvas de        |
-|      |                   | hiperparámetros.      | aprendizaje      |
-|      |                   |                       | estables.        |
-|      |                   | Ajuste de la función  |                  |
-|      |                   | de recompensa.        |                  |
-+------+-------------------+-----------------------+------------------+
-| 5    | CTDE y            | Implementación de     | H5: Tablas de    |
-|      | experimentación   | MAPPO.                | resultados       |
-|      |                   |                       | completas con    |
-|      |                   | Ejecución de la       | análisis         |
-|      |                   | batería experimental  | estadístico.     |
-|      |                   | completa con          |                  |
-|      |                   | réplicas.             |                  |
-|      |                   |                       |                  |
-|      |                   | Pruebas de robustez.  |                  |
-+------+-------------------+-----------------------+------------------+
-| 6    | Análisis y        | Análisis e            | H6: Informe      |
+| Dic  | Análisis y        | Análisis e            | H4: Informe      |
 |      | redacción         | interpretación.       | final,           |
-|      |                   |                       | repositorio      |
-|      |                   | Redacción del informe | reproducible y   |
-|      |                   | final.                | presentación.    |
-|      |                   |                       |                  |
-|      |                   | Limpieza del          |                  |
-|      |                   | repositorio.          |                  |
-|      |                   |                       |                  |
-|      |                   | Preparación de la     |                  |
-|      |                   | defensa.              |                  |
+|      |                   | Redacción del informe | repositorio y    |
+|      |                   | final. Limpieza del   | presentación.    |
+|      |                   | repo y defensa.       |                  |
 +------+-------------------+-----------------------+------------------+
 
-**Regla de corte:** si al término del mes 4 no se dispone de una
+**Regla de corte:** si al término de noviembre no se dispone de una
 política aprendida que al menos iguale al plan de tiempo fijo, se
 congela la exploración de arquitecturas y se redirige el esfuerzo hacia
 la profundización del análisis comparativo entre los controladores

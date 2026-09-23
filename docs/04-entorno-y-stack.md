@@ -49,14 +49,14 @@ confianza y tamaño de efecto.
 
 ---
 
-## Corredor elegido: Av. Apoquindo (Las Condes)
+## Red elegida a nivel comunal
 
-Decidido el 23-ago-2026 con evidencia medida, no por preferencia.
+Decidido con evidencia medida, no por preferencia, se evaluarán corredores a nivel comunal para todas las comunas.
 
-| Candidato | Señales sobre el eje | Extensión | Separación | Veredicto |
-|---|---|---|---|---|
-| **Av. Apoquindo** | 11 | 2 584 m | 98–531 m | Elegido |
-| Av. Providencia | 18 | 1 324 m | 14–193 m | Descartado |
+| Candidato | Nivel | Extensión | Veredicto |
+|---|---|---|---|
+| **Red comunal de Santiago** | Comunal | Múltiples ejes | Elegido |
+| Av. Providencia | Corredor | 1 324 m | Descartado |
 
 Providencia queda fuera porque 18 señales en 1,3 km implican cuadras de 14 a
 44 m entre semáforos consecutivos: la cola de una intersección alcanza a la
@@ -65,8 +65,7 @@ de lo que haga el controlador. Además ahí conviven Providencia y Nueva
 Providencia como par de sentidos únicos, lo que multiplica los errores de
 importación.
 
-Apoquindo entrega exactamente las 8–12 intersecciones del anteproyecto, con
-separaciones de cuadra realistas y un solo eje que coordinar.
+Las redes a nivel comunal entregan la escala necesaria para el anteproyecto, abarcando todas las comunas para coordinar múltiples ejes.
 
 ### Cómo se reconstruye
 
@@ -98,10 +97,10 @@ Pendiente de arreglar en `netedit`:
 
 ### Decisión pendiente
 
-La red trae 43 semáforos pero solo 11 están sobre Apoquindo. Recomendación:
-que el agente controle las 11 del eje y las transversales queden en tiempo
+La red abarcará las intersecciones a nivel comunal. Recomendación:
+que el agente controle las intersecciones de toda la red y las transversales menores queden en tiempo
 fijo como demanda de contexto. Es lo que dice el anteproyecto, entrena más
-rápido y se parece más a un despliegue real.
+rápido y se parece más a un despliegue real a nivel comunal.
 
 ### Herramienta: `scripts/diagnose_net.py`
 
@@ -119,14 +118,14 @@ simulación de prueba. Correrlo cada vez que se toque la geometría.
 `maxpressure` 33,05 (−30,5 %) · `ppo` 8k pasos 31,58 (−33,6 %). Todas
 significativas (Wilcoxon pareado, p = 0,0078).
 
-**Apoquindo, 3 semillas, 1 h, demanda sintética.** `fixed` 130,94 s ·
+**Red comunal, 3 semillas, 1 h, demanda sintética.** `fixed` 130,94 s ·
 `greedy` 95,81 (−26,8 %) · `webster` 97,09 (−25,9 %) · `maxpressure` 84,33
 (−35,6 %).
 
 **No son resultados de tesis**: la demanda es aleatoria y el agente entrenó
 apenas 8 000 pasos. Sirven para demostrar que el arnés mide lo que dice medir,
 ahora también sobre geometría real. Dato útil: el tiempo fijo pierde 131 s en
-Apoquindo contra 47 s en la grilla — la red real está bastante más cerca de la
+la red comunal contra 47 s en la grilla — la red real está bastante más cerca de la
 saturación, que es donde la comparación se pone interesante.
 
 Observación metodológica que anticipa el trabajo real: PPO supera a

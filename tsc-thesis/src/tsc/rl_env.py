@@ -26,6 +26,7 @@ if "SUMO_HOME" not in os.environ:
 sys.path.append(os.path.join(os.environ["SUMO_HOME"], "tools"))
 
 import sumo_rl  # noqa: E402
+from tsc.observations import WazeCongestionObservation
 
 
 def pressure_reward(ts) -> float:
@@ -58,25 +59,32 @@ def make_parallel_env(
     seed: int = 0,
     out_csv: str | None = None,
     gui: bool = False,
+    use_waze_obs: bool = False,
 ):
     """Entorno PettingZoo paralelo: un agente por intersección."""
     if reward not in REWARDS:
         raise ValueError(f"reward debe ser uno de {sorted(REWARDS)}")
-    return sumo_rl.parallel_env(
-        net_file=net_file,
-        route_file=route_file,
-        out_csv_name=out_csv,
-        use_gui=gui,
-        num_seconds=num_seconds,
-        delta_time=delta_time,
-        yellow_time=yellow_time,
-        min_green=min_green,
-        max_green=max_green,
-        reward_fn=REWARDS[reward],
-        sumo_seed=seed,
-        sumo_warnings=False,
-add_system_info=True,
-    )
+        
+    env_kwargs = {
+        "net_file": net_file,
+        "route_file": route_file,
+        "out_csv_name": out_csv,
+        "use_gui": gui,
+        "num_seconds": num_seconds,
+        "delta_time": delta_time,
+        "yellow_time": yellow_time,
+        "min_green": min_green,
+        "max_green": max_green,
+        "reward_fn": REWARDS[reward],
+        "sumo_seed": seed,
+        "sumo_warnings": False,
+        "add_system_info": True,
+    }
+    
+    if use_waze_obs:
+        env_kwargs["observation_class"] = WazeCongestionObservation
+        
+    return sumo_rl.parallel_env(**env_kwargs)
 
 
 def make_sb3_vec_env(num_vec_envs: int = 1, num_cpus: int = 1, **kwargs):

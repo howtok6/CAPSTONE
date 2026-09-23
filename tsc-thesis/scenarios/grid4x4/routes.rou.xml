@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-08-23 20:15:26.370803 by Eclipse SUMO randomTrips.py v1.27.1
+<!-- generated on 2026-09-16 17:48:21.877837 by Eclipse SUMO randomTrips.py v1_27_1+0000-7717f2379d9
 <configuration>
-    <net-file value="scenarios/grid4x4/net.net.xml"/>
-    <output-trip-file value="scenarios/grid4x4/trips.trips.xml"/>
-    <route-file value="scenarios/grid4x4/routes.rou.xml"/>
+    <net-file value="scenarios/grid4x4\net.net.xml"/>
+    <output-trip-file value="scenarios/grid4x4\trips.trips.xml"/>
+    <route-file value="scenarios/grid4x4\routes.rou.xml"/>
     <fringe-factor value="10"/>
     <period value="1.2"/>
 </configuration>
 -->
 
-<!-- generated on 2026-08-23T20:15:26.308484+00:00 by Eclipse SUMO duarouter 1.27.1
+<!-- generated on 2026-09-16T17:48:21.747473-04:00 by Eclipse SUMO duarouter 1.27.1
 <duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
-        <net-file value="scenarios/grid4x4/net.net.xml"/>
-        <route-files value="scenarios/grid4x4/trips.trips.xml"/>
+        <net-file value="scenarios/grid4x4\net.net.xml"/>
+        <route-files value="scenarios/grid4x4\trips.trips.xml"/>
     </input>
 
     <output>
-        <output-file value="scenarios/grid4x4/routes.rou.xml"/>
+        <output-file value="scenarios/grid4x4\routes.rou.xml"/>
         <alternatives-output value="NUL"/>
     </output>
+
+    <processing>
+        <routing-threads value="4"/>
+    </processing>
 
     <time>
         <begin value="0.0"/>

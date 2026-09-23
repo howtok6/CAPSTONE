@@ -28,7 +28,7 @@ from tsc.metrics import parse_tripinfo  # noqa: E402
 from tsc.rl_env import make_parallel_env  # noqa: E402
 
 
-def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True) -> dict:
+def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waze_obs=False) -> dict:
     tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
     tmp.close()
     env = make_parallel_env(
@@ -36,6 +36,7 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True) -> dict
         route_file=rou,
         num_seconds=seconds,
         seed=seed,
+        use_waze_obs=use_waze_obs,
     )
     env.unwrapped.env.additional_sumo_cmd = f"--tripinfo-output {tmp.name}"
 
@@ -87,6 +88,7 @@ def main() -> None:
     ap.add_argument("--name", default="ppo")
     ap.add_argument("--merge-into", default=None,
                     help="JSON de baselines al que agregar estas filas")
+    ap.add_argument("--use-waze-obs", action="store_true")
     args = ap.parse_args()
 
     from stable_baselines3 import PPO
@@ -97,7 +99,7 @@ def main() -> None:
 
     rows = []
     for seed in range(args.seeds):
-        r = evaluate(model, net, rou, seed, args.seconds, args.warmup)
+        r = evaluate(model, net, rou, seed, args.seconds, args.warmup, use_waze_obs=args.use_waze_obs)
         r["controller"] = args.name
         rows.append(r)
         print(f"  {args.name:12s} seed={seed:2d}  "

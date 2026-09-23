@@ -26,6 +26,9 @@ def run_episode(
     verbose: bool = False,
     tripinfo_path: str | None = None,
     keep_tripinfo: bool = False,
+    waze_rerouting_threshold: float = -1.0,
+    waze_reroute_pct: float = 0.2,
+    use_gnn_router: bool = False,
 ) -> dict:
     tmp = None
     if tripinfo_path is None:
@@ -46,12 +49,43 @@ def run_episode(
 
     with sim:
         controller.setup(sim)
+        
+        # Inicializar GNN Router si fue solicitado
+        gnn = None
+        if use_gnn_router:
+            from .gnn_router import GNNRouter
+            gnn = GNNRouter(net_file)
+            
         interval = max(1, int(getattr(controller, "decision_interval", 5)))
         t = 0
         while sim.running():
             sim.step(interval)
             t += interval
             controller.act(sim)
+            
+            # --- Integración GNN ---
+            if gnn is not None and t >= warmup and t % 10 == 0:
+                gnn.act(sim) # Actualiza pesos de ruta en tiempo real
+            # -----------------------
+            
+            # --- Integración Waze: Desvío Dinámico (Rerouting) ---
+            if waze_rerouting_threshold > 0 and t >= warmup:
+                # Proxy de índice Waze: suma del tiempo de espera de toda la red
+                total_wait = sum(tl.waiting_time() for tl in sim.tls.values())
+                
+                if total_wait > waze_rerouting_threshold:
+                    import random
+                    # Desviar a un % de los vehículos que acaban de partir (nuevos conductores abriendo Waze)
+                    departed = sim.conn.simulation.getDepartedIDList()
+                    for veh in departed:
+                        if random.random() < waze_reroute_pct:
+                            try:
+                                # Fuerza al vehículo a recalcular la ruta óptima dada la congestión actual
+                                sim.conn.vehicle.rerouteTraveltime(veh)
+                            except Exception:
+                                pass # Algunos vehículos ya no pueden ser enrutados
+            # ------------------------------------------------------
+            
             if t >= warmup and t % sample_every < interval:
                 sampler.sample(sim)
         controller.teardown(sim)
