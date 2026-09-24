@@ -1,0 +1,5 @@
+temp/
+test/
+.venv/
+__pycache__/
+*.pyc
