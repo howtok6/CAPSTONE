@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Packages and virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Indexing tools and IDE
+docs/index.bleve/
+.idea/
+.vscode/
+
+# SUMO / Simulation outputs
+*_health.log
+_health.log
+*.tripinfo.xml
+tsc-thesis/results/*.json
+tsc-thesis/results/tb/
+tsc-thesis/models/
+tsc-thesis/congestiones_waze_*.json
+tsc-thesis/scenarios/*/map.osm
+tsc-thesis/scenarios/*/trips.trips.xml
+*.zip

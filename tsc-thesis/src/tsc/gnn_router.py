@@ -60,6 +60,7 @@ class GNNRouter:
             
         sources, targets = [], []
         
+        self.incoming_edges_by_junction = {}
         for edge in root.findall('edge'):
             eid = edge.get('id')
             if 'function' in edge.attrib and edge.attrib['function'] == 'internal':
@@ -71,17 +72,33 @@ class GNNRouter:
                 sources.append(junction_map[u])
                 targets.append(junction_map[v])
                 self.edge_ids.append(eid)
+                self.incoming_edges_by_junction.setdefault(v, []).append(eid)
                 
         self.edge_index = torch.tensor([sources, targets], dtype=torch.long)
         
     def get_node_features(self, sim):
-        """Extrae el estado actual de la red de SUMO (densidad, colas) para la GNN."""
+        """Extrae el estado actual de la red de SUMO (densidad, colas, velocidad) para la GNN."""
         x = []
         for jid in self.node_ids:
-            # TODO: En una implementación completa, aquí consultamos a sim.conn (TraCI)
-            # por el estado real de los edges entrantes a 'jid'.
-            # Para el esqueleto, enviamos features simulados.
-            x.append([0.5, 10.0, 15.0]) # [densidad, cola, velocidad]
+            inc_edges = self.incoming_edges_by_junction.get(jid, [])
+            if not inc_edges or not hasattr(sim, 'conn'):
+                x.append([0.0, 0.0, 13.89])
+                continue
+            densities, queues, speeds = [], [], []
+            for eid in inc_edges:
+                try:
+                    q = sim.conn.edge.getLastStepHaltingNumber(eid)
+                    v = sim.conn.edge.getLastStepMeanSpeed(eid)
+                    veh_num = sim.conn.edge.getLastStepVehicleNumber(eid)
+                    queues.append(q)
+                    speeds.append(max(0.1, v))
+                    densities.append(min(1.0, veh_num / 20.0))
+                except Exception:
+                    continue
+            avg_density = sum(densities) / len(densities) if densities else 0.0
+            avg_queue = sum(queues) / len(queues) if queues else 0.0
+            avg_speed = sum(speeds) / len(speeds) if speeds else 13.89
+            x.append([avg_density, avg_queue, avg_speed])
         return torch.tensor(x, dtype=torch.float)
 
     def act(self, sim):

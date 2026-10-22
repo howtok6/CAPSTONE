@@ -34,6 +34,13 @@ from collections import Counter
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import tsc.sumo_env  # noqa: F401  (fija SUMO_HOME)
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 SHORT_EDGE_M = 25.0
 
 
@@ -58,6 +65,15 @@ def analyse_net(net_file: str) -> dict:
             if "G" not in st and "g" not in st:
                 empty_green.append(tid)
 
+    junction_tls = {}
+    for c in root.iter("connection"):
+        via = c.get("via", "")
+        tl = c.get("tl")
+        if via.startswith(":") and tl:
+            jid = via[1:].rsplit("_", 2)[0]
+            if jid in tls_junctions:
+                junction_tls.setdefault(jid, set()).add(tl)
+
     edges, short_between_tls = {}, []
     for e in root.iter("edge"):
         if e.get("function") == "internal":
@@ -76,7 +92,12 @@ def analyse_net(net_file: str) -> dict:
         if (length < SHORT_EDGE_M
                 and e.get("from") in tls_junctions
                 and e.get("to") in tls_junctions):
-            short_between_tls.append((e.get("id"), round(length, 1)))
+            f_tls = junction_tls.get(e.get("from"), set())
+            t_tls = junction_tls.get(e.get("to"), set())
+            # Si ambos extremos están coordinados bajo el mismo programa de semáforo
+            # (joined TLS), no hay riesgo de desincronización ni bloqueo.
+            if not (f_tls and t_tls and (f_tls & t_tls)):
+                short_between_tls.append((e.get("id"), round(length, 1)))
 
     return {
         "tls_total": len(tls_junctions),
@@ -119,6 +140,11 @@ def run_health_check(net_file: str, route_file: str, end: int = 1200) -> dict:
             out["still_running"] = s
         elif s.startswith("TimeLoss:"):
             out["time_loss"] = s
+    if os.path.exists(log):
+        try:
+            os.remove(log)
+        except OSError:
+            pass
     return out
 
 
@@ -181,7 +207,7 @@ def main() -> None:
             if h["teleports"] == 0 and h["collisions"] == 0 and not problems
             else "NO APTA todavía — arreglar lo anterior en netedit"
         )
-        print(f"\n  → {verdict}")
+        print(f"\n  -> {verdict}")
 
 
 if __name__ == "__main__":

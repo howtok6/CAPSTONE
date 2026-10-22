@@ -5451,9 +5451,12 @@
         <phase duration="5"  state="GrrrryyyG"/>
     </tlLogic>
     <tlLogic id="cluster_133350020_482819423_5741781400" type="static" programID="0" offset="0">
-        <phase duration="82" state="GgGGGGgGGGGG"/>
-        <phase duration="3"  state="yyyyyyyyyyyy"/>
-        <phase duration="5"  state="rrrrrrrrrrrr"/>
+        <phase duration="45" state="GrGGGGGrGGGG"/>
+        <phase duration="3"  state="yryyyyryyyyy"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
+        <phase duration="20" state="rGrrrrGrrrrr"/>
+        <phase duration="3"  state="ryrrrryrrrrr"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
     </tlLogic>
     <tlLogic id="cluster_13416801280_13882179_654101274_9408373826" type="static" programID="0" offset="0">
         <phase duration="26" state="rrrrrrrGGGG"/>

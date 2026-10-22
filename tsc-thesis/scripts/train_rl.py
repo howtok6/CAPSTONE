@@ -18,12 +18,21 @@ import warnings
 warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from tsc.rl_env import make_sb3_vec_env  # noqa: E402
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenario", required=True)
+    ap.add_argument("--profile", default=None, help="Nombre del perfil de demanda (valle, punta_manana, punta_tarde, sobresaturado)")
+    ap.add_argument("--routes", default=None, help="Ruta directa al archivo de rutas .rou.xml")
     ap.add_argument("--steps", type=int, default=200_000)
     ap.add_argument("--reward", default="wait", choices=["wait", "queue", "pressure", "speed"])
     ap.add_argument("--seconds", type=int, default=3600, help="duración del episodio (s sim)")
@@ -46,10 +55,6 @@ def main() -> None:
     from stable_baselines3 import PPO
     from stable_baselines3.common.utils import set_random_seed
 
-    # NO se pasa `seed=` al constructor de PPO: SB3 llamaría a `env.seed()`,
-    # que los VecEnv de SuperSuit no implementan (incompatibilidad conocida
-    # entre stable-baselines3 >= 2.x y supersuit 3.11). La semilla se fija
-    # aquí y en la simulación vía `sumo_seed`, que es donde importa.
     set_random_seed(args.seed)
 
     try:
@@ -59,8 +64,20 @@ def main() -> None:
         tb_log = None
 
     net = os.path.join(args.scenario, "net.net.xml")
-    rou = os.path.join(args.scenario, "routes.rou.xml")
-    tag = f"ppo_{args.reward}"
+    if args.routes:
+        rou = args.routes
+    elif args.profile:
+        rou = os.path.join(args.scenario, "demand", f"routes_{args.profile}.rou.xml")
+        if not os.path.exists(rou):
+            rou = os.path.join(args.scenario, f"routes_{args.profile}.rou.xml")
+    else:
+        rou = os.path.join(args.scenario, "routes.rou.xml")
+
+    if not os.path.exists(rou):
+        sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
+
+    tag_profile = f"_{args.profile}" if args.profile else ""
+    tag = f"ppo_{args.reward}{tag_profile}"
     out = args.out or os.path.join("models", os.path.basename(args.scenario), tag)
     os.makedirs(os.path.dirname(out), exist_ok=True)
 
@@ -96,7 +113,7 @@ def main() -> None:
     model.learn(total_timesteps=args.steps, progress_bar=False)
     model.save(out)
     env.close()
-    print(f"\nOK  modelo → {out}.zip")
+    print(f"\nOK  modelo -> {out}.zip")
     print(f"    Evalúa con:  python scripts/eval_rl.py --scenario {args.scenario} --model {out}.zip")
 
 

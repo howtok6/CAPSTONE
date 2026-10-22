@@ -14,6 +14,14 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from tsc.controllers import (
     FixedTimeController,
     GreedyQueueController,
@@ -44,6 +52,8 @@ def build_controllers(scenario: str, which: list) -> list:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenario", required=True)
+    ap.add_argument("--profile", default=None, help="Nombre del perfil de demanda (valle, punta_manana, punta_tarde, sobresaturado)")
+    ap.add_argument("--routes", default=None, help="Ruta directa al archivo de rutas .rou.xml")
     ap.add_argument("--seeds", type=int, default=10)
     ap.add_argument("--end", type=int, default=3600)
     ap.add_argument("--warmup", type=int, default=300)
@@ -56,7 +66,18 @@ def main() -> None:
     args = ap.parse_args()
 
     net = os.path.join(args.scenario, "net.net.xml")
-    rou = os.path.join(args.scenario, "routes.rou.xml")
+    if args.routes:
+        rou = args.routes
+    elif args.profile:
+        rou = os.path.join(args.scenario, "demand", f"routes_{args.profile}.rou.xml")
+        if not os.path.exists(rou):
+            rou = os.path.join(args.scenario, f"routes_{args.profile}.rou.xml")
+    else:
+        rou = os.path.join(args.scenario, "routes.rou.xml")
+
+    if not os.path.exists(rou):
+        sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
+
     factories = build_controllers(args.scenario, args.controllers.split(","))
 
     rows = []
@@ -71,11 +92,12 @@ def main() -> None:
                 f"queue={r.get('queue_mean', float('nan')):6.2f}"
             )
 
-    out = args.out or os.path.join("results", f"{os.path.basename(args.scenario)}_baselines.json")
+    tag = f"_{args.profile}" if args.profile else ""
+    out = args.out or os.path.join("results", f"{os.path.basename(args.scenario)}{tag}_baselines.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as fh:
         json.dump(rows, fh, indent=2)
-    print(f"\nOK  {len(rows)} corridas → {out}")
+    print(f"\nOK  {len(rows)} corridas -> {out}")
     print("    Analiza con:  python scripts/compare.py --results", out)
 
 

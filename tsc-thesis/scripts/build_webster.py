@@ -14,6 +14,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from tsc.controllers.webster import webster_plan
 from tsc.runner import measure_phase_flows
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -47,7 +54,7 @@ def main() -> None:
         json.dump(plans, fh, indent=2)
 
     cycles = [p["cycle"] for p in plans.values()]
-    print(f"OK  {len(plans)} intersecciones → {out}")
+    print(f"OK  {len(plans)} intersecciones -> {out}")
     print(f"    ciclo: min={min(cycles):.0f}s  medio={sum(cycles)/len(cycles):.0f}s  max={max(cycles):.0f}s")
 
 

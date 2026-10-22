@@ -46,16 +46,16 @@ def main():
     )
     
     print("\n================ RESULTADOS ================")
-    print(f"Demora Media (sin Waze): {res_no_waze.get('mean_delay_s', 0):.2f} s")
-    print(f"Demora Media (con Waze): {res_waze.get('mean_delay_s', 0):.2f} s")
-    print(f"Demora Media (con GNN):  {res_gnn.get('mean_delay_s', 0):.2f} s")
+    print(f"Demora Media (sin Waze): {res_no_waze.get('time_loss_mean', 0):.2f} s")
+    print(f"Demora Media (con Waze): {res_waze.get('time_loss_mean', 0):.2f} s")
+    print(f"Demora Media (con GNN):  {res_gnn.get('time_loss_mean', 0):.2f} s")
     
     print(f"\nThroughput (sin Waze): {res_no_waze.get('throughput', 0):.2f} veh/h")
     print(f"Throughput (con Waze): {res_waze.get('throughput', 0):.2f} veh/h")
     print(f"Throughput (con GNN):  {res_gnn.get('throughput', 0):.2f} veh/h")
     
-    diff_delay = ((res_waze.get('mean_delay_s', 1) / max(1e-5, res_no_waze.get('mean_delay_s', 1))) - 1) * 100
-    print(f"\nMejora en demora: {diff_delay:.1f}%")
+    diff_delay = ((res_waze.get('time_loss_mean', 1) / max(1e-5, res_no_waze.get('time_loss_mean', 1))) - 1) * 100
+    print(f"\nVariación en demora (Waze vs Base): {diff_delay:+.1f}%")
 
 if __name__ == "__main__":
     main()

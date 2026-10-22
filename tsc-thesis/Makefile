@@ -24,6 +24,9 @@ grid:
 webster:
 	python scripts/build_webster.py --scenario $(SCENARIO)
 
+demand:
+	python scripts/build_demand_profiles.py --scenario $(SCENARIO)
+
 baselines:
 	python scripts/run_baselines.py --scenario $(SCENARIO) --seeds $(SEEDS)
 

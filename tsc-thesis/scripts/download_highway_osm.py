@@ -14,8 +14,11 @@ out body;
 """
 
 url = "https://overpass-api.de/api/interpreter"
+headers = {
+    "User-Agent": "TSCThesisProject/1.0 (TrafficSignalControl; contact: academic-research)"
+}
 print("Descargando carreteras desde Overpass API...")
-response = requests.post(url, data={'data': overpass_query})
+response = requests.post(url, data={'data': overpass_query}, headers=headers, timeout=120)
 
 if response.status_code == 200:
     with open("map_alameda.osm", "wb") as f:
