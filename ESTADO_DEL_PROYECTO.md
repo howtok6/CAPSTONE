@@ -1,7 +1,8 @@
 # Estado Actual del Proyecto de Tesis
 
 **Proyecto:** Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente  
-**Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en un corredor urbano de Santiago de Chile  
+**Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en una red a nivel comunal de Santiago de Chile  
+**Alcance del MVP:** eje Apoquindo → Providencia → Alameda (Las Condes, Providencia y Santiago). Ver `docs/07-decision-escenario.md`.  
 **Autor:** Gabriel Ignacio Cárdenas Valdés  
 **Programa:** Ingeniería en Informática, DUOC UC  
 **Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre)  
@@ -98,9 +99,9 @@ C:\Users\Gabriel\Desktop\TESIS\
     ├── results/                          # Salidas JSON de baselines (versionadas desde 22-oct)
     ├── scenarios/                        # Escenarios SUMO
     │   ├── grid4x4/                      # Red sintética de verificación
-    │   ├── apoquindo/                    # Red real, 43 semáforos (11 sobre el eje)
-    │   ├── alameda_providencia/          # Red real, 36 semáforos (escenario principal)
-    │   └── providencia/                  # Red real, 75 semáforos (desaconsejada)
+    │   ├── apoquindo/                    # Red real, 42 semáforos (tramo oriente del eje)
+    │   ├── alameda_providencia/          # Red real, 36 semáforos (tramo poniente del eje)
+    │   └── providencia/                  # Red real, 72 semáforos (desaconsejada)
     ├── scripts/                          # Ejecución, calibración y diagnóstico
     ├── src/tsc/                          # Librería central del proyecto
     │   ├── controllers/                  # fixed, webster, maxpressure, greedy
@@ -142,20 +143,24 @@ Mediante `scripts/diagnose_net.py` se auditó la topología y viabilidad de cada
 | Escenario | Arcos | Semáforos | Semáforos de fase única (< 2 fases verdes) | Arcos críticos (< 25 m entre semáforos distintos) | Veredicto |
 |---|:---:|:---:|:---:|:---:|:---|
 | **`grid4x4`** | 48 | 12 | 0 | 0 | 🟢 **APTA** (verificación unitaria). |
-| **`alameda_providencia`** | 520 | 36 | 0 (fase de viraje corregida) | 0 (arcos internos de semáforos agrupados) | 🟢 **APTA** — escenario principal. |
-| **`apoquindo`** | 749 | 43 | 1 (`GS_252964499`) | 2 (arcos de 22,3 m) | 🟡 **Requiere netedit** (secundario). |
-| **`providencia`** | 788 | 75 | 5 | 3 | 🔴 **Desaconsejada** (alta densidad y acoplamiento). |
+| **`alameda_providencia`** | 520 | 36 | 0 (fase de viraje corregida) | 0 (arcos internos de semáforos agrupados) | 🟢 **APTA** — tramo poniente del eje del MVP. |
+| **`apoquindo`** | 749 | 42 | 1 (`GS_252964499`) | 2 (arcos de 22,3 m) | 🟡 **Requiere netedit** — tramo oriente del eje del MVP. |
+| **`providencia`** | 788 | 72 | 5 | 3 | 🔴 **Desaconsejada** (alta densidad y acoplamiento); única red que cubre el tramo central. |
+
+*Semáforos contados el 22-oct como elementos `tlLogic` en cada `net.net.xml`; las cifras previas de 43 y 75 provenían de diagnósticos anteriores.*
 
 **Advertencia sobre teletransportes.** `sumo_env.py` y `diagnose_net.py` ejecutan SUMO con `--time-to-teleport -1`:
 el teletransporte está desactivado por diseño para que los bloqueos se vean, así que «0 teletransportes» se cumple
 siempre y no prueba que la red esté sana. Los indicadores útiles son los vehículos detenidos al final de la corrida y la
 **cola de inserción** (vehículos cargados que no logran entrar a la red).
 
-**Cambio de escenario pendiente de registrar.** El 23-ago se eligió Apoquindo (11 semáforos sobre el eje) y se descartó
-Providencia por cuadras de 14–44 m. El escenario principal pasó a ser Alameda-Providencia (36 semáforos) sin un registro
-de la decisión. El anteproyecto contempla un corredor de 8–12 intersecciones. `diagnose_net.py` se modificó para no
-marcar los arcos cortos dentro de un mismo semáforo agrupado (*joined TLS*). Ambas decisiones deben justificarse por
-escrito y validarse con el profesor guía, junto con el número de semáforos que controlará el agente.
+**Decisión de escenario (22-oct-2026), registrada en `docs/07-decision-escenario.md`.** El proyecto pasa a nivel
+comunal y el MVP se centra en el eje Apoquindo → Providencia → Alameda. Ninguna red existente cubre el eje completo:
+`alameda_providencia` llega por el oriente hasta −70,611 y `apoquindo` empieza en −70,598, por lo que faltan ~1,2 km de
+Av. Providencia (entre Pedro de Valdivia y Tobalaba, aprox.). Quedan abiertos tres puntos: cómo construir la red del eje
+completo, cuántos semáforos controla el agente y la validación con el profesor guía, porque el anteproyecto contempla un
+corredor de 8–12 intersecciones. `diagnose_net.py` se modificó para no marcar los arcos cortos dentro de un mismo semáforo
+agrupado (*joined TLS*); el criterio debe explicarse en la metodología.
 
 ---
 
@@ -258,7 +263,7 @@ estrés.
 1. ⏳ **Contador `phase_switches`** devuelve 0 para todos los controladores.
 2. ⏳ **Métrica de cola de inserción y `depart_delay`** ausente de la validación de perfiles; distorsiona punta tarde y sobresaturado.
 3. ⏳ **Calibración de demanda** inexistente; los perfiles son sintéticos.
-4. ⏳ **Registro de la decisión de escenario** (Apoquindo → Alameda-Providencia) y del número de semáforos a controlar.
+4. ⏳ **Red del eje completo y número de semáforos a controlar** (decisión de alcance registrada el 22-oct en `docs/07-decision-escenario.md`).
 5. ⏳ **`requirements.txt` incompleto** (`torch`, `torch_geometric`, `WazeRouteCalculator`) y ejecución sin entorno virtual en Python 3.13.
 6. ⏳ **Componentes exploratorios** (Waze, *rerouting*, GNN) por mover a trabajo futuro o documentar como fuera de alcance.
 7. ✅ **Respaldo en git** del trabajo del 14-oct (resuelto el 22-oct: commits `eb7aa17` y `7c80729`).
@@ -275,10 +280,11 @@ recortar alcance.
 ### Próximas semanas (fin de octubre – noviembre)
 1. ✅ Commit y push del trabajo pendiente.
 2. ✅ Corregir este informe de estado.
-3. **Registrar la decisión de escenario** y validarla con el profesor guía.
+3. ✅ **Registrar la decisión de escenario** (`docs/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
+3b. **Construir la red del eje completo** Apoquindo → Providencia → Alameda (cubrir la brecha de ~1,2 km). Listo cuando `diagnose_net.py` la declara APTA.
 4. **Arreglar `phase_switches`.** Listo cuando Max-Pressure reporta conmutaciones > 0.
 5. **Medir la cola de inserción** en el arnés. Listo cuando los cuatro perfiles quedan ordenados por demora de valle a sobresaturado.
-6. **Fijar el alcance de control** (solo el eje o los 36 semáforos). Listo cuando `rl_env.py` recibe la lista explícita.
+6. **Fijar el alcance de control** (solo los semáforos del eje o todos los de la red). Listo cuando `rl_env.py` recibe la lista explícita.
 7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
 9. **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.

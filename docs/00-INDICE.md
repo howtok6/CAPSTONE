@@ -3,7 +3,7 @@
 Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente
 Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 
-Última actualización: 14 de octubre de 2026.
+Última actualización: 22 de octubre de 2026.
 
 ## Qué hay aquí
 
@@ -17,10 +17,13 @@ Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 | `04-entorno-y-stack.md` | El stack elegido capa por capa, la red comunal, resultados de sanidad y las trampas encontradas. | Referencia técnica general del proyecto. |
 | `05-visualizacion.md` | Cómo ver la simulación en vivo y cómo grabar video. | Cuando quieras mirar o mostrar la ejecución. |
 | `06-fuentes-de-datos.md` | De dónde sacar flujos, tiempos de viaje y programación real de semáforos, con la solicitud de transparencia lista. | Ahora. Las solicitudes tardan semanas. |
+| `07-decision-escenario.md` | Paso a nivel comunal y alcance del MVP (eje Apoquindo → Providencia → Alameda), cobertura de las redes actuales y decisiones abiertas. | Antes de construir la red del eje o fijar cuántos semáforos controla el agente. |
 
 ## Estado del proyecto
 
-- **Red elegida:** Nivel comunal, abarcando información de tránsito de todas las comunas. Múltiples ejes y redes de intersecciones semaforizadas.
+- **Red elegida:** nivel comunal. El MVP se centra en las comunas del eje principal Apoquindo → Providencia → Alameda
+  (Las Condes, Providencia y Santiago). Hoy el eje está cubierto por dos redes separadas con una brecha de ~1,2 km;
+  detalle en `07`.
 - **Entorno:** Windows nativo. Todo el stack tiene rueda de Windows, incluido
   `libsumo`, y las pruebas ya pasan en esta máquina.
 - **Pipeline:** funcionando de punta a punta — escenario, cuatro controladores
@@ -30,12 +33,13 @@ Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 
 ## Lo que sigue
 
-1. Depurar red comunal en `netedit` hasta que `diagnose_net.py` no reporte problemas.
-2. Enviar las solicitudes de datos (ver `06`). Cuanto antes, porque los plazos
-   legales son de semanas.
-3. Decidir si el agente controla las 11 intersecciones del eje o las 43 de la red.
-4. Definir los cuatro perfiles de demanda.
-5. Entrenamiento en serio y ablation de recompensa.
+La hoja de ruta vigente, con criterio de término por paso, está en la sección 8 de `../ESTADO_DEL_PROYECTO.md`. En corto:
+
+1. Construir la red del eje completo Apoquindo → Providencia → Alameda hasta que `diagnose_net.py` la declare APTA.
+2. Decidir si el agente controla solo los semáforos del eje o todos los de la red.
+3. Arreglar el contador `phase_switches` y medir la cola de inserción en el arnés.
+4. Regenerar los cuatro perfiles de demanda para la nueva red y validarlos contra datos observados (ver `06`).
+5. Baselines completos con 10 semillas; luego entrenamiento IPPO y ablation de recompensa.
 6. MAPPO con crítico centralizado.
 7. Pruebas de robustez.
 
