@@ -3,12 +3,13 @@
 Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente
 Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 
-Última actualización: 24 de agosto de 2026.
+Última actualización: 14 de octubre de 2026.
 
 ## Qué hay aquí
 
 | Archivo | Qué es | Cuándo mirarlo |
 |---|---|---|
+| `../ESTADO_DEL_PROYECTO.md` | Diagnóstico exhaustivo del estado actual del proyecto, avance de objetivos, resultados preliminares y plan de acción. | Estado consolidado y avance a octubre de 2026. |
 | `Anteproyecto_Tesis_Semaforos_Adaptativos.docx` | Anteproyecto formal, 18 páginas. Problema, objetivos, hipótesis, marco teórico, metodología, cronograma y bibliografía. | Es el documento que va al profesor guía. El `.pdf` es la misma versión, para leer sin Word. |
 | `01-anteproyecto-v1.md` | El mismo anteproyecto en texto plano. | Para buscar, citar o copiar fragmentos sin abrir Word. |
 | `02-windows-vs-wsl2.md` | Dónde montar el entorno, y la corrección de una recomendación anterior que estaba equivocada. | Decisión vigente: Windows nativo. |
