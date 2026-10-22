@@ -8,9 +8,18 @@ El proyecto pasa de un corredor único de 8–12 intersecciones (anteproyecto, s
 El **MVP** se acota a las comunas que atraviesa el eje principal oriente–poniente:
 **Apoquindo → Providencia → Alameda**.
 
-Según las coordenadas de las redes existentes, el eje cruza **Las Condes** (Apoquindo), **Providencia** (Av.
-Providencia) y **Santiago** (Alameda). Esta lista se deriva de la geografía de las redes y conviene confirmarla al fijar
-los límites exactos.
+**Límites del MVP (decididos el 22-oct): los de las comunas de Santiago, Providencia y Las Condes.** Calculados
+cruzando el eje con los límites administrativos de OpenStreetMap (`boundary=administrative`, `admin_level=8`):
+
+| Tramo | Comuna | Desde | Hasta |
+|---|---|---|---|
+| Alameda (Av. Libertador Bernardo O'Higgins) | Santiago | Matucana / Exposición (−70,679), límite con Estación Central | Plaza Baquedano (−70,635) |
+| Av. Providencia | Providencia | Plaza Baquedano (−70,635) | Av. Tobalaba (−70,6015), límite con Las Condes |
+| Av. Apoquindo | Las Condes | Av. Tobalaba (−70,6015) | término de la avenida junto a Camino El Alba (−70,545) |
+
+El eje mide ~13,5 km (suma de tramos en línea recta) y tiene **~86 puntos semaforizados**: 37 en Santiago, 23 en
+Providencia y 26 en Las Condes (nodos de semáforo de OSM a menos de 45 m agrupados en un punto; incluye pasos
+peatonales semaforizados, así que el número de intersecciones es menor).
 
 ## Historia
 
@@ -19,6 +28,7 @@ los límites exactos.
 | 23-ago-2026 | Apoquindo (11 semáforos sobre el eje) | Separación de cuadras realista (98–531 m) y un solo eje a coordinar. Providencia se descartó por cuadras de 14–44 m. |
 | 16-sep a 14-oct-2026 | Alameda-Providencia (36 semáforos) | Pasó a ser el escenario principal sin registro escrito de la decisión. |
 | 22-oct-2026 | Nivel comunal; MVP en el eje Apoquindo → Providencia → Alameda | Decisión de alcance del autor. |
+| 22-oct-2026 | Límites del MVP = límites comunales de Santiago, Providencia y Las Condes | Decisión del autor; extremos calculados con los límites de OSM. |
 
 ## Cobertura actual de las redes
 
@@ -38,10 +48,10 @@ calzada tiene su propio nodo).
 Providencia, entre Pedro de Valdivia y Tobalaba, aprox.). Solo la red `providencia` lo cubre, y su diagnóstico la
 desaconseja (5 semáforos de fase única, 3 arcos críticos).
 
-**Semáforos sobre el eje en las redes actuales:** 30 (18 en Av. Providencia y 12 en Av. Apoquindo), más los ~13 de
-la Alameda que solo están en OSM.
+**Semáforos sobre el eje en las redes actuales:** 30 (18 en Av. Providencia y 12 en Av. Apoquindo hasta Alonso de
+Córdova). Fuera de las redes quedan toda la Alameda y Av. Apoquindo al oriente de Alonso de Córdova.
 
-El eje completo mide ~8,5 km. Como referencia de escala, las tres redes suman ~150 semáforos, contra 8–12 del
+Como referencia de escala, las tres redes actuales suman ~150 semáforos (incluidas transversales), contra 8–12 del
 anteproyecto.
 
 ## Decisiones abiertas
@@ -50,11 +60,12 @@ anteproyecto.
     - *Opción A:* regenerar una sola red desde OSM con un recorte ajustado al eje (franja de algunas cuadras a cada lado). Evita costuras, pero obliga a repetir la depuración en netedit.
     - *Opción B:* unir las redes existentes con `netconvert` y depurar las costuras. Reutiliza el trabajo hecho, pero las uniones entre redes importadas por separado suelen dejar arcos duplicados o desconectados.
     - Recomendación: opción A, reutilizando las correcciones de fases ya hechas (Providencia/Condell y otras).
-2. **Cuántos semáforos controla el agente.** Recomendación: solo los del eje; las transversales en tiempo fijo como demanda de contexto. Controlar ~150 agentes multiplica el costo de entrenamiento y aleja el resultado de un despliegue realista por fases.
+2. **Cuántos semáforos controla el agente.** Recomendación: solo los del eje; las transversales en tiempo fijo como demanda de contexto. Aun así, el eje solo ya tiene ~86 puntos semaforizados (unas 7 a 10 veces lo previsto en el anteproyecto), así que conviene evaluar si se agrupan cruces muy cercanos en un agente o si el MVP entrena por tramo comunal antes de unir el eje.
 3. **Qué significa «nivel comunal» después del MVP:** ¿todas las intersecciones semaforizadas de las tres comunas, o el eje más sus transversales principales? Define el alcance de la tesis completa.
-4. **Límite poniente del MVP en la Alameda:** hasta dónde se extiende el eje al poniente de Plaza Baquedano (por
-   ejemplo, hasta Santa Rosa o hasta Dieciocho). Define cuántos cruces de la Alameda entran a la red.
-5. **Validación con el profesor guía,** porque el cambio modifica el escenario del anteproyecto formal (sección 5.2, «corredor de 8–12 intersecciones»).
+4. ~~Límite poniente del MVP en la Alameda~~ — **resuelto el 22-oct:** límites comunales (tabla de arriba).
+5. **Ancho de la franja de red** a cada lado del eje: cuántas cuadras de transversales se incluyen como demanda de
+   contexto (recomendación: hasta el primer cruce semaforizado de cada transversal).
+6. **Validación con el profesor guía,** porque el cambio modifica el escenario del anteproyecto formal (sección 5.2, «corredor de 8–12 intersecciones»).
 
 ## Impacto en el resto del proyecto
 

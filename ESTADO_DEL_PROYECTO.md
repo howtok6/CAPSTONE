@@ -2,7 +2,7 @@
 
 **Proyecto:** Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente  
 **Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en una red a nivel comunal de Santiago de Chile  
-**Alcance del MVP:** eje Apoquindo → Providencia → Alameda (Las Condes, Providencia y Santiago). Ver `docs/07-decision-escenario.md`.  
+**Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/07-decision-escenario.md`.  
 **Autor:** Gabriel Ignacio Cárdenas Valdés  
 **Programa:** Ingeniería en Informática, DUOC UC  
 **Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre)  
@@ -45,7 +45,7 @@ Desde el 22-oct, Waze se usa solo como referencia de tiempo de viaje consultada 
 
 ### Fuente de los tiempos semafóricos (decisión del 22-oct)
 Ubicación de semáforos desde OpenStreetMap. Tiempos estimados con Webster, anclados en una muestra de terreno de
-10 cruces × 3 franjas (`docs/09-protocolo-terreno.md`, datos en `tsc-thesis/data/terreno/`) y calibrados por tiempo de
+13 cruces × 3 franjas (`docs/09-protocolo-terreno.md`, datos en `tsc-thesis/data/terreno/`) y calibrados por tiempo de
 viaje por tramo. No se compran programaciones a la UOCT por ahora.
 
 ---
@@ -164,7 +164,8 @@ siempre y no prueba que la red esté sana. Los indicadores útiles son los vehí
 comunal y el MVP se centra en el eje Apoquindo → Providencia → Alameda. Ninguna red existente cubre el eje completo:
 **`alameda_providencia` no incluye la Alameda** (su extremo poniente está en Plaza Baquedano), llega por el oriente
 hasta −70,611, y `apoquindo` empieza en −70,598, por lo que faltan ~1,2 km de Av. Providencia (entre Pedro de Valdivia y
-Tobalaba, aprox.). Además de fijar el límite poniente del MVP en la Alameda, quedan abiertos tres puntos: cómo construir la red del eje
+Tobalaba, aprox.). Los límites del MVP son los comunales: la Alameda desde Matucana (límite con Estación Central) hasta
+Baquedano, toda Av. Providencia y toda Av. Apoquindo hasta Camino El Alba. Quedan abiertos tres puntos: cómo construir la red del eje
 completo, cuántos semáforos controla el agente y la validación con el profesor guía, porque el anteproyecto contempla un
 corredor de 8–12 intersecciones. `diagnose_net.py` se modificó para no marcar los arcos cortos dentro de un mismo semáforo
 agrupado (*joined TLS*); el criterio debe explicarse en la metodología.
@@ -288,8 +289,8 @@ recortar alcance.
 1. ✅ Commit y push del trabajo pendiente.
 2. ✅ Corregir este informe de estado.
 3. ✅ **Registrar la decisión de escenario** (`docs/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
-3b. **Construir la red del eje completo** Apoquindo → Providencia → Alameda (incluir la Alameda y cubrir la brecha de ~1,2 km). Listo cuando `diagnose_net.py` la declara APTA.
-3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (3 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
+3b. **Construir la red del eje completo** dentro de los límites comunales: Alameda desde Matucana, Av. Providencia completa y Av. Apoquindo hasta Camino El Alba. Listo cuando `diagnose_net.py` la declara APTA.
+3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (13 cruces, 4 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
 4. **Arreglar `phase_switches`.** Listo cuando Max-Pressure reporta conmutaciones > 0.
 5. **Medir la cola de inserción** en el arnés. Listo cuando los cuatro perfiles quedan ordenados por demora de valle a sobresaturado.
 6. **Fijar el alcance de control** (solo los semáforos del eje o todos los de la red). Listo cuando `rl_env.py` recibe la lista explícita.

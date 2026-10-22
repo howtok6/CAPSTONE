@@ -23,11 +23,11 @@ Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 
 ## Estado del proyecto
 
-- **Red elegida:** nivel comunal. El MVP se centra en las comunas del eje principal Apoquindo → Providencia → Alameda
-  (Las Condes, Providencia y Santiago). Hoy ninguna red incluye la Alameda, y Providencia–Apoquindo está repartido en
-  dos redes con una brecha de ~1,2 km; detalle en `07`.
+- **Red elegida:** nivel comunal. El MVP es el eje Alameda → Providencia → Apoquindo dentro de los límites de
+  Santiago, Providencia y Las Condes: de Matucana al término de Av. Apoquindo (~13,5 km, ~86 puntos semaforizados).
+  Hoy ninguna red incluye la Alameda ni Apoquindo al oriente de Alonso de Córdova; detalle en `07`.
 - **Tiempos semafóricos:** ubicación desde OSM; tiempos estimados con Webster, anclados en una muestra de terreno de
-  10 cruces y calibrados por tiempo de viaje (`08`, `09`).
+  13 cruces y calibrados por tiempo de viaje (`08`, `09`).
 - **Entorno:** Windows nativo. Todo el stack tiene rueda de Windows, incluido
   `libsumo`, y las pruebas ya pasan en esta máquina.
 - **Pipeline:** funcionando de punta a punta — escenario, cuatro controladores

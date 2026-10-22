@@ -22,9 +22,9 @@ Fuentes: [WazeRouteCalculator](https://www.github.com/kovacsbalu/WazeRouteCalcul
 ## Método de estimación de tiempos (tres capas)
 
 1. **Plan base estimado.** Para cada semáforo del eje: ciclo y repartos con Webster (`scripts/build_webster.py`) a partir de la demanda estimada, con entreverdes y verdes mínimos realistas.
-2. **Muestra de terreno.** Ciclo, verde, amarillo y rojo medidos en 10 cruces del eje, en tres franjas horarias. Protocolo en `09-protocolo-terreno.md`; datos en `tsc-thesis/data/terreno/`. La muestra se usa para:
+2. **Muestra de terreno.** Ciclo, verde, amarillo y rojo medidos en 13 cruces del eje (de Matucana al término de Av. Apoquindo), en tres franjas horarias. Protocolo en `09-protocolo-terreno.md`; datos en `tsc-thesis/data/terreno/`. La muestra se usa para:
     - **anclar el ciclo por tramo y franja:** si los cruces medidos de un mismo tramo comparten ciclo (corredor coordinado), ese ciclo se impone a los cruces no medidos del tramo y Webster solo reparte los verdes;
-    - **medir el error de la estimación:** diferencia entre el plan Webster y lo medido en los 10 cruces (error absoluto medio de ciclo y de verde), que se declara en la tesis;
+    - **medir el error de la estimación:** diferencia entre el plan Webster y lo medido en los 13 cruces (error absoluto medio de ciclo y de verde), que se declara en la tesis;
     - **detectar cruces actuados o adaptativos:** ciclo que varía más de 4 s entre ciclos consecutivos.
 3. **Calibración por tiempo de viaje.** Se ajustan ciclo, desfases y demanda hasta que el tiempo de viaje simulado por tramo y franja reproduzca el observado dentro de una tolerancia declarada.
 

@@ -1,38 +1,44 @@
 # Protocolo de terreno: medición de tiempos semafóricos
 
-Versión 1 · 22-oct-2026. Método definido en `08-decision-tiempos-semaforicos.md`.
+Versión 2 · 22-oct-2026 (muestra ajustada a los límites comunales). Método definido en
+`08-decision-tiempos-semaforicos.md`.
 
-**Qué se obtiene:** ciclo, verde, amarillo y rojo de 10 cruces del eje Alameda → Providencia → Apoquindo, en tres
-franjas horarias (30 mediciones). **Esfuerzo:** 3 días hábiles de unas 4 h en terreno, más ~5 h de extracción desde
-los videos.
+**Qué se obtiene:** ciclo, verde, amarillo y rojo de 13 cruces del eje Alameda → Providencia → Apoquindo, dentro de
+las comunas de Santiago, Providencia y Las Condes, en tres franjas horarias (39 mediciones). **Esfuerzo:** 4 días
+hábiles de unas 4 h en terreno, más ~6 h de extracción desde los videos.
 
 ## 1. Cruces de la muestra
 
 Lista completa con coordenadas e identificador SUMO en `tsc-thesis/data/terreno/cruces_muestra.csv`.
 
+El eje va de Matucana (límite de Santiago con Estación Central) hasta el término de Av. Apoquindo, junto a Camino El
+Alba, y tiene ~86 puntos semaforizados (37 en Santiago, 23 en Providencia y 26 en Las Condes, incluidos pasos
+peatonales). Ver `07-decision-escenario.md`.
+
 | ID | Ruta | Cruce | Comuna | Tipo |
 |---|---|---|---|---|
+| C11 | A | Alameda × Matucana / Exposición | Santiago | principal |
+| C12 | A | Alameda × Av. Brasil / Almirante Latorre | Santiago | principal |
 | C01 | A | Alameda × Santa Rosa / Mac Iver | Santiago | principal |
-| C02 | A | Alameda × Portugal | Santiago | principal |
-| C03 | A | Providencia × General Bustamante | Providencia (verificar) | principal |
+| C02 | B | Alameda × Portugal | Santiago | principal |
+| C03 | B | Providencia × General Bustamante | Providencia | principal |
 | C04 | B | Providencia × Manuel Montt | Providencia | principal |
-| C05 | B | Providencia × Pedro de Valdivia | Providencia | principal |
-| C06 | B | Providencia × Ricardo Lyon | Providencia | secundario |
-| C07 | C | Providencia × Tobalaba | límite Providencia / Las Condes | principal |
+| C05 | C | Providencia × Pedro de Valdivia | Providencia | principal |
+| C06 | C | Providencia × Ricardo Lyon | Providencia | secundario |
+| C07 | C | Providencia × Tobalaba | Providencia (límite con Las Condes) | principal |
 | C08 | C | Apoquindo × El Golf | Las Condes | principal |
-| C09 | C | Apoquindo × San Pascual | Las Condes | secundario |
-| C10 | C | Apoquindo × Manquehue | Las Condes | principal |
+| C09 | D | Apoquindo × San Pascual | Las Condes | secundario |
+| C10 | D | Apoquindo × Manquehue | Las Condes | principal |
+| C13 | D | Apoquindo × Tomás Moro / Chesterton | Las Condes | principal |
 
-**Criterios:** repartidos en las tres comunas, mezcla de cruces con avenidas principales y calles secundarias, y los dos
-cruces (C06, C07) del tramo que hoy no cubren las redes principales. Se excluyó Plaza Baquedano por su geometría
-atípica. **Reservas** si un cruce está en obras o con carabinero dirigiendo: Providencia × Huelén y Apoquindo × La
-Castellana.
+**Criterios:** los dos extremos del eje en Santiago y Las Condes, repartidos en las tres comunas (4 en Santiago, 5 en
+Providencia y 4 en Las Condes), mezcla de avenidas principales y calles secundarias, y los cruces de tramos que hoy no
+cubre ninguna red (C01, C02, C06, C07, C11, C12, C13). Se excluyó Plaza Baquedano por su geometría atípica.
+**Reservas** si un cruce está en obras o con carabinero dirigiendo: Alameda × Ricardo Cumming, Providencia × Huelén,
+Apoquindo × La Castellana y Apoquindo × Hernando de Magallanes.
 
-**Rutas a pie** (distancia en línea recta): A ≈ 1,4 km · B ≈ 1,2 km · C ≈ 3,4 km. La Línea 1 del Metro corre bajo todo
-el eje y sirve para la ruta C o para llegar al punto de partida.
-
-> Los cruces de la Alameda (C01, C02) son provisionales hasta fijar el límite poniente del MVP: ninguna red actual
-> incluye la Alameda (ver `07-decision-escenario.md`).
+**Rutas a pie** (distancia en línea recta): A ≈ 3,1 km · B ≈ 2,3 km · C ≈ 2,1 km · D ≈ 2,8 km. La Línea 1 del Metro
+corre bajo todo el eje y sirve para moverse entre cruces o llegar al punto de partida.
 
 ## 2. Calendario
 
@@ -41,11 +47,12 @@ Martes a jueves, que son días de tránsito típico. Cada ruta se mide una vez e
 | Día | Punta mañana 07:30–09:00 | Valle 10:30–12:00 | Punta tarde 18:00–19:30 |
 |---|---|---|---|
 | 1 | Ruta A | Ruta B | Ruta C |
-| 2 | Ruta B | Ruta C | Ruta A |
-| 3 | Ruta C | Ruta A | Ruta B |
+| 2 | Ruta B | Ruta C | Ruta D |
+| 3 | Ruta C | Ruta D | Ruta A |
+| 4 | Ruta D | Ruta A | Ruta B |
 
-Ejemplo: martes 27, miércoles 28 y jueves 29 de octubre. Si falta tiempo, la **versión mínima** es valle y punta
-tarde (6 salidas): punta tarde es el perfil donde se contrasta H1.
+Ejemplo: martes 27, miércoles 28 y jueves 29 de octubre, y martes 3 de noviembre. Si falta tiempo, la **versión
+mínima** es valle y punta tarde (8 salidas): punta tarde es el perfil donde se contrasta H1.
 
 Evitar días con lluvia, feriados, marchas o eventos masivos en el eje; si ocurren, anotarlos y repetir la medición.
 
