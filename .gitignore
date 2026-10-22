@@ -28,3 +28,8 @@ tsc-thesis/congestiones_waze_*.json
 tsc-thesis/scenarios/*/map.osm
 tsc-thesis/scenarios/*/trips.trips.xml
 *.zip
+
+# Terreno: los videos contienen rostros y patentes; solo se versionan los CSV extraídos
+tsc-thesis/data/terreno/videos/
+tsc-thesis/data/terreno/**/*.mp4
+tsc-thesis/data/terreno/**/*.mov

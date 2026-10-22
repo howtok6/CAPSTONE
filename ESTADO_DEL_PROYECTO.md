@@ -41,6 +41,12 @@ Se desarrollaron componentes que no forman parte de los objetivos y que **no deb
 3. **`GNNRouter`** (`torch_geometric`): lee densidad, colas y velocidades vía TraCI, pero **no tiene entrenamiento** (sin optimizador ni carga de pesos), por lo que opera con pesos aleatorios.
 
 El enrutamiento dinámico queda fuera del alcance según la sección 6.2 del anteproyecto. Se propone moverlo a trabajo futuro.
+Desde el 22-oct, Waze se usa solo como referencia de tiempo de viaje consultada a mano (`docs/08-decision-tiempos-semaforicos.md`).
+
+### Fuente de los tiempos semafóricos (decisión del 22-oct)
+Ubicación de semáforos desde OpenStreetMap. Tiempos estimados con Webster, anclados en una muestra de terreno de
+10 cruces × 3 franjas (`docs/09-protocolo-terreno.md`, datos en `tsc-thesis/data/terreno/`) y calibrados por tiempo de
+viaje por tramo. No se compran programaciones a la UOCT por ahora.
 
 ---
 
@@ -156,8 +162,9 @@ siempre y no prueba que la red esté sana. Los indicadores útiles son los vehí
 
 **Decisión de escenario (22-oct-2026), registrada en `docs/07-decision-escenario.md`.** El proyecto pasa a nivel
 comunal y el MVP se centra en el eje Apoquindo → Providencia → Alameda. Ninguna red existente cubre el eje completo:
-`alameda_providencia` llega por el oriente hasta −70,611 y `apoquindo` empieza en −70,598, por lo que faltan ~1,2 km de
-Av. Providencia (entre Pedro de Valdivia y Tobalaba, aprox.). Quedan abiertos tres puntos: cómo construir la red del eje
+**`alameda_providencia` no incluye la Alameda** (su extremo poniente está en Plaza Baquedano), llega por el oriente
+hasta −70,611, y `apoquindo` empieza en −70,598, por lo que faltan ~1,2 km de Av. Providencia (entre Pedro de Valdivia y
+Tobalaba, aprox.). Además de fijar el límite poniente del MVP en la Alameda, quedan abiertos tres puntos: cómo construir la red del eje
 completo, cuántos semáforos controla el agente y la validación con el profesor guía, porque el anteproyecto contempla un
 corredor de 8–12 intersecciones. `diagnose_net.py` se modificó para no marcar los arcos cortos dentro de un mismo semáforo
 agrupado (*joined TLS*); el criterio debe explicarse en la metodología.
@@ -281,7 +288,8 @@ recortar alcance.
 1. ✅ Commit y push del trabajo pendiente.
 2. ✅ Corregir este informe de estado.
 3. ✅ **Registrar la decisión de escenario** (`docs/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
-3b. **Construir la red del eje completo** Apoquindo → Providencia → Alameda (cubrir la brecha de ~1,2 km). Listo cuando `diagnose_net.py` la declara APTA.
+3b. **Construir la red del eje completo** Apoquindo → Providencia → Alameda (incluir la Alameda y cubrir la brecha de ~1,2 km). Listo cuando `diagnose_net.py` la declara APTA.
+3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (3 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
 4. **Arreglar `phase_switches`.** Listo cuando Max-Pressure reporta conmutaciones > 0.
 5. **Medir la cola de inserción** en el arnés. Listo cuando los cuatro perfiles quedan ordenados por demora de valle a sobresaturado.
 6. **Fijar el alcance de control** (solo los semáforos del eje o todos los de la red). Listo cuando `rl_env.py` recibe la lista explícita.

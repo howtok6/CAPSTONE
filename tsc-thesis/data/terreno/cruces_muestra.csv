@@ -1,0 +1,11 @@
+cruce_id,ruta,eje,transversal,comuna,lon,lat,tls_red_actual,red_actual,tipo,motivo
+C01,A,Av. Libertador Bernardo O'Higgins (Alameda),Av. Santa Rosa / Enrique Mac Iver,Santiago,-70.64627,-33.44282,,ninguna (solo OSM),principal,Alameda: cruce con avenida principal
+C02,A,Av. Libertador Bernardo O'Higgins (Alameda),Av. Portugal,Santiago,-70.64056,-33.44020,,ninguna (solo OSM),principal,Alameda: cruce con avenida principal cercano a Baquedano
+C03,A,Av. Providencia,Av. General Bustamante,Providencia (verificar),-70.63313,-33.43696,4393731875,alameda_providencia,principal,Extremo poniente de la red actual junto a Plaza Baquedano
+C04,B,Av. Providencia,Av. Manuel Montt,Providencia,-70.62033,-33.42883,GS_224543851,providencia,principal,Cruce con avenida principal en el centro del tramo
+C05,B,Av. Providencia,Av. Pedro de Valdivia,Providencia,-70.61245,-33.42358,GS_59712719,providencia,principal,Cruce con avenida principal
+C06,B,Av. Providencia,Av. Ricardo Lyon,Providencia,-70.60987,-33.42179,GS_13877010,providencia,secundario,Tramo sin cubrir por las redes principales
+C07,C,Av. Providencia,Av. Tobalaba,Providencia / Las Condes (límite),-70.60148,-33.41832,cluster_10968314835_10968314836_15073543_2456745214_#3more,providencia,principal,Límite comunal; tramo sin cubrir por las redes principales
+C08,C,Av. Apoquindo,Av. El Golf / Gertrudis Echeñique,Las Condes,-70.59179,-33.41582,GS_cluster_131549381_252840920_273499131_336208461,apoquindo,principal,Cruce con avenida principal
+C09,C,Av. Apoquindo,San Pascual,Las Condes,-70.58135,-33.41295,GS_cluster_252958142_457132234,apoquindo,secundario,Cruce con calle secundaria
+C10,C,Av. Apoquindo,Av. Manquehue,Las Condes,-70.56722,-33.40881,cluster_2726241620_412306671_412307402_6253856353,apoquindo,principal,Extremo oriente del eje

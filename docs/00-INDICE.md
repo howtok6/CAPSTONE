@@ -18,12 +18,16 @@ Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 | `05-visualizacion.md` | Cómo ver la simulación en vivo y cómo grabar video. | Cuando quieras mirar o mostrar la ejecución. |
 | `06-fuentes-de-datos.md` | De dónde sacar flujos, tiempos de viaje y programación real de semáforos, con la solicitud de transparencia lista. | Ahora. Las solicitudes tardan semanas. |
 | `07-decision-escenario.md` | Paso a nivel comunal y alcance del MVP (eje Apoquindo → Providencia → Alameda), cobertura de las redes actuales y decisiones abiertas. | Antes de construir la red del eje o fijar cuántos semáforos controla el agente. |
+| `08-decision-tiempos-semaforicos.md` | Ubicación de semáforos desde OSM y tiempos estimados (Webster + terreno + calibración por tiempo de viaje). Por qué Waze no sirve para inferir tiempos. | Al generar planes de tiempo fijo o justificar la metodología. |
+| `09-protocolo-terreno.md` | Cruces a medir, calendario, procedimiento con video, formato de los CSV y control de calidad. | Antes y después de cada salida a terreno. |
 
 ## Estado del proyecto
 
 - **Red elegida:** nivel comunal. El MVP se centra en las comunas del eje principal Apoquindo → Providencia → Alameda
-  (Las Condes, Providencia y Santiago). Hoy el eje está cubierto por dos redes separadas con una brecha de ~1,2 km;
-  detalle en `07`.
+  (Las Condes, Providencia y Santiago). Hoy ninguna red incluye la Alameda, y Providencia–Apoquindo está repartido en
+  dos redes con una brecha de ~1,2 km; detalle en `07`.
+- **Tiempos semafóricos:** ubicación desde OSM; tiempos estimados con Webster, anclados en una muestra de terreno de
+  10 cruces y calibrados por tiempo de viaje (`08`, `09`).
 - **Entorno:** Windows nativo. Todo el stack tiene rueda de Windows, incluido
   `libsumo`, y las pruebas ya pasan en esta máquina.
 - **Pipeline:** funcionando de punta a punta — escenario, cuatro controladores
