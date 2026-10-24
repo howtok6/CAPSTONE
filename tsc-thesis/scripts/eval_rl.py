@@ -38,10 +38,11 @@ from tsc.metrics import (  # noqa: E402
     parse_tripinfo,
     planned_departures,
 )
-from tsc.rl_env import make_parallel_env  # noqa: E402
+from tsc.rl_env import controlled_tls, make_parallel_env  # noqa: E402
 
 
-def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waze_obs=False) -> dict:
+def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waze_obs=False,
+             tls_ids=None) -> dict:
     tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
     tmp.close()
     env = make_parallel_env(
@@ -50,6 +51,7 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
         num_seconds=seconds,
         seed=seed,
         use_waze_obs=use_waze_obs,
+        tls_ids=tls_ids,
     )
     env.unwrapped.env.additional_sumo_cmd = f"--tripinfo-output {tmp.name}"
 
@@ -116,7 +118,10 @@ def main() -> None:
     ap.add_argument("--merge-into", default=None,
                     help="JSON de baselines al que agregar estas filas")
     ap.add_argument("--use-waze-obs", action="store_true")
+    ap.add_argument("--control", default="auto", choices=["auto", "eje", "todos"],
+                    help="debe coincidir con el usado al entrenar")
     args = ap.parse_args()
+    tls_ids = controlled_tls(args.scenario, args.control)
 
     from stable_baselines3 import PPO
 
@@ -137,7 +142,8 @@ def main() -> None:
 
     rows = []
     for seed in range(args.seeds):
-        r = evaluate(model, net, rou, seed, args.seconds, args.warmup, use_waze_obs=args.use_waze_obs)
+        r = evaluate(model, net, rou, seed, args.seconds, args.warmup, use_waze_obs=args.use_waze_obs,
+                     tls_ids=tls_ids)
         r["controller"] = args.name
         rows.append(r)
         print(f"  {args.name:12s} seed={seed:2d}  "
