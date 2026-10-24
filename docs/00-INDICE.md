@@ -20,6 +20,7 @@ Gabriel Cárdenas · Ingeniería en Informática, DUOC UC
 | `07-decision-escenario.md` | Paso a nivel comunal y alcance del MVP (eje Apoquindo → Providencia → Alameda), cobertura de las redes actuales y decisiones abiertas. | Antes de construir la red del eje o fijar cuántos semáforos controla el agente. |
 | `08-decision-tiempos-semaforicos.md` | Ubicación de semáforos desde OSM y tiempos estimados (Webster + terreno + calibración por tiempo de viaje). Por qué Waze no sirve para inferir tiempos. | Al generar planes de tiempo fijo o justificar la metodología. |
 | `09-protocolo-terreno.md` | Cruces a medir, calendario, procedimiento con video, formato de los CSV y control de calidad. | Antes y después de cada salida a terreno. |
+| `10-decision-base-de-datos.md` | GeoPackage + GeoParquet + DuckDB para los datos de la tesis; cuándo pasar a PostGIS. | Al guardar resultados o capas del mapa. |
 
 ## Estado del proyecto
 

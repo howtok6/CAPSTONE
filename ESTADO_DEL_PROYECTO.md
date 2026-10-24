@@ -280,19 +280,20 @@ estrés.
 
 ## 8. Hoja de Ruta Priorizada
 
-**Plazo pendiente de confirmar.** La versión del 14-oct proyectaba el cierre en diciembre; el anteproyecto contempla
-seis meses desde el 23-ago (≈ fines de febrero de 2027). La regla de corte del anteproyecto (fin del mes 4: una política
-aprendida que al menos iguale a tiempo fijo) cae hacia el 23-dic. Si el plazo real es diciembre, hay que adelantarla y
-recortar alcance.
+**Plazo confirmado el 24-oct: entrega en diciembre de 2026** (el plan asume el 13-dic). Plan detallado en el documento
+«Plan de cierre de la tesis — entrega en diciembre 2026». Recortes declarados: 10 semillas (20 en la evaluación final
+si alcanza), MAPPO solo en el tramo de Providencia, dos variantes de recompensa y dos perturbaciones de robustez.
+**La regla de corte se adelanta al 22 de noviembre.** Datos de la tesis en GeoPackage + GeoParquet + DuckDB
+(`docs/10-decision-base-de-datos.md`).
 
 ### Próximas semanas (fin de octubre – noviembre)
 1. ✅ Commit y push del trabajo pendiente.
 2. ✅ Corregir este informe de estado.
 3. ✅ **Registrar la decisión de escenario** (`docs/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
-3b. **Construir la red del eje completo** dentro de los límites comunales: Alameda desde Matucana, Av. Providencia completa y Av. Apoquindo hasta Camino El Alba. Listo cuando `diagnose_net.py` la declara APTA.
+3b. ✅ **Construir la red del eje completo** (24-oct): `scenarios/eje_comunal`, APTA; 1 130 arcos, 64 semáforos sobre el eje y 22 en transversales (`docs/07`).
 3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (13 cruces, 4 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
-4. **Arreglar `phase_switches`.** Listo cuando Max-Pressure reporta conmutaciones > 0.
-5. **Medir la cola de inserción** en el arnés. Listo cuando los cuatro perfiles quedan ordenados por demora de valle a sobresaturado.
+4. ✅ **Arreglar `phase_switches`** (24-oct): se cuenta observando la red, no al controlador; funciona con tiempo fijo, Max-Pressure y el agente.
+5. ✅ **Medir la cola de inserción** (24-oct): nueva métrica primaria `delay_all_mean`, que incluye a los vehículos que siguen en la red o esperan entrar al cierre; también `vehicles_running_end` y `vehicles_pending_end`. Pendiente verificar que los cuatro perfiles quedan ordenados de valle a sobresaturado.
 6. **Fijar el alcance de control** (solo los semáforos del eje o todos los de la red). Listo cuando `rl_env.py` recibe la lista explícita.
 7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.

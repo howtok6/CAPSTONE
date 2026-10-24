@@ -30,7 +30,29 @@ peatonales semaforizados, así que el número de intersecciones es menor).
 | 22-oct-2026 | Nivel comunal; MVP en el eje Apoquindo → Providencia → Alameda | Decisión de alcance del autor. |
 | 22-oct-2026 | Límites del MVP = límites comunales de Santiago, Providencia y Las Condes | Decisión del autor; extremos calculados con los límites de OSM. |
 
-## Cobertura actual de las redes
+## Red del eje completo (construida el 24-oct-2026)
+
+`scenarios/eje_comunal` cubre todo el MVP, de Matucana al término de Av. Apoquindo. Se reconstruye con:
+
+```
+python scripts/download_axis_osm.py --out scenarios/eje_comunal --buffer 150
+python scripts/build_santiago.py --osm=<recuadros> --out scenarios/eje_comunal --tls-join-dist 30 --keep-geo-boundary=<franja_poly.txt>
+python scripts/fix_tls.py --scenario scenarios/eje_comunal
+python scripts/list_axis_tls.py --scenario scenarios/eje_comunal
+python scripts/diagnose_net.py --scenario scenarios/eje_comunal
+```
+
+- **Franja:** 150 m a cada lado del eje (provisional; ver decisión abierta 5), cortada en Matucana. Polígono en
+  `franja.geojson`.
+- **Tamaño:** 1 130 arcos, 86 programas de semáforo: **64 sobre el eje** (27 en la Alameda, 19 en Av. Providencia,
+  19 en Av. Apoquindo; uno compartido en Baquedano) y 22 solo en transversales. Listas en `tls_eje.json`.
+- **Correcciones automáticas:** semáforos a menos de 30 m se unen (las dos calzadas de la Alameda en un mismo
+  cruce); dos semáforos con un solo verde y virajes permisivos reciben una fase de viraje protegido
+  (`fix_tls.py`, `tls_fixes.add.xml`), entre ellos Providencia × Condell.
+- **Diagnóstico:** APTA. Sin problemas estructurales; en 1 200 s de prueba, 0 teletransportes, 0 colisiones, 0 atascos.
+- **Fuente:** API principal de OSM en siete recuadros (Overpass no respondió). Los recuadros no se versionan.
+
+## Cobertura de las redes anteriores
 
 | Red | Longitud (oeste → este) | Extensión | Semáforos | Calles principales |
 |---|---|---|---|---|
@@ -60,7 +82,8 @@ anteproyecto.
     - *Opción A:* regenerar una sola red desde OSM con un recorte ajustado al eje (franja de algunas cuadras a cada lado). Evita costuras, pero obliga a repetir la depuración en netedit.
     - *Opción B:* unir las redes existentes con `netconvert` y depurar las costuras. Reutiliza el trabajo hecho, pero las uniones entre redes importadas por separado suelen dejar arcos duplicados o desconectados.
     - Recomendación: opción A, reutilizando las correcciones de fases ya hechas (Providencia/Condell y otras).
-2. **Cuántos semáforos controla el agente.** Recomendación: solo los del eje; las transversales en tiempo fijo como demanda de contexto. Aun así, el eje solo ya tiene ~86 puntos semaforizados (unas 7 a 10 veces lo previsto en el anteproyecto), así que conviene evaluar si se agrupan cruces muy cercanos en un agente o si el MVP entrena por tramo comunal antes de unir el eje.
+    - **Resuelto el 24-oct:** se aplicó la opción A (ver «Red del eje completo»).
+2. **Cuántos semáforos controla el agente.** Recomendación: solo los del eje; las transversales en tiempo fijo como demanda de contexto. Aun así, el eje solo ya tiene 64 semáforos en la red construida (5 a 8 veces lo previsto en el anteproyecto), así que conviene evaluar si se agrupan cruces muy cercanos en un agente o si el MVP entrena por tramo comunal antes de unir el eje.
 3. **Qué significa «nivel comunal» después del MVP:** ¿todas las intersecciones semaforizadas de las tres comunas, o el eje más sus transversales principales? Define el alcance de la tesis completa.
 4. ~~Límite poniente del MVP en la Alameda~~ — **resuelto el 22-oct:** límites comunales (tabla de arriba).
 5. **Ancho de la franja de red** a cada lado del eje: cuántas cuadras de transversales se incluyen como demanda de
