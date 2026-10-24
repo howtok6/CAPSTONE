@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import tempfile
 
-from .metrics import StepSampler, parse_tripinfo
+from .metrics import StepSampler, combine_delay, parse_tripinfo, planned_departures
 from .sumo_env import SumoSimulation
 
 
@@ -86,13 +86,18 @@ def run_episode(
                                 pass # Algunos vehículos ya no pueden ser enrutados
             # ------------------------------------------------------
             
+            if t >= warmup:
+                sampler.track_phases(sim)
             if t >= warmup and t % sample_every < interval:
                 sampler.sample(sim)
+        end_state = sampler.end_state(sim, planned_departures(route_file))
         controller.teardown(sim)
 
     result = {"controller": controller.name, "seed": seed}
     result.update(sampler.summary())
     result.update(parse_tripinfo(tripinfo_path))
+    result.update(end_state)
+    combine_delay(result)
     # Throughput: vehículos que completaron su viaje por hora simulada.
     # Se deriva de tripinfo, la misma fuente que usan las métricas por
     # vehículo, para que la definición sea idéntica en todos los

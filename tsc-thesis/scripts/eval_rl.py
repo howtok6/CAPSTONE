@@ -31,7 +31,13 @@ if sys.platform == "win32":
 
 import numpy as np  # noqa: E402
 
-from tsc.metrics import parse_tripinfo  # noqa: E402
+from tsc.metrics import (  # noqa: E402
+    GreenSwitchCounter,
+    combine_delay,
+    end_state_from_conn,
+    parse_tripinfo,
+    planned_departures,
+)
 from tsc.rl_env import make_parallel_env  # noqa: E402
 
 
@@ -50,6 +56,8 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
     obs, _ = env.reset()
     obs_dim = model.observation_space.shape[0]
     queues = []
+    switches = GreenSwitchCounter()
+    end_state = {}
     t = 0
     while env.agents:
         actions = {}
@@ -62,6 +70,13 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
         obs, _, term, trunc, info = env.step(actions)
         delta = env.unwrapped.env.delta_time
         t += delta
+        inner = env.unwrapped.env
+        if t >= warmup:
+            switches.update(inner.sumo, inner.ts_ids)
+        if all(term.values()) or all(trunc.values()):
+            # mismo cierre que el runner: demora de los que no terminaron
+            end_state = end_state_from_conn(inner.sumo, inner.sumo.simulation.getTime(),
+                                            planned_departures(rou))
         if t >= warmup:
             # se muestrea cada 10 s, igual que `StepSampler` en el runner de
             # los baselines: si los intervalos difieren, las colas medias no
@@ -77,6 +92,9 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
 
     res = {"controller": "ppo", "seed": seed}
     res.update(parse_tripinfo(tmp.name))
+    res.update(end_state)
+    combine_delay(res)
+    res["phase_switches"] = switches.switches
     if queues:
         res["queue_mean"] = statistics.fmean(queues)
         res["queue_max"] = max(queues)

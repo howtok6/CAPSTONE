@@ -31,12 +31,14 @@ except ImportError:  # pragma: no cover
     HAVE_SCIPY = False
 
 METRICS = [
+    ("delay_all_mean", "Demora media incl. no terminados (s)", True),
     ("time_loss_mean", "Demora media (s)", True),
     ("travel_time_mean", "Tiempo de viaje (s)", True),
     ("waiting_time_mean", "Espera media (s)", True),
     ("waiting_time_p95", "Espera p95 (s)", True),
     ("queue_mean", "Cola media (veh)", True),
     ("throughput", "Throughput (veh/h)", False),
+    ("vehicles_pending_end", "Sin poder entrar al cierre (veh)", True),
 ]
 
 
@@ -74,7 +76,8 @@ def main() -> None:
         for ctrl in others:
             vals = [r[key] for r in by_ctrl[ctrl]]
             mean = statistics.fmean(vals)
-            delta = (mean - statistics.fmean(base_vals)) / statistics.fmean(base_vals) * 100
+            base_mean = statistics.fmean(base_vals)
+            delta = (mean - base_mean) / base_mean * 100 if base_mean else 0.0
             better = (delta < 0) if lower_is_better else (delta > 0)
             mark = "mejor " if better else "peor  "
             line = (
