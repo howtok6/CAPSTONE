@@ -33,3 +33,6 @@ tsc-thesis/scenarios/*/trips.trips.xml
 tsc-thesis/data/terreno/videos/
 tsc-thesis/data/terreno/**/*.mp4
 tsc-thesis/data/terreno/**/*.mov
+
+# Recuadros OSM del eje (~85 MB): se regeneran con scripts/download_axis_osm.py
+tsc-thesis/scenarios/*/osm_tiles/

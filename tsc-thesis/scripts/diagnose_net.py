@@ -55,12 +55,25 @@ def analyse_net(net_file: str) -> dict:
                      if j.get("type") == "traffic_light"}
     logics = {t.get("id"): t for t in root.iter("tlLogic")}
 
-    one_phase, empty_green, phase_counts = [], [], Counter()
+    edge_names = {e.get("id"): e.get("name", "") for e in root.iter("edge")
+                  if e.get("function") != "internal"}
+    tls_streets = {}
+    for c in root.iter("connection"):
+        if c.get("tl") and c.get("from") in edge_names:
+            tls_streets.setdefault(c.get("tl"), set()).add(edge_names[c.get("from")])
+
+    one_phase, pedestrian, empty_green, phase_counts = [], [], [], Counter()
     for tid, logic in logics.items():
         greens = [p.get("state") for p in logic.iter("phase") if is_green(p.get("state"))]
         phase_counts[len(greens)] += 1
         if len(greens) < 2:
-            one_phase.append(tid)
+            # Un solo verde, una sola calle de llegada y sin virajes permisivos:
+            # es un cruce peatonal a mitad de cuadra. No hay movimientos
+            # vehiculares en conflicto que controlar; queda en tiempo fijo.
+            if len(tls_streets.get(tid, ())) <= 1 and greens and "g" not in greens[0]:
+                pedestrian.append(tid)
+            else:
+                one_phase.append(tid)
         for st in greens:
             if "G" not in st and "g" not in st:
                 empty_green.append(tid)
@@ -102,6 +115,7 @@ def analyse_net(net_file: str) -> dict:
     return {
         "tls_total": len(tls_junctions),
         "tls_uncontrollable": one_phase,
+        "tls_pedestrian": pedestrian,
         "tls_empty_green": sorted(set(empty_green)),
         "phase_histogram": dict(sorted(phase_counts.items())),
         "edges_total": len(edges),
@@ -165,6 +179,9 @@ def main() -> None:
     print(f"  arcos                          {a['edges_total']}")
     print(f"  intersecciones semaforizadas   {a['tls_total']}")
     print(f"  fases verdes por semáforo      {a['phase_histogram']}")
+    if a["tls_pedestrian"]:
+        print(f"  cruces peatonales (tiempo fijo, fuera del control): "
+              f"{len(a['tls_pedestrian'])} {a['tls_pedestrian'][:8]}")
 
     problems = []
     if a["tls_uncontrollable"]:

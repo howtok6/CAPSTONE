@@ -72,6 +72,9 @@ def main() -> None:
     ap.add_argument("--end", type=int, default=3600)
     ap.add_argument("--period", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--tls-join-dist", type=float, default=20.0,
+                    help="une semáforos a menos de esta distancia (m). En avenidas con "
+                         "bandejón, las dos calzadas de un mismo cruce quedan a 20-30 m.")
     ap.add_argument(
         "--keep-geo-boundary",
         help="min_lon,min_lat,max_lon,max_lat — recorta la red al corredor. "
@@ -105,6 +108,7 @@ def main() -> None:
             "--tls.guess-signals", "true",
             "--tls.discard-simple", "true",
             "--tls.join", "true",
+            "--tls.join-dist", str(args.tls_join_dist),
             "--tls.default-type", "static",
             "--remove-edges.isolated", "true",
             "--keep-edges.by-vclass", "passenger",
