@@ -294,7 +294,7 @@ si alcanza), MAPPO solo en el tramo de Providencia, dos variantes de recompensa 
 3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (13 cruces, 4 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
 4. ✅ **Arreglar `phase_switches`** (24-oct): se cuenta observando la red, no al controlador; funciona con tiempo fijo, Max-Pressure y el agente.
 5. ✅ **Medir la cola de inserción** (24-oct): nueva métrica primaria `delay_all_mean`, que incluye a los vehículos que siguen en la red o esperan entrar al cierre; también `vehicles_running_end` y `vehicles_pending_end`. Pendiente verificar que los cuatro perfiles quedan ordenados de valle a sobresaturado.
-6. **Fijar el alcance de control** (solo los semáforos del eje o todos los de la red). Listo cuando `rl_env.py` recibe la lista explícita.
+6. ✅ **Fijar el alcance de control** (24-oct): el agente controla los 64 semáforos del eje (`tls_eje.json`); las transversales quedan en tiempo fijo. Optimizador configurable: Adam por defecto, RMSprop como alternativa; tasa de aprendizaje lineal decreciente (`docs/11-decision-agente.md`).
 7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
 9. **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.
