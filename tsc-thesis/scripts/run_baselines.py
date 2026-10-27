@@ -31,14 +31,18 @@ from tsc.controllers import (
 from tsc.runner import run_episode
 
 
-def build_controllers(scenario: str, which: list) -> list:
+def build_controllers(scenario: str, which: list, profile: str | None = None) -> list:
     available = {
         "fixed": lambda: FixedTimeController(),
         "greedy": lambda: GreedyQueueController(),
         "maxpressure": lambda: MaxPressureController(),
     }
-    plan = os.path.join(scenario, "webster_plan.json")
+    # Plan de Webster del perfil (build_webster.py --profile); si no hay, el general
+    plan = os.path.join(scenario, f"webster_plan_{profile}.json") if profile else ""
+    if not os.path.exists(plan):
+        plan = os.path.join(scenario, "webster_plan.json")
     if os.path.exists(plan):
+        print(f"  Webster: {plan}")
         available["webster"] = lambda: WebsterController(plan)
     out = []
     for name in which:
@@ -78,7 +82,7 @@ def main() -> None:
     if not os.path.exists(rou):
         sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
 
-    factories = build_controllers(args.scenario, args.controllers.split(","))
+    factories = build_controllers(args.scenario, args.controllers.split(","), args.profile)
 
     rows = []
     for factory in factories:
