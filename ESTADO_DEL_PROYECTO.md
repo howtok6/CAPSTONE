@@ -295,6 +295,7 @@ si alcanza), MAPPO solo en el tramo de Providencia, dos variantes de recompensa 
 4. ✅ **Arreglar `phase_switches`** (24-oct): se cuenta observando la red, no al controlador; funciona con tiempo fijo, Max-Pressure y el agente.
 5. ✅ **Medir la cola de inserción** (24-oct): nueva métrica primaria `delay_all_mean`, que incluye a los vehículos que siguen en la red o esperan entrar al cierre; también `vehicles_running_end` y `vehicles_pending_end`. Pendiente verificar que los cuatro perfiles quedan ordenados de valle a sobresaturado.
 6. ✅ **Fijar el alcance de control** (24-oct): el agente controla los 64 semáforos del eje (`tls_eje.json`); las transversales quedan en tiempo fijo. Optimizador configurable: Adam por defecto, RMSprop como alternativa; tasa de aprendizaje lineal decreciente (`docs/11-decision-agente.md`).
+6b. ✅ **Plan Webster para la red del eje** (27-oct): ciclo común por avenida, onda verde según el perfil y ciclo real ajustado al objetivo (`docs/08`). Provisional: con la demanda sintética los ciclos quedan en el mínimo (40–49 s); se regenera por perfil (`build_webster.py --profile`).
 7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
 9. **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.

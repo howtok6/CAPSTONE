@@ -28,6 +28,35 @@ Fuentes: [WazeRouteCalculator](https://www.github.com/kovacsbalu/WazeRouteCalcul
     - **detectar cruces actuados o adaptativos:** ciclo que varía más de 4 s entre ciclos consecutivos.
 3. **Calibración por tiempo de viaje.** Se ajustan ciclo, desfases y demanda hasta que el tiempo de viaje simulado por tramo y franja reproduzca el observado dentro de una tolerancia declarada.
 
+## Plan Webster de la red del eje (27-oct-2026)
+
+`scripts/build_webster.py` genera el plan en tres pasos:
+
+1. **Calibración:** una hora simulada con tiempo fijo mide el flujo por fase de los 86 semáforos.
+2. **Webster por semáforo:** ciclo óptimo y reparto de verdes.
+3. **Coordinación del eje** (si existe `tls_eje.json`):
+    - **ciclo común por avenida** (Alameda 27, Providencia 19, Apoquindo 18 semáforos): el mayor del grupo, para
+      que el cruce más cargado no se sature;
+    - **onda verde** en el sentido de la punta, a 40 km/h: hacia el poniente en punta mañana, hacia el oriente en
+      punta tarde y sobresaturado, sin onda en valle;
+    - las 22 transversales conservan su Webster aislado.
+
+El controlador (`WebsterController`) escala los verdes para que el **ciclo real** (verdes + amarillos + rojos del
+programa) sea exactamente el ciclo objetivo, y arranca cada semáforo en la posición del ciclo que le corresponde
+según su desfase. Sin ese ajuste, semáforos con «el mismo ciclo» en el papel tendrían ciclos reales distintos y la
+coordinación se perdería en pocos minutos. Con `--profile <perfil>` se genera `webster_plan_<perfil>.json`, que
+`run_baselines.py --profile` usa automáticamente.
+
+**Resultado con la demanda sintética actual** (`routes.rou.xml`, 2 semillas, 1 800 s, demora incluyendo no
+terminados): tiempo fijo 228 y 227 s; Webster coordinado 149 y 148 s (−35 %); Webster con onda verde al oriente
+147 y 148 s.
+
+**Advertencia:** los ciclos resultantes (40 a 49 s) son cortos para avenidas de Santiago. La carga media de los cruces
+del eje es baja (Y = 0,17, máx. 0,53) porque la demanda de prueba son viajes aleatorios repartidos en toda la red, y
+Webster cae a su ciclo mínimo. Por la misma razón la onda verde no cambia nada: la demanda no tiene sentido dominante.
+El plan definitivo se genera por perfil cuando existan los perfiles de demanda del eje, y se ancla en la medición de
+terreno.
+
 ## Limitaciones que se declaran en la tesis
 
 - Los cruces no medidos usan tiempos estimados, no la programación oficial.
