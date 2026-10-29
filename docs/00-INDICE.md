@@ -15,6 +15,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 | `anteproyecto/Anteproyecto_Tesis_Semaforos_Adaptativos.docx` | Anteproyecto formal entregado al profesor guía. El `.pdf` es la misma versión. | ★★★ |
 | `anteproyecto/01-anteproyecto-v1.md` | El mismo anteproyecto en texto plano, para buscar y citar. | ★★ |
 | `informe/1.4 Informe -v1.docx` | Borrador del informe final de la tesis. | ★★★ |
+| `informe/informe-avance-2026-10-29.md` | Informe de avance del 15 al 29 de octubre: decisiones, cambios técnicos, avance por objetivo y próximos pasos. | ★★ |
 
 ## Decisiones registradas — `decisiones/`
 
