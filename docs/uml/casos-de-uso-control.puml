@@ -1,0 +1,70 @@
+@startuml casos-de-uso-control
+' Generado por gen.py — no editar a mano
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #2F4F6F
+  ArrowColor #2F4F6F
+}
+skinparam rectangle {
+  BorderColor #2F4F6F
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #F5F7FA
+  BorderColor #9AA9B8
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+title Subsistema 2 — Control de semáforos
+
+actor "Investigador" as INV
+actor "SUMO\n(libsumo / TraCI)" as SUMO <<sistema>>
+
+rectangle "Plataforma experimental tsc-thesis" {
+  package "1. Escenario" {
+    usecase "UC05 Seleccionar semáforos\ncontrolados" as UC05 #EEF1F4;line.dashed
+  }
+  package "2. Control" {
+    usecase "UC10 Calcular plan\nWebster coordinado" as UC10
+    usecase "UC11 Ejecutar líneas base\n(Fixed, Webster,\nMax-Pressure, Greedy)" as UC11
+    usecase "UC12 Entrenar agente\n(IPPO / MAPPO)" as UC12
+    usecase "UC13 Ajustar recompensa,\noptimizador e\nhiperparámetros" as UC13
+    usecase "UC14 Simular episodio" as UC14
+    usecase "UC15 Calcular métricas\n(tripinfo)" as UC15
+    usecase "UC16 Evaluar política\nentrenada" as UC16
+  }
+  package "3. Análisis y difusión" {
+    usecase "UC17 Comparar controladores\n(Wilcoxon, IC 95 %,\ntamaño de efecto)" as UC17 #EEF1F4;line.dashed
+    usecase "UC18 Ejecutar pruebas\nde robustez" as UC18 #EEF1F4;line.dashed
+  }
+}
+
+INV -- UC10
+INV -- UC11
+INV -- UC12
+INV -- UC16
+UC14 -- SUMO
+UC11 ..> UC10 : <<include>>
+UC11 ..> UC14 : <<include>>
+UC12 ..> UC05 : <<include>>
+UC12 ..> UC14 : <<include>>
+UC16 ..> UC14 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC17 ..> UC15 : <<include>>
+UC13 ..> UC12 : <<extend>>
+UC18 ..> UC16 : <<extend>>
+
+legend right
+  Casos de uso en gris y borde discontinuo:
+  pertenecen a otro subsistema.
+endlegend
+@enduml

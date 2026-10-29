@@ -24,7 +24,7 @@ _health.log
 tsc-thesis/results/*.json
 tsc-thesis/results/tb/
 tsc-thesis/models/
-tsc-thesis/congestiones_waze_*.json
+tsc-thesis/data/waze/congestiones_waze_*.json
 tsc-thesis/scenarios/*/map.osm
 tsc-thesis/scenarios/*/trips.trips.xml
 *.zip

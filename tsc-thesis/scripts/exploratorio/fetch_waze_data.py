@@ -58,7 +58,7 @@ def fetch_congestion_data():
 if __name__ == "__main__":
     data = fetch_congestion_data()
     if data:
-        filename = f"congestiones_waze_{int(data['timestamp'])}.json"
+        filename = f"data/waze/congestiones_waze_{int(data['timestamp'])}.json"
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         logging.info(f"Datos guardados exitosamente en {filename}")

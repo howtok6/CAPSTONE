@@ -14,7 +14,7 @@ controladores clásicos → agente aprendido → análisis estadístico.
 python -m venv .venv && source .venv/bin/activate    # Linux / WSL2
 pip install -r requirements.txt
 make grid          # genera el escenario sintético 4x4
-make test          # 5 pruebas, ~3 s
+make test          # 27 pruebas, ~35 s
 ```
 
 No hace falta instalar SUMO aparte: el paquete `eclipse-sumo` de PyPI trae los
@@ -25,6 +25,21 @@ binarios (`sumo`, `netconvert`, `netgenerate`, `netedit`) y el código fija
 > `pettingzoo >= 1.25` rompe `sumo-rl` (`agent_selector` pasó de ser una clase
 > invocable a un módulo). No las subas sin verificar que `make test` sigue
 > pasando.
+
+## Estructura
+
+| Carpeta | Contenido |
+|---|---|
+| `src/tsc/` | Librería: controladores, arnés de simulación, métricas y entorno RL. |
+| `scripts/` | Pipeline: construir y diagnosticar redes, demanda, Webster, baselines, entrenamiento, evaluación, comparación y video. |
+| `scripts/exploratorio/` | Waze, *rerouting* y descarga por Overpass. Fuera del alcance de la tesis; no se usan para resultados. Se ejecutan desde esta carpeta raíz (`python scripts/exploratorio/<script>.py`). |
+| `scenarios/` | Redes SUMO. `eje_comunal` es la red del MVP. |
+| `data/terreno/` | Mediciones de terreno (CSV). |
+| `data/waze/` | Muestra exploratoria de Waze (no citable). |
+| `results/` | Salidas JSON de las corridas. |
+| `tests/` | Pruebas automatizadas. |
+
+El modelo de casos de uso está en `../docs/uml/`.
 
 ## Pipeline completo
 

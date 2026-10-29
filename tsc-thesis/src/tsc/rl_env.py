@@ -40,7 +40,7 @@ from tsc.observations import WazeCongestionObservation  # noqa: E402
 # Control de un subconjunto de semáforos
 #
 # sumo-rl controla TODOS los semáforos de la red. En el eje comunal solo deben
-# aprender los del eje (docs/07, decisión 2); los de las transversales siguen
+# aprender los del eje (docs/decisiones/07, decisión 2); los de las transversales siguen
 # su programa de tiempo fijo como demanda de contexto. Estas dos subclases
 # filtran la lista sin modificar la librería instalada.
 # --------------------------------------------------------------------------

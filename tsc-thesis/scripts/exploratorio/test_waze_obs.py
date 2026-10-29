@@ -1,7 +1,7 @@
 import sys
 import os
 # Asegurar que el modulo local se puede importar
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
 from tsc.rl_env import make_sb3_vec_env
 

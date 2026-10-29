@@ -2,7 +2,7 @@
 
 **Proyecto:** Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente  
 **Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en una red a nivel comunal de Santiago de Chile  
-**Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/07-decision-escenario.md`.  
+**Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/decisiones/07-decision-escenario.md`.  
 **Autor:** Gabriel Ignacio Cárdenas Valdés  
 **Programa:** Ingeniería en Informática, DUOC UC  
 **Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre)  
@@ -41,11 +41,11 @@ Se desarrollaron componentes que no forman parte de los objetivos y que **no deb
 3. **`GNNRouter`** (`torch_geometric`): lee densidad, colas y velocidades vía TraCI, pero **no tiene entrenamiento** (sin optimizador ni carga de pesos), por lo que opera con pesos aleatorios.
 
 El enrutamiento dinámico queda fuera del alcance según la sección 6.2 del anteproyecto. Se propone moverlo a trabajo futuro.
-Desde el 22-oct, Waze se usa solo como referencia de tiempo de viaje consultada a mano (`docs/08-decision-tiempos-semaforicos.md`).
+Desde el 22-oct, Waze se usa solo como referencia de tiempo de viaje consultada a mano (`docs/decisiones/08-decision-tiempos-semaforicos.md`).
 
 ### Fuente de los tiempos semafóricos (decisión del 22-oct)
 Ubicación de semáforos desde OpenStreetMap. Tiempos estimados con Webster, anclados en una muestra de terreno de
-13 cruces × 3 franjas (`docs/09-protocolo-terreno.md`, datos en `tsc-thesis/data/terreno/`) y calibrados por tiempo de
+13 cruces × 3 franjas (`docs/datos/09-protocolo-terreno.md`, datos en `tsc-thesis/data/terreno/`) y calibrados por tiempo de
 viaje por tramo. No se compran programaciones a la UOCT por ahora.
 
 ---
@@ -87,37 +87,37 @@ anteproyecto, los resultados deben reportarse con tamaño de efecto e intervalo 
 ## 4. Auditoría Técnica del Código y Repositorio
 
 ### 4.1 Estructura del Software
+Reorganizada el 29-oct-2026 por categoría e importancia; el mapa completo está en `README.md` (raíz).
 ```
 C:\Users\Gabriel\Desktop\TESIS\
-├── docs/                                 # Documentación y anteproyecto formal
-│   ├── 00-INDICE.md                      # Índice general
-│   ├── 01-anteproyecto-v1.md             # Anteproyecto en texto plano
-│   ├── 02-windows-vs-wsl2.md             # Decisión técnica: Windows nativo
-│   ├── 03-montaje-wsl2.md                # Runbook alternativo WSL2
-│   ├── 04-entorno-y-stack.md             # Stack técnico y lecciones aprendidas
-│   ├── 05-visualizacion.md               # Guía de simulación visual y video
-│   ├── 06-fuentes-de-datos.md            # Estrategia de aforos y solicitud UOCT
-│   └── Anteproyecto_Tesis_*.{docx,pdf}   # Documento formal entregado
-└── tsc-thesis/                           # Repositorio de código y experimentos
-    ├── configs/                          # Configuraciones experimentales
+├── README.md                             # Portada y mapa del repositorio
+├── ESTADO_DEL_PROYECTO.md                # Este informe
+├── docs/
+│   ├── 00-INDICE.md                      # Índice de la documentación
+│   ├── anteproyecto/                     # 01 (texto plano) + DOCX/PDF entregados
+│   ├── informe/                          # Borrador del informe final (1.4)
+│   ├── decisiones/                       # 02, 07, 08, 10, 11 — decisiones registradas
+│   ├── entorno/                          # 03, 04, 05 — montaje, stack y visualización
+│   ├── datos/                            # 06, 09 — fuentes de datos y protocolo de terreno
+│   └── uml/                              # Actores y casos de uso (PlantUML + SVG/PNG)
+├── capstone/                             # Evidencias del ramo (APT122), fuera de la tesis
+│   ├── fase1/                            # Autoevaluaciones y diario de reflexión
+│   └── generadores/                      # Scripts que rellenan esas plantillas
+└── tsc-thesis/                           # Código y experimentos
+    ├── data/terreno/                     # Mediciones de terreno (CSV)
+    ├── data/waze/                        # Muestra Waze (exploratoria, no citable)
     ├── models/                           # Políticas guardadas (no versionado en git)
-    ├── resultados/                       # Muestra de telemetría Waze (exploratoria)
-    ├── results/                          # Salidas JSON de baselines (versionadas desde 22-oct)
+    ├── results/                          # Salidas JSON de baselines
     ├── scenarios/                        # Escenarios SUMO
-    │   ├── grid4x4/                      # Red sintética de verificación
-    │   ├── apoquindo/                    # Red real, 42 semáforos (tramo oriente del eje)
-    │   ├── alameda_providencia/          # Red real, 36 semáforos (tramo poniente del eje)
-    │   └── providencia/                  # Red real, 72 semáforos (desaconsejada)
-    ├── scripts/                          # Ejecución, calibración y diagnóstico
-    ├── src/tsc/                          # Librería central del proyecto
-    │   ├── controllers/                  # fixed, webster, maxpressure, greedy
-    │   ├── gnn_router.py                 # GCN para rerouting (exploratorio, sin entrenar)
-    │   ├── metrics.py                    # Parser de tripinfo y StepSampler
-    │   ├── observations.py               # Observaciones extendidas Waze (exploratorio)
-    │   ├── rl_env.py                     # Envoltorio PettingZoo/SuperSuit para SB3
-    │   ├── runner.py                     # Ejecutor unificado de episodios SUMO
-    │   └── sumo_env.py                   # Envoltorio de TraCI / libsumo
-    └── tests/                            # Pruebas unitarias automatizadas (pytest)
+    │   ├── eje_comunal/                  # Red del MVP: Matucana → Apoquindo, 64 semáforos en el eje
+    │   ├── alameda_providencia/          # Tramo poniente (36 semáforos), perfiles de demanda
+    │   ├── apoquindo/                    # Tramo oriente
+    │   ├── providencia/                  # Red desaconsejada (cuadras cortas)
+    │   └── grid4x4/                      # Red sintética de verificación
+    ├── scripts/                          # Pipeline: construir, diagnosticar, simular, entrenar, comparar
+    │   └── exploratorio/                 # Waze, rerouting y descarga Overpass (fuera de alcance)
+    ├── src/tsc/                          # Librería central (controladores, arnés, entorno RL)
+    └── tests/                            # Pruebas automatizadas (pytest)
 ```
 
 ### 4.2 Resultados de Pruebas Automatizadas
@@ -125,7 +125,7 @@ Ejecución en PowerShell el 22-oct-2026 (`python -m pytest -q` desde `tsc-thesis
 ```
 13 passed, 2 warnings in 41.93s
 ```
-Incluye las 12 pruebas de `tests/` (`test_pipeline.py` y `test_demand_and_network.py`) más `scripts/test_waze_obs.py`,
+Incluye las 12 pruebas de `tests/` (`test_pipeline.py` y `test_demand_and_network.py`) más `scripts/exploratorio/test_waze_obs.py`,
 que pytest recoge desde la raíz. Pruebas relevantes:
 * `test_alameda_providencia_net_exists`: red real presente y legible.
 * `test_demand_profiles_exist`: los 4 archivos de perfil existen y superan 100 KB.
@@ -135,6 +135,7 @@ que pytest recoge desde la raíz. Pruebas relevantes:
 * `test_min_green_is_respected`: el verde mínimo se respeta como restricción dura.
 
 ### 4.3 Estado del control de versiones
+* 29-oct-2026: repositorio reorganizado por categoría (documentos, evidencias del ramo, datos y scripts exploratorios) y modelo de casos de uso agregado en `docs/uml/`; 27 pruebas pasan tras el cambio.
 * Repositorio remoto: `github.com/howtok6/CAPSTONE`, rama `master` (las ramas `main` y `dev-benja` contienen las evidencias de Fase 1 y el mockup de la app, con historia separada).
 * Trabajo del 14-oct respaldado el 22-oct en los commits `eb7aa17` (código, escenario y resultados) y `7c80729` (documentación).
 * `models/` sigue excluido de git; los JSON de `results/` se agregaron forzados y los nuevos resultados deben agregarse igual o ajustarse el `.gitignore`.
@@ -160,7 +161,7 @@ el teletransporte está desactivado por diseño para que los bloqueos se vean, a
 siempre y no prueba que la red esté sana. Los indicadores útiles son los vehículos detenidos al final de la corrida y la
 **cola de inserción** (vehículos cargados que no logran entrar a la red).
 
-**Decisión de escenario (22-oct-2026), registrada en `docs/07-decision-escenario.md`.** El proyecto pasa a nivel
+**Decisión de escenario (22-oct-2026), registrada en `docs/decisiones/07-decision-escenario.md`.** El proyecto pasa a nivel
 comunal y el MVP se centra en el eje Apoquindo → Providencia → Alameda. Ninguna red existente cubre el eje completo:
 **`alameda_providencia` no incluye la Alameda** (su extremo poniente está en Plaza Baquedano), llega por el oriente
 hasta −70,611, y `apoquindo` empieza en −70,598, por lo que faltan ~1,2 km de Av. Providencia (entre Pedro de Valdivia y
@@ -201,7 +202,7 @@ al comparar hay que declarar qué optimiza cada controlador.
 | **`maxpressure`** | **$84.33 \pm 0.91$** | **$-35.6\,\%$** | **$35.28 \pm 0.50$** | **$35.88 \pm 1.05$** | **$4765.0 \pm 16.4$** |
 
 ### 6.3 Muestra Exploratoria de Congestión en Santiago (Waze)
-`scripts/analyze_santiago_congestion.py` tomó **una sola muestra** el 16-sep-2026 a las 18:47 mediante
+`scripts/exploratorio/analyze_santiago_congestion.py` tomó **una sola muestra** el 16-sep-2026 a las 18:47 mediante
 `WazeRouteCalculator` (cliente no oficial). Sirve como referencia de orden de magnitud, no como dato de calibración ni
 fuente citable:
 * **Alameda (Este-Oeste):** 11,11 km/h; 30,7 min para 5,68 km → índice de congestión 4,50.
@@ -210,7 +211,7 @@ fuente citable:
 * **Apoquindo:** 19,55–21,90 km/h → índice 2,28–2,56.
 
 Para validar el escenario se recomiendan fuentes repetibles: tiempos típicos de Google por franja horaria y GPS de
-buses de DTPM (ver `docs/06-fuentes-de-datos.md`).
+buses de DTPM (ver `docs/datos/06-fuentes-de-datos.md`).
 
 ### 6.4 Prueba de Humo en Alameda-Providencia (perfil valle, 2 semillas)
 Corrida multi-controlador sobre el corredor Alameda-Providencia (36 semáforos, 520 arcos) con el perfil sintético
@@ -256,7 +257,7 @@ estrés.
 ## 7. Deuda Técnica
 
 ### 7.1 Corregida en la sesión del 14-oct-2026
-1. ✅ **`scripts/evaluate_waze_rerouting.py`:** `res.get('mean_delay_s')` reemplazado por `res.get('time_loss_mean')`.
+1. ✅ **`scripts/exploratorio/evaluate_waze_rerouting.py`:** `res.get('mean_delay_s')` reemplazado por `res.get('time_loss_mean')`.
 2. ✅ **Codificación en Windows:** `sys.stdout.reconfigure(encoding='utf-8')` y `\u2192` reemplazado por `->` en `diagnose_net.py`, `build_webster.py`, `run_baselines.py`, `eval_rl.py` y `train_rl.py`.
 3. ✅ **`map_alameda.osm` corrupto:** eliminado; `download_highway_osm.py` ahora envía `User-Agent` y usa timeouts.
 4. ✅ **Residuos (`docs/index.bleve/`, logs):** `.gitignore` en la raíz del repositorio.
@@ -271,7 +272,7 @@ estrés.
 1. ⏳ **Contador `phase_switches`** devuelve 0 para todos los controladores.
 2. ⏳ **Métrica de cola de inserción y `depart_delay`** ausente de la validación de perfiles; distorsiona punta tarde y sobresaturado.
 3. ⏳ **Calibración de demanda** inexistente; los perfiles son sintéticos.
-4. ⏳ **Red del eje completo y número de semáforos a controlar** (decisión de alcance registrada el 22-oct en `docs/07-decision-escenario.md`).
+4. ⏳ **Red del eje completo y número de semáforos a controlar** (decisión de alcance registrada el 22-oct en `docs/decisiones/07-decision-escenario.md`).
 5. ⏳ **`requirements.txt` incompleto** (`torch`, `torch_geometric`, `WazeRouteCalculator`) y ejecución sin entorno virtual en Python 3.13.
 6. ⏳ **Componentes exploratorios** (Waze, *rerouting*, GNN) por mover a trabajo futuro o documentar como fuera de alcance.
 7. ✅ **Respaldo en git** del trabajo del 14-oct (resuelto el 22-oct: commits `eb7aa17` y `7c80729`).
@@ -284,18 +285,18 @@ estrés.
 «Plan de cierre de la tesis — entrega en diciembre 2026». Recortes declarados: 10 semillas (20 en la evaluación final
 si alcanza), MAPPO solo en el tramo de Providencia, dos variantes de recompensa y dos perturbaciones de robustez.
 **La regla de corte se adelanta al 22 de noviembre.** Datos de la tesis en GeoPackage + GeoParquet + DuckDB
-(`docs/10-decision-base-de-datos.md`).
+(`docs/decisiones/10-decision-base-de-datos.md`).
 
 ### Próximas semanas (fin de octubre – noviembre)
 1. ✅ Commit y push del trabajo pendiente.
 2. ✅ Corregir este informe de estado.
-3. ✅ **Registrar la decisión de escenario** (`docs/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
-3b. ✅ **Construir la red del eje completo** (24-oct): `scenarios/eje_comunal`, APTA; 1 130 arcos, 64 semáforos sobre el eje y 22 en transversales (`docs/07`).
-3c. **Terreno de tiempos semafóricos** según `docs/09-protocolo-terreno.md` (13 cruces, 4 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
+3. ✅ **Registrar la decisión de escenario** (`docs/decisiones/07-decision-escenario.md`). Pendiente: validarla con el profesor guía.
+3b. ✅ **Construir la red del eje completo** (24-oct): `scenarios/eje_comunal`, APTA; 1 130 arcos, 64 semáforos sobre el eje y 22 en transversales (`docs/decisiones/07`).
+3c. **Terreno de tiempos semafóricos** según `docs/datos/09-protocolo-terreno.md` (13 cruces, 4 días hábiles; versión mínima: valle y punta tarde). Listo cuando `scripts/procesar_terreno.py` entrega ≥3 ciclos completos por cruce y franja.
 4. ✅ **Arreglar `phase_switches`** (24-oct): se cuenta observando la red, no al controlador; funciona con tiempo fijo, Max-Pressure y el agente.
 5. ✅ **Medir la cola de inserción** (24-oct): nueva métrica primaria `delay_all_mean`, que incluye a los vehículos que siguen en la red o esperan entrar al cierre; también `vehicles_running_end` y `vehicles_pending_end`. Pendiente verificar que los cuatro perfiles quedan ordenados de valle a sobresaturado.
-6. ✅ **Fijar el alcance de control** (24-oct): el agente controla los 64 semáforos del eje (`tls_eje.json`); las transversales quedan en tiempo fijo. Optimizador configurable: Adam por defecto, RMSprop como alternativa; tasa de aprendizaje lineal decreciente (`docs/11-decision-agente.md`).
-6b. ✅ **Plan Webster para la red del eje** (27-oct): ciclo común por avenida, onda verde según el perfil y ciclo real ajustado al objetivo (`docs/08`). Provisional: con la demanda sintética los ciclos quedan en el mínimo (40–49 s); se regenera por perfil (`build_webster.py --profile`).
+6. ✅ **Fijar el alcance de control** (24-oct): el agente controla los 64 semáforos del eje (`tls_eje.json`); las transversales quedan en tiempo fijo. Optimizador configurable: Adam por defecto, RMSprop como alternativa; tasa de aprendizaje lineal decreciente (`docs/decisiones/11-decision-agente.md`).
+6b. ✅ **Plan Webster para la red del eje** (27-oct): ciclo común por avenida, onda verde según el perfil y ciclo real ajustado al objetivo (`docs/decisiones/08`). Provisional: con la demanda sintética los ciclos quedan en el mínimo (40–49 s); se regenera por perfil (`build_webster.py --profile`).
 7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
 9. **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.

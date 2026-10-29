@@ -25,7 +25,7 @@ AVENIDAS_SANTIAGO = {
     "La Florida (Sur-Norte)": {"start": "-33.5500,-70.5800", "end": "-33.5000,-70.6100"},
 }
 
-CSV_FILE = "resultados/santiago_congestion_log.csv"
+CSV_FILE = "data/waze/santiago_congestion_log.csv"
 
 def init_csv():
     os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)

@@ -1,0 +1,70 @@
+@startuml casos-de-uso-analisis
+' Generado por gen.py — no editar a mano
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #2F4F6F
+  ArrowColor #2F4F6F
+}
+skinparam rectangle {
+  BorderColor #2F4F6F
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #F5F7FA
+  BorderColor #9AA9B8
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+title Subsistema 3 — Análisis y difusión
+
+actor "Investigador" as INV
+actor "Revisor" as REV
+actor "Profesor guía" as PG
+actor "Comisión evaluadora" as CE
+actor "Investigador externo" as EXT
+actor "SUMO\n(libsumo / TraCI)" as SUMO <<sistema>>
+
+rectangle "Plataforma experimental tsc-thesis" {
+  package "2. Control" {
+    usecase "UC15 Calcular métricas\n(tripinfo)" as UC15 #EEF1F4;line.dashed
+    usecase "UC16 Evaluar política\nentrenada" as UC16 #EEF1F4;line.dashed
+  }
+  package "3. Análisis y difusión" {
+    usecase "UC17 Comparar controladores\n(Wilcoxon, IC 95 %,\ntamaño de efecto)" as UC17
+    usecase "UC18 Ejecutar pruebas\nde robustez" as UC18
+    usecase "UC19 Visualizar simulación" as UC19
+    usecase "UC20 Grabar video\nde la ejecución" as UC20
+    usecase "UC21 Reproducir resultados\ndesde el repositorio" as UC21
+    usecase "UC22 Revisar avance\npor hito" as UC22
+  }
+}
+
+INV -- UC17
+INV -- UC18
+INV -- UC19
+UC19 -- REV
+UC21 -- REV
+UC22 -- PG
+UC19 -- SUMO
+UC17 ..> UC15 : <<include>>
+UC21 ..> UC17 : <<include>>
+UC18 ..> UC16 : <<extend>>
+UC20 ..> UC19 : <<extend>>
+REV <|-- PG
+REV <|-- CE
+REV <|-- EXT
+
+legend right
+  Casos de uso en gris y borde discontinuo:
+  pertenecen a otro subsistema.
+endlegend
+@enduml

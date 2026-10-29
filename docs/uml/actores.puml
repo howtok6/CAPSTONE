@@ -1,0 +1,49 @@
+@startuml actores
+' Diagrama de actores — jerarquía y tipo
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam actorStyle awesome
+skinparam rectangle {
+  BorderColor #9AA9B8
+  BackgroundColor #F5F7FA
+}
+
+title Actores del sistema
+
+rectangle "Actores primarios (humanos)" {
+  actor "Investigador" as INV
+  actor "Revisor" as REV
+  actor "Profesor guía" as PG
+  actor "Comisión evaluadora" as CE
+  actor "Investigador externo" as EXT
+  PG -up-|> REV
+  CE -up-|> REV
+  EXT -up-|> REV
+}
+
+rectangle "Actores secundarios (sistemas externos)" {
+  actor "OpenStreetMap" as OSM <<sistema>>
+  actor "Fuentes de datos\nde movilidad" as FDM <<sistema>>
+  actor "SUMO" as SUMO <<sistema>>
+}
+
+note bottom of INV
+  Autor de la tesis. Construye el escenario,
+  implementa controladores, entrena agentes
+  y analiza resultados.
+end note
+
+note bottom of REV
+  Consulta y reproduce resultados;
+  no modifica el escenario ni el código.
+end note
+
+note bottom of FDM
+  UOCT/MTT, DTPM, SECTRA, municipios
+  (Las Condes, Providencia, Santiago).
+  Entregan aforos, programaciones y
+  tiempos de viaje vía transparencia.
+end note
+
+@enduml

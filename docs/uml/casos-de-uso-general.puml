@@ -1,0 +1,109 @@
+@startuml casos-de-uso-general
+' Generado por gen.py — no editar a mano
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #2F4F6F
+  ArrowColor #2F4F6F
+}
+skinparam rectangle {
+  BorderColor #2F4F6F
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #F5F7FA
+  BorderColor #9AA9B8
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+title Diagrama de casos de uso — Plataforma experimental de control de semáforos
+
+actor "Investigador" as INV
+actor "Revisor" as REV
+actor "Profesor guía" as PG
+actor "Comisión evaluadora" as CE
+actor "Investigador externo" as EXT
+actor "OpenStreetMap" as OSM <<sistema>>
+actor "Fuentes de datos\nde movilidad" as FDM <<sistema>>
+actor "SUMO\n(libsumo / TraCI)" as SUMO <<sistema>>
+
+rectangle "Plataforma experimental tsc-thesis" {
+  package "1. Escenario" {
+    usecase "UC01 Construir red\ndel eje comunal" as UC01
+    usecase "UC02 Descargar geometría\ndesde OSM" as UC02
+    usecase "UC03 Diagnosticar red" as UC03
+    usecase "UC04 Corregir semáforos\ny geometría" as UC04
+    usecase "UC05 Seleccionar semáforos\ncontrolados" as UC05
+    usecase "UC06 Generar perfiles\nde demanda" as UC06
+    usecase "UC07 Calibrar demanda\ncon datos observados" as UC07
+    usecase "UC08 Procesar mediciones\nde terreno" as UC08
+    usecase "UC09 Validar escenario\n(tiempos de viaje)" as UC09
+  }
+  package "2. Control" {
+    usecase "UC10 Calcular plan\nWebster coordinado" as UC10
+    usecase "UC11 Ejecutar líneas base\n(Fixed, Webster,\nMax-Pressure, Greedy)" as UC11
+    usecase "UC12 Entrenar agente\n(IPPO / MAPPO)" as UC12
+    usecase "UC13 Ajustar recompensa,\noptimizador e\nhiperparámetros" as UC13
+    usecase "UC14 Simular episodio" as UC14
+    usecase "UC15 Calcular métricas\n(tripinfo)" as UC15
+    usecase "UC16 Evaluar política\nentrenada" as UC16
+  }
+  package "3. Análisis y difusión" {
+    usecase "UC17 Comparar controladores\n(Wilcoxon, IC 95 %,\ntamaño de efecto)" as UC17
+    usecase "UC18 Ejecutar pruebas\nde robustez" as UC18
+    usecase "UC19 Visualizar simulación" as UC19
+    usecase "UC20 Grabar video\nde la ejecución" as UC20
+    usecase "UC21 Reproducir resultados\ndesde el repositorio" as UC21
+    usecase "UC22 Revisar avance\npor hito" as UC22
+  }
+}
+
+INV -- UC01
+INV -- UC04
+INV -- UC05
+INV -- UC06
+INV -- UC07
+INV -- UC08
+INV -- UC09
+INV -- UC10
+INV -- UC11
+INV -- UC12
+INV -- UC16
+INV -- UC17
+INV -- UC18
+INV -- UC19
+UC19 -- REV
+UC21 -- REV
+UC22 -- PG
+UC02 -- OSM
+UC07 -- FDM
+UC09 -- FDM
+UC14 -- SUMO
+UC19 -- SUMO
+UC01 ..> UC02 : <<include>>
+UC01 ..> UC03 : <<include>>
+UC04 ..> UC03 : <<include>>
+UC11 ..> UC10 : <<include>>
+UC11 ..> UC14 : <<include>>
+UC12 ..> UC05 : <<include>>
+UC12 ..> UC14 : <<include>>
+UC16 ..> UC14 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC17 ..> UC15 : <<include>>
+UC21 ..> UC17 : <<include>>
+UC07 ..> UC06 : <<extend>>
+UC13 ..> UC12 : <<extend>>
+UC18 ..> UC16 : <<extend>>
+UC20 ..> UC19 : <<extend>>
+REV <|-- PG
+REV <|-- CE
+REV <|-- EXT
+@enduml

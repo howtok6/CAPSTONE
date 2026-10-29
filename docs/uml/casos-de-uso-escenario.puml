@@ -1,0 +1,70 @@
+@startuml casos-de-uso-escenario
+' Generado por gen.py — no editar a mano
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #2F4F6F
+  ArrowColor #2F4F6F
+}
+skinparam rectangle {
+  BorderColor #2F4F6F
+  FontStyle bold
+}
+skinparam package {
+  BackgroundColor #F5F7FA
+  BorderColor #9AA9B8
+}
+skinparam note {
+  BackgroundColor #FFFBE6
+  BorderColor #C9B458
+}
+
+title Subsistema 1 — Escenario de simulación
+
+actor "Investigador" as INV
+actor "OpenStreetMap" as OSM <<sistema>>
+actor "Fuentes de datos\nde movilidad" as FDM <<sistema>>
+
+rectangle "Plataforma experimental tsc-thesis" {
+  package "1. Escenario" {
+    usecase "UC01 Construir red\ndel eje comunal" as UC01
+    usecase "UC02 Descargar geometría\ndesde OSM" as UC02
+    usecase "UC03 Diagnosticar red" as UC03
+    usecase "UC04 Corregir semáforos\ny geometría" as UC04
+    usecase "UC05 Seleccionar semáforos\ncontrolados" as UC05
+    usecase "UC06 Generar perfiles\nde demanda" as UC06
+    usecase "UC07 Calibrar demanda\ncon datos observados" as UC07
+    usecase "UC08 Procesar mediciones\nde terreno" as UC08
+    usecase "UC09 Validar escenario\n(tiempos de viaje)" as UC09
+  }
+  package "2. Control" {
+    usecase "UC12 Entrenar agente\n(IPPO / MAPPO)" as UC12 #EEF1F4;line.dashed
+  }
+}
+
+INV -- UC01
+INV -- UC04
+INV -- UC05
+INV -- UC06
+INV -- UC07
+INV -- UC08
+INV -- UC09
+UC02 -- OSM
+UC07 -- FDM
+UC09 -- FDM
+UC01 ..> UC02 : <<include>>
+UC01 ..> UC03 : <<include>>
+UC04 ..> UC03 : <<include>>
+UC12 ..> UC05 : <<include>>
+UC07 ..> UC06 : <<extend>>
+
+legend right
+  Casos de uso en gris y borde discontinuo:
+  pertenecen a otro subsistema.
+endlegend
+@enduml

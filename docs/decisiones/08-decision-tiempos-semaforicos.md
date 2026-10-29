@@ -15,7 +15,7 @@ No se compran programaciones a la UOCT por ahora. Queda como respaldo (ver «Alt
 ## Por qué Waze no se usa para inferir los tiempos
 
 1. **No entrega lo necesario.** `WazeRouteCalculator` devuelve solo tiempo y distancia de una ruta completa. Los métodos publicados para inferir ciclo y reparto de verde parten de trayectorias de vehículos individuales que cruzan la intersección (por ejemplo, transformada de Fourier sobre puntos GPS de vehículos sonda). Un tiempo de viaje agregado de varios kilómetros mezcla decenas de semáforos y no permite despejar el ciclo de cada uno.
-2. **Términos de uso.** Las condiciones de Waze prohíben el acceso automatizado (robots, *scrapers*) sin permiso escrito. `scripts/fetch_waze_data.py` y `scripts/analyze_santiago_congestion.py` quedan como material exploratorio: no se amplían ni se publican sus datos. Waze sí puede consultarse a mano, de forma puntual, como referencia de tiempo de viaje.
+2. **Términos de uso.** Las condiciones de Waze prohíben el acceso automatizado (robots, *scrapers*) sin permiso escrito. `scripts/exploratorio/fetch_waze_data.py` y `scripts/exploratorio/analyze_santiago_congestion.py` quedan como material exploratorio: no se amplían ni se publican sus datos. Waze sí puede consultarse a mano, de forma puntual, como referencia de tiempo de viaje.
 
 Fuentes: [WazeRouteCalculator](https://www.github.com/kovacsbalu/WazeRouteCalculator) · [Waze Terms of Use](https://support.google.com/waze/answer/12373727) · [Estimación de ciclo con GPS de vehículos sonda (hEART 2018)](https://transp-or.epfl.ch/heart/2018/abstracts/5260.pdf).
 

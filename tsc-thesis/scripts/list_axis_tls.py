@@ -4,7 +4,7 @@
 Un semáforo es «del eje» si alguno de los arcos que controla pertenece a la
 Alameda, Av. Providencia o Av. Apoquindo. Escribe <escenario>/tls_eje.json con
 las dos listas: la del eje es la que controla el agente (decisión pendiente de
-validar, docs/07); las transversales quedan en tiempo fijo.
+validar, docs/decisiones/07); las transversales quedan en tiempo fijo.
 
 Ojo: netconvert guarda el nombre de la Alameda como «O&apos;Higgins» (apóstrofo
 escapado dos veces); el patrón lo tolera.

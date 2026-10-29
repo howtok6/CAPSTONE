@@ -15,7 +15,7 @@ Tres pasos:
        sobresaturado; sin onda en valle.
      Los semáforos de transversales quedan con su Webster aislado.
 
-Decisión registrada en docs/08 (tiempos estimados, anclados después en la
+Decisión registrada en docs/decisiones/08 (tiempos estimados, anclados después en la
 medición de terreno). Con `--profile` mide con las rutas del perfil y guarda
 `webster_plan_<perfil>.json`, que es el que usa run_baselines con ese perfil.
 """

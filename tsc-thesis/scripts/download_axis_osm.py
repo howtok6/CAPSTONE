@@ -17,7 +17,7 @@ Luego:
     python scripts/build_santiago.py --osm <lista de recuadros> --keep-geo-boundary <polígono>
 (el script imprime la línea exacta).
 
-Decisión registrada en docs/07-decision-escenario.md.
+Decisión registrada en docs/decisiones/07-decision-escenario.md.
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ from shapely.ops import transform, unary_union
 API = "https://api.openstreetmap.org/api/0.6/map?bbox={},{},{},{}"
 EJE = {"Avenida Libertador Bernardo O'Higgins", "Avenida Providencia", "Avenida Apoquindo"}
 LIMITE_PONIENTE = -70.6790  # Matucana: límite Santiago / Estación Central sobre la Alameda
-# Recuadros (oeste, sur, este, norte) que cubren el eje con margen; ver docs/07
+# Recuadros (oeste, sur, este, norte) que cubren el eje con margen; ver docs/decisiones/07
 RECUADROS = [
     (-70.6820, -33.4565, -70.6560, -33.4395),
     (-70.6580, -33.4505, -70.6280, -33.4250),
