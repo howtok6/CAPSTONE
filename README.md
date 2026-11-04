@@ -32,6 +32,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ archivo /
 | `docs/datos/` | Fuentes de datos y protocolo de terreno | ★★ |
 | `docs/entorno/` | Stack, montaje y visualización | ★★ |
 | `docs/uml/` | Modelo de casos de uso (PlantUML + SVG/PNG) | ★★ |
+| `docs/integracion-app/`, `tsc-thesis/api/` | Integración con la app móvil «Vía»: API de simulación en vivo y su avance | ★★ |
 | `tsc-thesis/data/`, `tsc-thesis/results/` | Mediciones de terreno y resultados de corridas | ★★ |
 | `tsc-thesis/scripts/exploratorio/`, `tsc-thesis/data/waze/` | Pruebas con Waze y *rerouting*; fuera del alcance de la tesis | ★ |
 | `capstone/` | Evidencias del ramo Capstone (APT122, fase 1) y scripts que las generan | ★ |
@@ -43,11 +44,11 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ archivo /
 ├── docs/
 │   ├── 00-INDICE.md
 │   ├── anteproyecto/   informe/   decisiones/
-│   ├── datos/          entorno/   uml/
+│   ├── datos/          entorno/   uml/   integracion-app/
 ├── capstone/
 │   ├── fase1/          generadores/
 └── tsc-thesis/
-    ├── src/tsc/   scripts/   tests/
+    ├── src/tsc/   api/   scripts/   tests/
     ├── scenarios/   data/   results/
     └── Makefile   requirements.txt
 ```

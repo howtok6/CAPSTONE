@@ -17,6 +17,12 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 | `informe/1.4 Informe -v1.docx` | Borrador del informe final de la tesis. | ★★★ |
 | `informe/informe-avance-2026-10-29.md` | Informe de avance del 15 al 29 de octubre: decisiones, cambios técnicos, avance por objetivo y próximos pasos. | ★★ |
 
+## Integración con la app móvil — `integracion-app/`
+
+| Archivo | Qué es | Importancia |
+|---|---|---|
+| `integracion-app/avance-2026-11-03.md` | Etapa 1: API de simulación en vivo, panel «Próximo semáforo» de la app, verificación y hallazgo de conectividad de la red. | ★★ |
+
 ## Decisiones registradas — `decisiones/`
 
 | Archivo | Qué decide | Importancia |
