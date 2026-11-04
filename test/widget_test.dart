@@ -8,10 +8,21 @@ import 'package:http/testing.dart';
 import 'package:mockup/main.dart';
 import 'package:mockup/via_api.dart';
 
+import 'apoyo.dart';
+
 http.Response _json(Object cuerpo, [int status = 200]) => http.Response.bytes(
   utf8.encode(jsonEncode(cuerpo)),
   status,
   headers: {'content-type': 'application/json'},
+);
+
+/// La app con mapa y GPS falsos (MapLibre y geolocator son nativos).
+Widget _app({ViaApi? api}) => MaterialApp(
+  home: MobilityPage(
+    api: api,
+    ubicacion: sinGps(),
+    constructorMapa: MapaFalso().construir,
+  ),
 );
 
 void main() {
@@ -28,7 +39,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(_app());
       final scene = tester.getRect(find.byKey(const Key('driving-view')));
       for (final key in [
         'traffic-panel',
@@ -71,7 +82,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(_app());
     expect(find.text('0.36 L'), findsOneWidget);
     expect(find.byKey(const Key('octane-97')), findsNothing);
     await tester.tap(find.byKey(const Key('fuel-toggle')));
@@ -115,11 +126,11 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const MyApp());
-      expect(find.byKey(const Key('rear-scene')), findsOneWidget);
+      await tester.pumpWidget(_app());
+      expect(find.byKey(const Key('main-map')), findsOneWidget);
       await tester.tap(find.byKey(const Key('view-above')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('overhead-scene')), findsOneWidget);
+      expect(find.byKey(const Key('main-map')), findsOneWidget);
       await tester.tap(find.byKey(const Key('fuel-toggle')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('octane-93')), findsOneWidget);
@@ -138,7 +149,7 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('view-driving')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('rear-scene')), findsOneWidget);
+      expect(find.byKey(const Key('main-map')), findsOneWidget);
       expect(find.text('0.36 L'), findsOneWidget);
       await tester.tap(find.byKey(const Key('energy-toggle')));
       await tester.pumpAndSettle();
@@ -148,7 +159,7 @@ void main() {
     },
   );
   testWidgets('Traffic light cycles through all colors', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(_app());
     expect(find.text('24s'), findsOneWidget);
     await tester.pump(const Duration(seconds: 24));
     expect(find.text('Amarillo → rojo'), findsOneWidget);
@@ -210,11 +221,7 @@ void main() {
       return http.Response('no encontrado', 404);
     });
     await tester.pumpWidget(
-      MaterialApp(
-        home: MobilityPage(
-          api: ViaApi(baseUrl: 'http://api.test', client: cliente),
-        ),
-      ),
+      _app(api: ViaApi(baseUrl: 'http://api.test', client: cliente)),
     );
     await tester.pump();
     expect(find.text('Av. General Bustamante · 1,7 km'), findsOneWidget);
@@ -271,11 +278,7 @@ void main() {
         return http.Response('', 204);
       });
       await tester.pumpWidget(
-        MaterialApp(
-          home: MobilityPage(
-            api: ViaApi(baseUrl: 'http://api.test', client: cliente),
-          ),
-        ),
+        _app(api: ViaApi(baseUrl: 'http://api.test', client: cliente)),
       );
       await tester.pump();
       await tester.tap(find.text('Iniciar recorrido'));
@@ -363,11 +366,7 @@ void main() {
       return http.Response('', 204);
     });
     await tester.pumpWidget(
-      MaterialApp(
-        home: MobilityPage(
-          api: ViaApi(baseUrl: 'http://api.test', client: cliente),
-        ),
-      ),
+      _app(api: ViaApi(baseUrl: 'http://api.test', client: cliente)),
     );
     await tester.pump();
 

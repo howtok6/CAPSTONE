@@ -38,6 +38,7 @@ dependencies:
   latlong2: ^0.10.1
   geolocator: ^14.1.2
   maplibre_gl: ^0.28.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

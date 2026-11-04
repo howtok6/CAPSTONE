@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Necesario para consultar el backend de «Vía». -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Viajes GPS: la app envía la ubicación al backend mientras dura el recorrido. -->
+    <!-- Ubicación exacta (FINE) o aproximada (COARSE): en Android 12 o más el
+         diálogo del sistema deja elegir entre ambas, y la app también ofrece
+         un modo aproximado propio. Se muestra en el mapa y se envía al backend
+         solo durante un viaje GPS. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application

@@ -1,6 +1,17 @@
 // Pantalla principal de «Vía»: vista de conducción con semáforo, paneles de
 // gasolina y gasto energético, y controles de recorrido.
 //
+// El fondo es un mapa 3D low poly navegable (lib/mapa_low_poly.dart): se mueve,
+// acerca, gira e inclina con los dedos, dibuja la ruta elegida con sus
+// semáforos y sigue al usuario (o al vehículo simulado) durante el recorrido.
+// «Conducción» lleva la cámara detrás del usuario mirando hacia donde avanza;
+// «Desde arriba», cenital con el norte arriba. Al mover el mapa la cámara deja
+// de seguir; el botón de recentrar la devuelve.
+//
+// Al abrir la app por primera vez se pregunta cómo compartir la ubicación:
+// exacta o aproximada dentro de un rango (lib/permiso_ubicacion.dart). La
+// elección se guarda y se cambia tocando el indicador del encabezado.
+//
 // La pantalla funciona en tres modos según de dónde salen los datos. Todo lo
 // que no es demo viene del backend Go (lib/via_api.dart y lib/rutas_osm.dart):
 // - Demo: semáforo, rutas y distancias simuladas dentro de la app.
@@ -14,10 +25,10 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
-import 'driving_scene.dart';
-import 'mapa_low_poly.dart' show ConstructorMapa;
-import 'overhead_scene.dart';
+import 'mapa_low_poly.dart';
+import 'permiso_ubicacion.dart';
 import 'proponer_ruta.dart';
 import 'rutas_osm.dart';
 import 'ubicacion.dart';
@@ -77,7 +88,8 @@ class MobilityPage extends StatefulWidget {
   /// Fuente de ubicación para los viajes GPS; null usa el GPS del celular.
   final FuenteUbicacion? ubicacion;
 
-  /// Mapa de «Proponer ruta»; null usa el mapa 3D low poly (MapLibre).
+  /// Mapa de la pantalla principal y de «Proponer ruta»; null usa el mapa 3D
+  /// low poly (MapLibre).
   final ConstructorMapa? constructorMapa;
   @override
   State<MobilityPage> createState() => _MobilityPageState();
@@ -103,13 +115,24 @@ class _MobilityPageState extends State<MobilityPage> {
   EstadoViaje? viaje;
   bool consultando = false;
 
-  // --- GPS de los viajes por ruta propuesta ----------------------------------
+  // --- Ubicación del usuario ---------------------------------------------------
+  // La ubicación se sigue mientras la app está abierta (para el mapa) y solo se
+  // envía al backend durante un viaje GPS.
   late final FuenteUbicacion gps = widget.ubicacion ?? FuenteGps();
-  StreamSubscription<Posicion>? _seguimiento;
+  PreferenciaUbicacion? preferencia; // null = el usuario aún no elige
+  ResultadoPermiso? permiso; // respuesta del sistema al último pedido
+  StreamSubscription<Posicion>? _ubicaciones;
+  Posicion? miUbicacion; // ya ajustada al rango si es aproximada
   bool _enviandoUbicacion = false;
   Posicion? _ubicacionPendiente; // la última que llegó mientras se enviaba otra
   int _intentoViaje = 0; // identifica el último «Iniciar recorrido» en vivo
   bool get enVivo => viaje != null;
+
+  // --- Mapa -------------------------------------------------------------------
+  final mapa = ControlMapa();
+
+  /// La cámara sigue al usuario hasta que este mueve el mapa con los dedos.
+  bool siguiendo = true;
   ProximoSemaforo? get semaforoVivo => viaje?.semaforo;
 
   // --- Rutas propuestas por el usuario (OpenStreetMap, vía backend) ---------
@@ -211,6 +234,164 @@ class _MobilityPageState extends State<MobilityPage> {
       });
     });
     cargarDestinos();
+    WidgetsBinding.instance.addPostFrameCallback((_) => prepararUbicacion());
+  }
+
+  /// Al abrir: si el usuario nunca eligió cómo compartir su ubicación, se le
+  /// pregunta; si ya eligió, se activa sin volver a preguntar.
+  Future<void> prepararUbicacion() async {
+    final guardada = await gps.preferenciaGuardada();
+    if (!mounted) return;
+    if (guardada == null) {
+      await cambiarUbicacion();
+      return;
+    }
+    setState(() => preferencia = guardada);
+    if (guardada.activa) await activarUbicacion(avisar: false);
+  }
+
+  /// Muestra la hoja de ubicación, guarda lo elegido y vuelve a pedir el
+  /// permiso con la nueva precisión. Devuelve si quedó activa.
+  Future<bool> cambiarUbicacion({bool avisar = true}) async {
+    final eleccion = await elegirUbicacion(context, actual: preferencia);
+    if (eleccion == null || !mounted) return ubicacionActiva;
+    await gps.guardarPreferencia(eleccion);
+    if (!mounted) return false;
+    _detenerUbicacion();
+    setState(() {
+      preferencia = eleccion;
+      permiso = null;
+      miUbicacion = null;
+    });
+    if (!eleccion.activa) {
+      // Sin ubicación, un viaje GPS en curso ya no puede seguirse.
+      if (navigating && viaje?.esGps == true) await alternarRecorrido();
+      return false;
+    }
+    return activarUbicacion(avisar: avisar);
+  }
+
+  bool get ubicacionActiva => _ubicaciones != null;
+
+  /// Pide el permiso según la preferencia y empieza a seguir la ubicación.
+  /// Con [avisar], explica al usuario por qué no se pudo.
+  Future<bool> activarUbicacion({bool avisar = true}) async {
+    final pref = preferencia;
+    if (pref == null || !pref.activa) return false;
+    if (_ubicaciones != null) return true;
+    final r = await gps.permitir(pref);
+    if (!mounted) return false;
+    setState(() => permiso = r);
+    if (!r.concedido) {
+      if (avisar) avisarPermiso(r);
+      return false;
+    }
+    final soloAproximado = r == ResultadoPermiso.soloAproximado;
+    if (soloAproximado && avisar) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'El sistema solo permite ubicación aproximada: el próximo '
+            'semáforo será una estimación',
+          ),
+        ),
+      );
+    }
+    _ubicaciones = gps
+        .seguir(pref, sistemaAproximado: soloAproximado)
+        .listen(
+          alMoverse,
+          onError: (_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Se perdió la señal del GPS')),
+            );
+          },
+        );
+    return true;
+  }
+
+  void _detenerUbicacion() {
+    final s = _ubicaciones;
+    _ubicaciones = null;
+    _ubicacionPendiente = null;
+    unawaited(s?.cancel());
+  }
+
+  /// Explica por qué no hay ubicación y, si hace falta, lleva a los ajustes.
+  void avisarPermiso(ResultadoPermiso r, {String? texto}) {
+    final mensaje =
+        texto ??
+        switch (r) {
+          ResultadoPermiso.servicioApagado =>
+            'La ubicación del celular está apagada',
+          ResultadoPermiso.denegadoSiempre =>
+            'Vía no tiene permiso de ubicación',
+          _ => 'Sin permiso de ubicación: el mapa no te mostrará',
+        };
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        action: r == ResultadoPermiso.denegadoSiempre
+            ? SnackBarAction(label: 'Ajustes', onPressed: gps.abrirAjustes)
+            : null,
+      ),
+    );
+  }
+
+  /// Nueva ubicación del usuario: se dibuja, se envía si hay un viaje GPS y,
+  /// si la cámara lo está siguiendo, la mueve.
+  void alMoverse(Posicion p) {
+    if (!mounted) return;
+    setState(() => miUbicacion = p);
+    if (viaje?.esGps == true) unawaited(enviarUbicacion(p));
+    if (siguiendo && (navigating || propuesta == null)) seguirConCamara();
+  }
+
+  /// Lo que sigue la cámara: el vehículo en un viaje simulado; si no, el
+  /// usuario.
+  LatLng? get objetivoCamara => enVivo && !viaje!.esGps
+      ? viaje!.posicion
+      : miUbicacion?.punto;
+
+  void seguirConCamara() {
+    final objetivo = objetivoCamara;
+    if (objetivo == null) return;
+    mapa.seguir(
+      objetivo,
+      rumbo: enVivo && !viaje!.esGps ? null : miUbicacion?.rumbo,
+      conduccion: !overhead,
+    );
+  }
+
+  /// El usuario tocó el mapa: la cámara deja de seguirlo.
+  void dejarDeSeguir() {
+    if (siguiendo) setState(() => siguiendo = false);
+  }
+
+  /// Botón de recentrar (y cambios de ruta o de vista): durante un recorrido,
+  /// o sin ruta elegida, la cámara sigue al usuario (si aún no se sabe dónde
+  /// está, muestra la ruta y lo sigue en cuanto llega su ubicación); con una
+  /// ruta elegida y sin recorrido, la encuadra completa.
+  void recentrar() {
+    final objetivo = objetivoCamara;
+    final ruta = propuesta;
+    final seguir = navigating || ruta == null;
+    setState(() => siguiendo = seguir);
+    if (seguir && objetivo != null) {
+      seguirConCamara();
+    } else if (ruta != null) {
+      mapa.encuadrar(
+        ruta.trazado,
+        inclinacion: overhead ? 0.0 : MapaLowPoly.inclinacion,
+      );
+    } else {
+      mapa.mover(
+        plazaDeArmas.punto,
+        15,
+        inclinacion: overhead ? 0.0 : MapaLowPoly.inclinacion,
+      );
+    }
   }
 
   /// Pide los destinos a la simulación. Si responde, el selector muestra sus
@@ -233,7 +414,10 @@ class _MobilityPageState extends State<MobilityPage> {
     consultando = true;
     try {
       final nuevo = await api.viaje(actual.id);
-      if (mounted && viaje?.id == actual.id) setState(() => viaje = nuevo);
+      if (mounted && viaje?.id == actual.id) {
+        setState(() => viaje = nuevo);
+        if (siguiendo && !nuevo.esGps) seguirConCamara();
+      }
     } catch (_) {
       // Se reintenta en el siguiente segundo.
     } finally {
@@ -249,7 +433,7 @@ class _MobilityPageState extends State<MobilityPage> {
   Future<void> alternarRecorrido() async {
     if (navigating) {
       final actual = viaje;
-      _detenerGps();
+      _ubicacionPendiente = null;
       setState(() {
         navigating = false;
         viaje = null;
@@ -257,9 +441,11 @@ class _MobilityPageState extends State<MobilityPage> {
       if (actual != null) {
         unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
       }
+      recentrar();
       return;
     }
     setState(() => navigating = true);
+    recentrar();
     final ruta = propuesta;
     if (ruta != null) return iniciarViajeGps(ruta);
     if (destinos == null) return; // modo demo
@@ -297,8 +483,17 @@ class _MobilityPageState extends State<MobilityPage> {
           .showSnackBar(SnackBar(content: Text(texto)));
     }
 
-    if (!await gps.permitir()) {
-      aviso('Activa la ubicación para seguir la ruta en vivo: modo demo');
+    // Si el usuario no ha elegido cómo compartir su ubicación, se le pregunta.
+    if (preferencia == null || !preferencia!.activa) {
+      await cambiarUbicacion(avisar: false);
+      if (!vigente()) return;
+    }
+    if (!await activarUbicacion(avisar: false)) {
+      if (!vigente()) return;
+      avisarPermiso(
+        permiso ?? ResultadoPermiso.denegado,
+        texto: 'Activa la ubicación para seguir la ruta en vivo: modo demo',
+      );
       return;
     }
     if (!vigente()) return;
@@ -312,10 +507,10 @@ class _MobilityPageState extends State<MobilityPage> {
         return;
       }
       setState(() => viaje = nuevo);
-      _seguimiento = gps.seguir().listen(
-        enviarUbicacion,
-        onError: (_) => aviso('Se perdió la señal del GPS'),
-      );
+      // La última ubicación conocida va de inmediato, sin esperar a moverse.
+      final ultima = miUbicacion;
+      if (ultima != null) unawaited(enviarUbicacion(ultima));
+      recentrar();
     } catch (_) {
       aviso('Sin conexión con el backend: modo demo');
     }
@@ -344,12 +539,6 @@ class _MobilityPageState extends State<MobilityPage> {
     }
   }
 
-  void _detenerGps() {
-    unawaited(_seguimiento?.cancel());
-    _seguimiento = null;
-    _ubicacionPendiente = null;
-  }
-
   /// Abre la pantalla «Proponer ruta». Si hay un recorrido en curso lo termina
   /// primero. La ruta que devuelve se agrega al selector y queda elegida.
   Future<void> proponerRuta() async {
@@ -362,6 +551,16 @@ class _MobilityPageState extends State<MobilityPage> {
           buscador: widget.buscador,
           enrutador: widget.enrutador,
           constructorMapa: widget.constructorMapa,
+          origen: miUbicacion == null
+              ? null
+              : Lugar(
+                  'Mi ubicación',
+                  miUbicacion!.punto,
+                  detalle: preferencia?.exacta == true
+                      ? ''
+                      : 'aproximada, ${preferencia?.etiqueta ?? ''}',
+                ),
+          posicion: marcadorUsuario,
         ),
       ),
     );
@@ -370,13 +569,14 @@ class _MobilityPageState extends State<MobilityPage> {
       propuestas.add(nueva);
       route = primeraPropuesta + propuestas.length - 1;
     });
+    recentrar(); // muestra la ruta nueva completa
   }
 
   @override
   void dispose() {
     // Al salir, detiene el reloj y retira el vehículo si quedaba un viaje activo.
     timer.cancel();
-    _detenerGps();
+    _detenerUbicacion();
     final actual = viaje;
     if (actual != null && actual.activo) {
       unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
@@ -431,14 +631,9 @@ class _MobilityPageState extends State<MobilityPage> {
       children: [
         Semantics(
           label: overhead
-              ? 'Vista desde arriba de la ciudad, con el auto y la ruta marcada.'
-              : 'Auto amarillo al centro de una calle con casas y edificios a ambos lados.',
-          child: CustomPaint(
-            key: ValueKey(overhead ? 'overhead-scene' : 'rear-scene'),
-            painter: overhead
-                ? OverheadScenePainter(alternate: route == 1)
-                : DrivingScenePainter(alternate: route == 1),
-          ),
+              ? 'Mapa de la ciudad visto desde arriba, con tu ruta.'
+              : 'Mapa de la ciudad en 3D, siguiendo tu ruta.',
+          child: mapaPrincipal(),
         ),
         const IgnorePointer(
           child: DecoratedBox(
@@ -473,12 +668,11 @@ class _MobilityPageState extends State<MobilityPage> {
                   letterSpacing: -1,
                 ),
               ),
-              const Spacer(),
-              const Icon(Icons.location_on_outlined, color: subdued, size: 13),
-              const SizedBox(width: 4),
-              const Text(
-                'Santiago',
-                style: TextStyle(color: subdued, fontSize: 11),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: indicadorUbicacion(),
+                ),
               ),
               const SizedBox(width: 9),
               Container(
@@ -539,9 +733,134 @@ class _MobilityPageState extends State<MobilityPage> {
           child: energyPanel(),
         ),
         Positioned(bottom: 16, left: 14, right: 14, child: routeControls()),
+        Positioned(bottom: 156, right: 14, child: botonRecentrar()),
       ],
     );
   }
+
+  /// Marcador del usuario en el mapa, con la zona si la ubicación es
+  /// aproximada o imprecisa.
+  MarcadorPosicion? get marcadorUsuario => miUbicacion == null
+      ? null
+      : MarcadorPosicion(
+          miUbicacion!.punto,
+          radioM: miUbicacion!.precisionM ?? 0,
+        );
+
+  static const _hexFase = ['#6BD5A0', '#F5CB45', '#FF7773'];
+
+  /// Mapa navegable de fondo: la ruta elegida con sus paradas y semáforos (el
+  /// próximo con su color actual) y el usuario o el vehículo simulado.
+  Widget mapaPrincipal() {
+    final ruta = propuesta;
+    final proximo = semaforoVivo;
+    SemaforoMapa? destacado;
+    final semaforos = <SemaforoMapa>[
+      for (final s in ruta?.semaforos ?? const <SemaforoEnRuta>[])
+        if (s.punto != null) SemaforoMapa(s.id, s.punto!),
+    ];
+    if (proximo != null && proximo.id.isNotEmpty) {
+      for (final s in semaforos) {
+        if (s.id == proximo.id) destacado = s;
+      }
+    }
+    final vehiculo = enVivo && !viaje!.esGps ? viaje!.posicion : null;
+    final datos = DatosMapa(
+      control: mapa,
+      centro:
+          miUbicacion?.punto ?? ruta?.paradas.first.punto ?? plazaDeArmas.punto,
+      paradas: [
+        if (ruta != null)
+          for (var i = 0; i < ruta.paradas.length; i++)
+            ParadaMapa(
+              ruta.paradas[i].punto,
+              i == 0 ? 'A' : (i == ruta.paradas.length - 1 ? 'B' : '$i'),
+              extremo: i == 0 || i == ruta.paradas.length - 1,
+            ),
+      ],
+      trazados: [?ruta?.trazado],
+      elegida: 0,
+      paleta: ProponerRutaPageEstado.ultimaPaleta,
+      alTocar: (_) {},
+      semaforos: semaforos,
+      posicion: vehiculo != null
+          ? MarcadorPosicion(vehiculo, vehiculo: true)
+          : marcadorUsuario,
+      proximo: destacado,
+      colorProximo: fase < 0 ? '#8A909B' : _hexFase[fase],
+      alInteractuar: dejarDeSeguir,
+      zoom: 16,
+      inclinacion: overhead ? 0 : MapaLowPoly.inclinacionConduccion,
+      margenInferior: 160, // sobre el panel de recorrido
+    );
+    return KeyedSubtree(
+      key: const Key('main-map'),
+      child: (widget.constructorMapa ?? MapaLowPoly.new)(datos),
+    );
+  }
+
+  /// Indicador del encabezado: cómo se comparte la ubicación. Tocarlo abre la
+  /// hoja para cambiarlo.
+  Widget indicadorUbicacion() {
+    final pref = preferencia;
+    final (icono, texto) = switch ((pref, permiso)) {
+      (null, _) => (Icons.location_searching_rounded, 'Ubicación'),
+      (final p?, _) when !p.activa => (Icons.location_off_outlined, 'Sin ubicación'),
+      (_, final r?) when !r.concedido => (Icons.location_disabled_outlined, 'Sin permiso'),
+      (_, ResultadoPermiso.soloAproximado) => (
+        Icons.blur_circular_rounded,
+        '≈ ${PreferenciaUbicacion.textoRango(math.max(pref!.rangoM, rangoSistemaAproximadoM))}',
+      ),
+      (final p?, _) => (
+        p.exacta ? Icons.gps_fixed_rounded : Icons.blur_circular_rounded,
+        p.etiqueta,
+      ),
+    };
+    return Semantics(
+      button: true,
+      label: 'Ubicación: $texto. Toca para cambiarla.',
+      child: InkWell(
+        key: const Key('location-chip'),
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => cambiarUbicacion(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icono, color: subdued, size: 13),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  texto,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: subdued, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Vuelve a centrar la cámara (ver [recentrar]). Relleno mientras sigue al
+  /// usuario, de contorno cuando el usuario movió el mapa.
+  Widget botonRecentrar() => Material(
+    color: surface,
+    shape: const CircleBorder(side: BorderSide(color: Color(0xFF454A53))),
+    child: IconButton(
+      key: const Key('recenter'),
+      tooltip: 'Recentrar el mapa',
+      onPressed: recentrar,
+      icon: Icon(
+        siguiendo ? Icons.my_location_rounded : Icons.location_searching_rounded,
+        color: yellow,
+        size: 20,
+      ),
+    ),
+  );
 
   /// Estilo común de las tarjetas: fondo oscuro, borde y sombra suave.
   BoxDecoration cardDecoration({Color border = const Color(0xFF454A53)}) =>
@@ -660,7 +979,10 @@ class _MobilityPageState extends State<MobilityPage> {
                 height: 36,
                 child: TextButton.icon(
                   key: Key(fromAbove ? 'view-above' : 'view-driving'),
-                  onPressed: () => setState(() => overhead = fromAbove),
+                  onPressed: () {
+                    setState(() => overhead = fromAbove);
+                    recentrar();
+                  },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     foregroundColor: overhead == fromAbove
@@ -1011,6 +1333,7 @@ class _MobilityPageState extends State<MobilityPage> {
                   onChanged: (value) {
                     if (navigating) alternarRecorrido();
                     setState(() => route = value!);
+                    recentrar();
                   },
                 ),
               ),

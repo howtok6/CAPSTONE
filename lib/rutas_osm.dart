@@ -90,9 +90,19 @@ class Paso {
 
 /// Semáforo por el que pasa una ruta, según el backend.
 class SemaforoEnRuta {
-  const SemaforoEnRuta(this.nombre, this.distanciaDesdeInicioM);
+  const SemaforoEnRuta(
+    this.nombre,
+    this.distanciaDesdeInicioM, {
+    this.id = '',
+    this.punto,
+  });
   final String nombre;
   final double distanciaDesdeInicioM;
+
+  /// Identificador del semáforo en la simulación (el mismo que trae el próximo
+  /// semáforo de un viaje) y su ubicación, para dibujarlo en el mapa.
+  final String id;
+  final LatLng? punto;
 }
 
 /// Ruta calculada por el backend, lista para mostrarse en el mapa y en el selector.
@@ -140,6 +150,13 @@ class RutaPropuesta {
           SemaforoEnRuta(
             s['nombre'] as String,
             (s['distancia_desde_inicio_m'] as num).toDouble(),
+            id: s['id'] as String? ?? '',
+            punto: s['lat'] == null || s['lon'] == null
+                ? null
+                : LatLng(
+                    (s['lat'] as num).toDouble(),
+                    (s['lon'] as num).toDouble(),
+                  ),
           ),
       ],
     );

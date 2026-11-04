@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,10 +6,11 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mockup/main.dart';
-import 'package:mockup/mapa_low_poly.dart';
 import 'package:mockup/rutas_osm.dart';
 import 'package:mockup/ubicacion.dart';
 import 'package:mockup/via_api.dart';
+
+import 'apoyo.dart';
 
 http.Response _json(Object cuerpo, [int status = 200]) => http.Response.bytes(
   utf8.encode(jsonEncode(cuerpo)),
@@ -64,20 +64,6 @@ final _rutas = [
 ];
 
 const _destino = Lugar('Cerro Santa Lucía', LatLng(-33.4372, -70.6275));
-
-/// MapLibre es una vista nativa: en las pruebas se reemplaza por un recuadro.
-Widget _mapaFalso(DatosMapa _) => const ColoredBox(color: Colors.black);
-
-/// GPS falso: concede o niega el permiso y entrega las posiciones que se le pasen.
-class _GpsFalso implements FuenteUbicacion {
-  _GpsFalso({this.permite = true});
-  final bool permite;
-  final posiciones = StreamController<Posicion>.broadcast();
-  @override
-  Future<bool> permitir() async => permite;
-  @override
-  Stream<Posicion> seguir() => posiciones.stream;
-}
 
 void main() {
   test('Enrutador pide la ruta al backend e interpreta distancia, trazado, pasos y semáforos', () async {
@@ -198,7 +184,8 @@ void main() {
     // Simulación activa: las rutas propuestas conviven con sus destinos.
     final llamadas = <String>[];
     final cuerpos = <String>[];
-    final gps = _GpsFalso();
+    final gps = GpsFalso();
+    final mapa = MapaFalso();
     final simulacion = MockClient((req) async {
       final clave = '${req.method} ${req.url.path}';
       llamadas.add(clave);
@@ -273,7 +260,7 @@ void main() {
             client: MockClient((_) async => _json(_rutas)),
           ),
           ubicacion: gps,
-          constructorMapa: _mapaFalso,
+          constructorMapa: mapa.construir,
         ),
       ),
     );
@@ -308,6 +295,13 @@ void main() {
     expect(find.text('Desde Plaza de Armas · 10 min'), findsOneWidget);
     expect(find.text('↑  Sal por Plaza de Armas'), findsOneWidget);
 
+    // El mapa principal muestra la ruta elegida, sus paradas y sus semáforos.
+    final enMapa = mapa.ultimo!;
+    expect(enMapa.trazados.single, hasLength(3));
+    expect(enMapa.paradas.map((p) => p.etiqueta), ['A', 'B']);
+    expect(enMapa.semaforos, isEmpty); // la alternativa 1 no tiene semáforos
+    expect(enMapa.posicion, isNull); // aún no llega ninguna ubicación
+
     // Una ruta propuesta se recorre como viaje GPS con el trazado elegido.
     await tester.tap(find.text('Iniciar recorrido'));
     await tester.pump();
@@ -326,6 +320,16 @@ void main() {
     await tester.pump();
     expect(llamadas, contains('POST /v1/viajes/vg/ubicacion'));
     expect(find.text('Alameda × San Antonio'), findsOneWidget);
+    // La ubicación se dibuja en el mapa, y la cámara la sigue hasta que el
+    // usuario mueve el mapa.
+    expect(mapa.ultimo!.posicion!.punto, const LatLng(-33.4378, -70.6506));
+    expect(find.byIcon(Icons.my_location_rounded), findsOneWidget);
+    await tester.tap(find.byKey(const Key('mapa-falso')), warnIfMissed: false);
+    await tester.pump();
+    expect(find.byIcon(Icons.my_location_rounded), findsNothing);
+    await tester.tap(find.byKey(const Key('recenter')));
+    await tester.pump();
+    expect(find.byIcon(Icons.my_location_rounded), findsOneWidget);
     expect(find.text('9s'), findsOneWidget);
     expect(find.text('Verde → amarillo · a 140 m'), findsOneWidget);
 
@@ -371,8 +375,8 @@ void main() {
               client: backend,
             ),
             enrutador: Enrutador(baseUrl: 'http://api.test', client: backend),
-            ubicacion: _GpsFalso(permite: false),
-            constructorMapa: _mapaFalso,
+            ubicacion: GpsFalso(resultado: ResultadoPermiso.denegado),
+            constructorMapa: MapaFalso().construir,
           ),
         ),
       );

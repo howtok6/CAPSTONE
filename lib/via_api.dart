@@ -10,6 +10,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 
 import 'ubicacion.dart';
 
@@ -39,6 +40,7 @@ class Destino {
 /// adaptativo).
 class ProximoSemaforo {
   const ProximoSemaforo({
+    this.id = '',
     required this.nombre,
     required this.distanciaM,
     required this.color,
@@ -46,6 +48,7 @@ class ProximoSemaforo {
     required this.siguiente,
     required this.exacto,
   });
+  final String id;
   final String nombre;
   final int distanciaM;
   final String color; // verde | amarillo | rojo | apagado | desconocido
@@ -54,6 +57,7 @@ class ProximoSemaforo {
   final bool exacto;
 
   factory ProximoSemaforo.fromJson(Map<String, dynamic> j) => ProximoSemaforo(
+    id: j['id'] as String? ?? '',
     nombre: j['nombre'] as String,
     distanciaM: (j['distancia_m'] as num).round(),
     color: j['color'] as String,
@@ -74,6 +78,7 @@ class EstadoViaje {
     this.semaforo,
     this.distanciaRestanteM,
     this.tieneUbicacion = false,
+    this.posicion,
   });
   final String id;
   final String estado; // esperando | en_ruta | llego | finalizado | reiniciado
@@ -85,6 +90,10 @@ class EstadoViaje {
   /// En un viaje GPS, si el backend ya recibió alguna ubicación.
   final bool tieneUbicacion;
 
+  /// Última ubicación conocida del viaje: la que envió el celular (GPS) o la
+  /// del vehículo dentro de la simulación (simulado).
+  final LatLng? posicion;
+
   bool get esGps => modo == 'gps';
 
   /// true mientras el vehículo no ha llegado ni se ha retirado; solo entonces
@@ -93,12 +102,16 @@ class EstadoViaje {
 
   factory EstadoViaje.fromJson(Map<String, dynamic> j) {
     final s = j['proximo_semaforo'];
+    final u = j['ubicacion'];
     return EstadoViaje(
       id: j['id'] as String,
       estado: j['estado'] as String,
       destino: j['destino'] as String? ?? '',
       modo: j['modo'] as String? ?? 'simulado',
-      tieneUbicacion: j['ubicacion'] != null,
+      tieneUbicacion: u != null,
+      posicion: u is Map && u['lat'] != null && u['lon'] != null
+          ? LatLng((u['lat'] as num).toDouble(), (u['lon'] as num).toDouble())
+          : null,
       semaforo: s == null
           ? null
           : ProximoSemaforo.fromJson(s as Map<String, dynamic>),

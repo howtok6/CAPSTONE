@@ -5,9 +5,6 @@ import 'main.dart' show subdued, surface, yellow;
 import 'mapa_low_poly.dart';
 import 'rutas_osm.dart';
 
-/// Pantalla donde el usuario arma su propia ruta: elige origen, paradas y
-/// destino (buscando o tocando el mapa 3D low poly), compara las alternativas
-/// y devuelve la elegida con `Navigator.pop`.
 /// Estado que se recuerda entre aperturas de la pantalla mientras la app
 /// esté abierta.
 abstract final class ProponerRutaPageEstado {
@@ -18,13 +15,26 @@ abstract final class ProponerRutaPageEstado {
   static void reiniciarPaleta() => ultimaPaleta = PaletaMapa.noche;
 }
 
+/// Pantalla donde el usuario arma su propia ruta: elige origen, paradas y
+/// destino (buscando o tocando el mapa 3D low poly), compara las alternativas
+/// y devuelve la elegida con `Navigator.pop`. El origen parte en la ubicación
+/// del usuario si se conoce.
 class ProponerRutaPage extends StatefulWidget {
   const ProponerRutaPage({
     super.key,
     this.buscador,
     this.enrutador,
     this.constructorMapa,
+    this.origen,
+    this.posicion,
   });
+
+  /// Origen inicial; null usa Plaza de Armas. La pantalla principal pasa la
+  /// ubicación del usuario cuando la conoce.
+  final Lugar? origen;
+
+  /// Dónde está el usuario, para dibujarlo en el mapa.
+  final MarcadorPosicion? posicion;
 
   final BuscadorLugares? buscador;
   final Enrutador? enrutador;
@@ -46,7 +56,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
 
   PaletaMapa paleta = ProponerRutaPageEstado.ultimaPaleta;
   final texto = TextEditingController();
-  final paradas = <Lugar?>[plazaDeArmas, null];
+  late final paradas = <Lugar?>[widget.origen ?? plazaDeArmas, null];
   int editando = 1;
   List<Lugar> resultados = const [];
   List<RutaPropuesta> alternativas = const [];
@@ -330,7 +340,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
   Widget mapaLowPoly() {
     final datos = DatosMapa(
       control: mapa,
-      centro: plazaDeArmas.punto,
+      centro: (paradas.first ?? plazaDeArmas).punto,
       paradas: [
         for (var i = 0; i < paradas.length; i++)
           if (paradas[i] != null)
@@ -344,6 +354,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
       elegida: elegida,
       paleta: paleta,
       alTocar: tocarMapa,
+      posicion: widget.posicion,
     );
     return (widget.constructorMapa ?? MapaLowPoly.new)(datos);
   }

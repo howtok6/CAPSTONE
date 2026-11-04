@@ -67,6 +67,11 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Vía usa tu ubicación durante un recorrido para mostrarte el próximo semáforo de tu ruta.</string>
+	<string>Vía usa tu ubicación para mostrarte en el mapa, seguir tu ruta y avisarte del próximo semáforo. Puedes compartirla exacta o aproximada.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>Navegacion</key>
+		<string>Elegiste ubicación exacta: Vía la necesita para saber cuál es el próximo semáforo de tu ruta.</string>
+	</dict>
 </dict>
 </plist>
