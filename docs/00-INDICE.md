@@ -17,6 +17,14 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 | `informe/1.4 Informe -v1.docx` | Borrador del informe final de la tesis. | ★★★ |
 | `informe/informe-avance-2026-10-29.md` | Informe de avance del 15 al 29 de octubre: decisiones, cambios técnicos, avance por objetivo y próximos pasos. | ★★ |
 
+## Arquitectura
+
+| Archivo | Qué es | Importancia |
+|---|---|---|
+| `arquitectura.md` | App, backend Go y simulación: responsabilidades, decisiones del 4-nov y cómo levantarlos. | ★★★ |
+| `../backend/README.md` | Contrato de la API `/v1` que consume la app. | ★★ |
+| `../simulacion/README.md` | Servicio de simulación: el proveedor de tráfico del entorno de pruebas. | ★★ |
+
 ## Integración con la app móvil — `integracion-app/`
 
 | Archivo | Qué es | Importancia |

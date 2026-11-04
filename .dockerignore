@@ -1,0 +1,7 @@
+# Contexto de la imagen de simulación (raíz del repo): solo lo necesario.
+*
+!simulacion/
+!tsc-thesis/src/
+!tsc-thesis/scenarios/eje_comunal/
+**/__pycache__/
+**/.pytest_cache/

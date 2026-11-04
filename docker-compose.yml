@@ -1,0 +1,36 @@
+# Backend + simulación. La app habla solo con el backend (puerto 8080);
+# la simulación queda en la red interna y solo la consulta el backend.
+#
+#   docker compose up --build
+services:
+  simulacion:
+    build:
+      context: .
+      dockerfile: simulacion/Dockerfile
+    environment:
+      TSC_VELOCIDAD: "1"          # 1 = tiempo real
+      TSC_CALENTAMIENTO: "300"
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/estado'))['lista']"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      VIA_DIRECCION: ":8080"
+      VIA_SIMULACION_URL: "http://simulacion:8000"
+      VIA_OSRM_URL: "https://router.project-osrm.org"
+      VIA_NOMINATIM_URL: "https://nominatim.openstreetmap.org"
+    ports:
+      - "${VIA_PUERTO:-8080}:8080"   # VIA_PUERTO=18080 si el 8080 está ocupado
+    depends_on:
+      simulacion:
+        condition: service_healthy
+    restart: unless-stopped
