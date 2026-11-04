@@ -83,6 +83,7 @@ class _MobilityPageState extends State<MobilityPage> {
   List<Destino>? destinos; // null = API no disponible → modo demo
   EstadoViaje? viaje;
   bool consultando = false;
+  int _intentoViaje = 0; // identifica el último «Iniciar recorrido» en vivo
   bool get enVivo => viaje != null;
   ProximoSemaforo? get semaforoVivo => viaje?.semaforo;
 
@@ -108,16 +109,27 @@ class _MobilityPageState extends State<MobilityPage> {
   static const _colores = {'verde': 0, 'amarillo': 1, 'rojo': 2};
   static const _nombresColor = ['Verde', 'Amarillo', 'Rojo'];
 
-  /// Fase y segundos que muestra el semáforo: los de la simulación si hay un
-  /// semáforo en vivo; si no, los del ciclo demo.
-  int get fase =>
-      semaforoVivo != null ? (_colores[semaforoVivo!.color] ?? 2) : phase;
-  int get segundos =>
-      semaforoVivo != null ? (semaforoVivo!.segundos ?? 0) : seconds;
+  /// Fase que muestra el semáforo (0 verde, 1 amarillo, 2 rojo): la de la
+  /// simulación en vivo o la del ciclo demo. Es -1 cuando en vivo no hay dato
+  /// (aún no hay semáforo en la ruta, o está apagado): todas las luces apagadas.
+  /// En vivo nunca se cae al ciclo demo, para no mostrar un color inventado.
+  int get fase => enVivo ? (_colores[semaforoVivo?.color] ?? -1) : phase;
 
-  /// Color del panel del semáforo según la fase: verde, amarillo o rojo.
-  Color get signalColor =>
-      [const Color(0xFF6BD5A0), yellow, const Color(0xFFFF7773)][fase];
+  /// Segundos para el cambio tal como se muestran: «—» si en vivo no hay dato,
+  /// y «≈» delante cuando la simulación solo puede estimarlos (`exacto` false,
+  /// con un controlador adaptativo).
+  String get textoSegundos {
+    if (!enVivo) return '${seconds}s';
+    final s = semaforoVivo;
+    if (s == null || s.segundos == null || fase < 0) return '—';
+    return '${s.exacto ? '' : '≈'}${s.segundos}s';
+  }
+
+  /// Color del panel del semáforo según la fase: verde, amarillo, rojo o gris
+  /// cuando no hay dato.
+  Color get signalColor => fase < 0
+      ? subdued
+      : [const Color(0xFF6BD5A0), yellow, const Color(0xFFFF7773)][fase];
 
   /// Título del panel del semáforo: el cruce en vivo, o un mensaje según el
   /// estado del recorrido (entrando a la vía, llegada, reinicio).
@@ -139,6 +151,7 @@ class _MobilityPageState extends State<MobilityPage> {
           ? 'Simulación en vivo'
           : ['Verde → amarillo', 'Amarillo → rojo', 'Rojo → verde'][phase];
     }
+    if (fase < 0) return 'Semáforo apagado · a ${s.distanciaM} m';
     final siguiente = _colores[s.siguiente];
     final cambio = siguiente == null
         ? _nombresColor[fase]
@@ -215,11 +228,20 @@ class _MobilityPageState extends State<MobilityPage> {
     }
     setState(() => navigating = true);
     if (destinos == null || propuesta != null) return; // modo demo
+    // Crear el viaje puede tardar varios segundos. Si mientras tanto se finaliza
+    // el recorrido, o se inicia otro, este viaje ya no corresponde: se retira de
+    // la simulación en vez de dejar el vehículo abierto.
+    final intento = ++_intentoViaje;
+    bool vigente() => mounted && navigating && intento == _intentoViaje;
     try {
       final nuevo = await api.crearViaje(route);
-      if (mounted && navigating) setState(() => viaje = nuevo);
+      if (vigente()) {
+        setState(() => viaje = nuevo);
+      } else {
+        unawaited(api.finalizarViaje(nuevo.id).catchError((_) {}));
+      }
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || !vigente()) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sin conexión con la simulación: modo demo'),
@@ -503,9 +525,7 @@ class _MobilityPageState extends State<MobilityPage> {
         Column(
           children: [
             Text(
-              semaforoVivo != null && semaforoVivo!.segundos == null
-                  ? '—'
-                  : '${segundos}s',
+              textoSegundos,
               key: const Key('traffic-seconds'),
               style: TextStyle(
                 color: signalColor,
@@ -513,9 +533,9 @@ class _MobilityPageState extends State<MobilityPage> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const Text(
-              'para cambiar',
-              style: TextStyle(color: subdued, fontSize: 8),
+            Text(
+              semaforoVivo?.exacto == false ? 'estimado' : 'para cambiar',
+              style: const TextStyle(color: subdued, fontSize: 8),
             ),
           ],
         ),

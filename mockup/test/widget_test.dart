@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -237,6 +238,158 @@ void main() {
     await tester.pump();
     expect(find.text('DEMO'), findsOneWidget);
     expect(llamadas, contains('DELETE /viajes/v1'));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  group('En vivo: casos límite del semáforo', () {
+    /// Abre la app contra una simulación simulada, inicia un recorrido y espera
+    /// una consulta. [viaje] es lo que responde `GET /viajes/v1`.
+    Future<void> iniciarEnVivo(
+      WidgetTester tester,
+      Map<String, Object?> viaje,
+    ) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final base = {'id': 'v1', 'ruta': 0, 'destino': 'Av. General Bustamante'};
+      final cliente = MockClient((req) async {
+        switch ('${req.method} ${req.url.path}') {
+          case 'GET /destinos':
+            return _json([
+              {
+                'ruta': 0,
+                'nombre': 'Av. General Bustamante',
+                'distancia_km': 1.7,
+              },
+            ]);
+          case 'POST /viajes':
+            return _json({...base, 'estado': 'esperando'}, 201);
+          case 'GET /viajes/v1':
+            return _json({...base, ...viaje});
+        }
+        return http.Response('', 204);
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MobilityPage(
+            api: ViaApi(baseUrl: 'http://api.test', client: cliente),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Iniciar recorrido'));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+    }
+
+    String segundos(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const Key('traffic-seconds'))).data!;
+
+    testWidgets('sin semáforo en la ruta no muestra segundos del demo', (
+      tester,
+    ) async {
+      await iniciarEnVivo(tester, {'estado': 'esperando'});
+      expect(find.text('Entrando a la vía…'), findsOneWidget);
+      expect(segundos(tester), '—');
+      // Pasan 5 s del reloj demo: en vivo el panel no debe cambiar.
+      await tester.pump(const Duration(seconds: 5));
+      expect(segundos(tester), '—');
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('un semáforo apagado no se muestra en rojo', (tester) async {
+      await iniciarEnVivo(tester, {
+        'estado': 'en_ruta',
+        'proximo_semaforo': {
+          'nombre': 'Alameda × Lira',
+          'distancia_m': 80,
+          'color': 'apagado',
+          'segundos_para_cambio': null,
+          'siguiente_color': null,
+        },
+      });
+      expect(find.text('Semáforo apagado · a 80 m'), findsOneWidget);
+      expect(segundos(tester), '—');
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('una cuenta regresiva no exacta se marca como estimada', (
+      tester,
+    ) async {
+      await iniciarEnVivo(tester, {
+        'estado': 'en_ruta',
+        'proximo_semaforo': {
+          'nombre': 'Alameda × Santa Rosa',
+          'distancia_m': 200,
+          'color': 'verde',
+          'segundos_para_cambio': 12,
+          'siguiente_color': 'amarillo',
+          'exacto': false,
+        },
+      });
+      expect(segundos(tester), '≈12s');
+      expect(find.text('estimado'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
+  });
+
+  testWidgets('Finalizar mientras se crea el viaje retira el vehículo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final llamadas = <String>[];
+    final creacion = Completer<http.Response>();
+    final cliente = MockClient((req) async {
+      final clave = '${req.method} ${req.url.path}';
+      llamadas.add(clave);
+      switch (clave) {
+        case 'GET /destinos':
+          return _json([
+            {
+              'ruta': 0,
+              'nombre': 'Av. General Bustamante',
+              'distancia_km': 1.7,
+            },
+          ]);
+        case 'POST /viajes':
+          return creacion.future; // la API todavía no responde
+      }
+      return http.Response('', 204);
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MobilityPage(
+          api: ViaApi(baseUrl: 'http://api.test', client: cliente),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Iniciar recorrido'));
+    await tester.pump();
+    await tester.tap(find.text('Finalizar recorrido'));
+    await tester.pump();
+    // La API responde tarde: el viaje ya no corresponde y debe retirarse.
+    creacion.complete(
+      _json({
+        'id': 'v9',
+        'estado': 'esperando',
+        'ruta': 0,
+        'destino': 'Av. General Bustamante',
+      }, 201),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(llamadas, contains('DELETE /viajes/v9'));
+    expect(find.text('DEMO'), findsOneWidget);
+    expect(find.text('Iniciar recorrido'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 }

@@ -99,11 +99,12 @@ flutter analyze
 flutter test
 ```
 
-Hay 13 pruebas:
+Hay 17 pruebas:
 
 - **Diseño:** los controles caben en pantallas de 360×640, 390×844 y 1440×1000.
 - **Paneles:** gasolina, consumo, cámara y ciclo del semáforo.
-- **Modo en vivo:** con una API simulada.
+- **Modo en vivo:** con una API simulada, incluidos los casos límite: sin semáforo en la ruta, semáforo apagado,
+  cuenta regresiva estimada y finalizar mientras se crea el viaje.
 - **Proponer rutas:**
   - lectura de las respuestas de OSRM y Nominatim, con errores y paradas;
   - el flujo completo con la simulación activa, que comprueba que una ruta propuesta va en demo y que un
@@ -134,6 +135,7 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 3-nov-2026 | Gabriel Cárdenas | Conexión con la simulación en vivo (`5c4b7e3`): cliente `via_api.dart`, panel del semáforo, destinos y estado del recorrido desde la API, permiso de red en Android y prueba del modo en vivo |
 | 3-nov-2026 | Benjamín Quiroz | Proponer rutas con OpenStreetMap (`70c005f`): búsqueda con Nominatim, rutas y alternativas con OSRM, mapa con `flutter_map` y 5 pruebas nuevas |
 | 4-nov-2026 | Benjamín Quiroz | Documentación del código y de este README |
+| 4-nov-2026 | Benjamín Quiroz | Correcciones del modo en vivo, con 4 pruebas nuevas: un viaje finalizado mientras se creaba ya no queda abierto en la simulación; sin semáforo en la ruta, o con el semáforo apagado, el panel muestra «—» y luces apagadas en vez de datos del demo o rojo; una cuenta regresiva no exacta se muestra como «≈12s · estimado» |
 
 ## Limitaciones conocidas y pendientes
 
@@ -144,11 +146,6 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 - **Simulación:**
   - el origen es fijo (Alameda frente a Plaza de Armas);
   - solo hay dos destinos (Bustamante y Matucana), porque la red simulada no está conectada de punta a punta.
-- **Modo en vivo, detalles por corregir:**
-  - si se finaliza el recorrido mientras se crea el viaje, el vehículo queda abierto en la simulación;
-  - mientras no hay semáforo en la ruta, el panel muestra segundos del ciclo demo;
-  - un semáforo `apagado` se muestra en rojo;
-  - el campo `exacto` aún no se usa para avisar que la cuenta regresiva es una estimación.
 - **iOS:** falta la excepción de ATS para conectarse por HTTP a la API en desarrollo.
 - **Identificador de la app:** es `com.example.mockup`, y también se usa para identificarse ante OpenStreetMap.
   Conviene cambiarlo por el definitivo.
