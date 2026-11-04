@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'driving_scene.dart';
 import 'overhead_scene.dart';
+import 'via_api.dart';
 
 const yellow = Color(0xFFF5CB45);
 const surface = Color(0xF01C2027);
@@ -34,7 +35,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MobilityPage extends StatefulWidget {
-  const MobilityPage({super.key});
+  const MobilityPage({super.key, this.api});
+
+  /// Cliente de la API de simulación; null usa la URL configurada (API_URL).
+  final ViaApi? api;
   @override
   State<MobilityPage> createState() => _MobilityPageState();
 }
@@ -46,30 +50,128 @@ class _MobilityPageState extends State<MobilityPage> {
   bool overhead = false;
   String? expandedPanel;
   late final Timer timer;
-  double get distance => route == 0 ? 4.8 : 6.2;
+
+  // --- Simulación en vivo (tsc-thesis/api) ---------------------------------
+  late final ViaApi api = widget.api ?? ViaApi();
+  List<Destino>? destinos; // null = API no disponible → modo demo
+  EstadoViaje? viaje;
+  bool consultando = false;
+  bool get enVivo => viaje != null;
+  ProximoSemaforo? get semaforoVivo => viaje?.semaforo;
+
+  double get distance => destinos != null && route < destinos!.length
+      ? destinos![route].distanciaKm
+      : (route == 0 ? 4.8 : 6.2);
   double get liters => distance * efficiency / 100;
+  static const _colores = {'verde': 0, 'amarillo': 1, 'rojo': 2};
+  static const _nombresColor = ['Verde', 'Amarillo', 'Rojo'];
+  int get fase =>
+      semaforoVivo != null ? (_colores[semaforoVivo!.color] ?? 2) : phase;
+  int get segundos =>
+      semaforoVivo != null ? (semaforoVivo!.segundos ?? 0) : seconds;
   Color get signalColor =>
-      [const Color(0xFF6BD5A0), yellow, const Color(0xFFFF7773)][phase];
+      [const Color(0xFF6BD5A0), yellow, const Color(0xFFFF7773)][fase];
+
+  String get nombreSemaforo {
+    if (viaje == null) return 'Av. Alameda';
+    if (viaje!.estado == 'esperando') return 'Entrando a la vía…';
+    if (viaje!.estado == 'llego') return 'Llegaste a ${viaje!.destino}';
+    if (viaje!.estado == 'reiniciado') return 'Simulación reiniciada';
+    final s = semaforoVivo;
+    return s == null ? 'Sin semáforos en la ruta' : s.nombre;
+  }
+
+  String get cambioSemaforo {
+    final s = semaforoVivo;
+    if (s == null) {
+      return enVivo
+          ? 'Simulación en vivo'
+          : ['Verde → amarillo', 'Amarillo → rojo', 'Rojo → verde'][phase];
+    }
+    final siguiente = _colores[s.siguiente];
+    final cambio = siguiente == null
+        ? _nombresColor[fase]
+        : '${_nombresColor[fase]} → ${_nombresColor[siguiente].toLowerCase()}';
+    return '$cambio · a ${s.distanciaM} m';
+  }
 
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => setState(() {
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (enVivo) {
+        actualizarViaje();
+        return;
+      }
+      setState(() {
         if (seconds > 1) {
           seconds--;
         } else {
           phase = (phase + 1) % 3;
           seconds = [30, 5, 25][phase];
         }
-      }),
-    );
+      });
+    });
+    cargarDestinos();
+  }
+
+  Future<void> cargarDestinos() async {
+    try {
+      final lista = await api.destinos();
+      if (mounted && lista.isNotEmpty) setState(() => destinos = lista);
+    } catch (_) {
+      // Sin API: la app sigue en modo demo.
+    }
+  }
+
+  Future<void> actualizarViaje() async {
+    final actual = viaje;
+    if (actual == null || consultando || !actual.activo) return;
+    consultando = true;
+    try {
+      final nuevo = await api.viaje(actual.id);
+      if (mounted && viaje?.id == actual.id) setState(() => viaje = nuevo);
+    } catch (_) {
+      // Se reintenta en el siguiente segundo.
+    } finally {
+      consultando = false;
+    }
+  }
+
+  Future<void> alternarRecorrido() async {
+    if (navigating) {
+      final actual = viaje;
+      setState(() {
+        navigating = false;
+        viaje = null;
+      });
+      if (actual != null) {
+        unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
+      }
+      return;
+    }
+    setState(() => navigating = true);
+    if (destinos == null) return; // modo demo
+    try {
+      final nuevo = await api.crearViaje(route);
+      if (mounted && navigating) setState(() => viaje = nuevo);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sin conexión con la simulación: modo demo'),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
     timer.cancel();
+    final actual = viaje;
+    if (actual != null && actual.activo) {
+      unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
+    }
     super.dispose();
   }
 
@@ -169,9 +271,10 @@ class _MobilityPageState extends State<MobilityPage> {
                   color: yellow.withValues(alpha: .12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  'DEMO',
-                  style: TextStyle(
+                child: Text(
+                  enVivo ? 'EN VIVO' : 'DEMO',
+                  key: const Key('mode-chip'),
+                  style: const TextStyle(
                     fontSize: 8,
                     color: yellow,
                     letterSpacing: 1,
@@ -194,7 +297,9 @@ class _MobilityPageState extends State<MobilityPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                route == 0
+                enVivo
+                    ? '↑  Hacia ${viaje!.destino}'
+                    : route == 0
                     ? '↑  Continúa por Av. Alameda'
                     : '↗  Hacia Parque Forestal',
                 style: const TextStyle(color: yellow, fontSize: 11),
@@ -255,7 +360,7 @@ class _MobilityPageState extends State<MobilityPage> {
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: phase == [2, 1, 0][i]
+                  color: fase == [2, 1, 0][i]
                       ? signalColor
                       : const Color(0xFF343943),
                 ),
@@ -277,13 +382,21 @@ class _MobilityPageState extends State<MobilityPage> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Av. Alameda',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              Text(
+                nombreSemaforo,
+                key: const Key('traffic-name'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 3),
               Text(
-                ['Verde → amarillo', 'Amarillo → rojo', 'Rojo → verde'][phase],
+                cambioSemaforo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: signalColor, fontSize: 10),
               ),
             ],
@@ -293,7 +406,10 @@ class _MobilityPageState extends State<MobilityPage> {
         Column(
           children: [
             Text(
-              '${seconds}s',
+              semaforoVivo != null && semaforoVivo!.segundos == null
+                  ? '—'
+                  : '${segundos}s',
+              key: const Key('traffic-seconds'),
               style: TextStyle(
                 color: signalColor,
                 fontSize: 30,
@@ -632,20 +748,30 @@ class _MobilityPageState extends State<MobilityPage> {
                   isDense: true,
                   dropdownColor: const Color(0xFF20242C),
                   style: const TextStyle(fontSize: 12, color: Colors.white),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 0,
-                      child: Text('Bustamante · 4,8 km'),
-                    ),
-                    DropdownMenuItem(
-                      value: 1,
-                      child: Text('Forestal · 6,2 km'),
-                    ),
-                  ],
-                  onChanged: (value) => setState(() {
-                    route = value!;
-                    navigating = false;
-                  }),
+                  items: destinos != null
+                      ? [
+                          for (final d in destinos!)
+                            DropdownMenuItem(
+                              value: d.ruta,
+                              child: Text(
+                                '${d.nombre} · ${d.distanciaKm.toStringAsFixed(1).replaceAll('.', ',')} km',
+                              ),
+                            ),
+                        ]
+                      : const [
+                          DropdownMenuItem(
+                            value: 0,
+                            child: Text('Bustamante · 4,8 km'),
+                          ),
+                          DropdownMenuItem(
+                            value: 1,
+                            child: Text('Forestal · 6,2 km'),
+                          ),
+                        ],
+                  onChanged: (value) {
+                    if (navigating) alternarRecorrido();
+                    setState(() => route = value!);
+                  },
                 ),
               ),
             ),
@@ -656,7 +782,9 @@ class _MobilityPageState extends State<MobilityPage> {
           alignment: Alignment.centerLeft,
           child: Text(
             navigating
-                ? 'Recorrido en curso · Demo'
+                ? (enVivo
+                      ? 'Recorrido en curso · Simulación en vivo'
+                      : 'Recorrido en curso · Demo')
                 : 'Desde Plaza de Armas · ${(distance * 2.5).round()} min',
             style: const TextStyle(fontSize: 10, color: subdued),
           ),
@@ -666,7 +794,7 @@ class _MobilityPageState extends State<MobilityPage> {
           width: double.infinity,
           height: 42,
           child: FilledButton.icon(
-            onPressed: () => setState(() => navigating = !navigating),
+            onPressed: alternarRecorrido,
             style: FilledButton.styleFrom(
               backgroundColor: yellow,
               foregroundColor: const Color(0xFF161A21),

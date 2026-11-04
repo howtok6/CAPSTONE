@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- La API de simulación se sirve por HTTP en desarrollo (127.0.0.1 o la IP del PC). -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

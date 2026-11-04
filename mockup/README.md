@@ -23,3 +23,18 @@ No requiere API de mapas ni dependencias adicionales.
 Ejecutar: `flutter run` o `flutter run -d chrome`.
 Verificar: `flutter analyze` y `flutter test`.
 
+
+## Conexión con la simulación en vivo
+
+Desde noviembre de 2026 la app puede leer el panel «Próximo semáforo» desde la API de simulación de la tesis
+(`tsc-thesis/api` en la rama `master`). Si la API no responde, todo sigue funcionando en modo demo, como antes.
+
+1. En el PC, desde `tsc-thesis/`: `python scripts/run_api.py`.
+2. Con el celular conectado por USB: `adb reverse tcp:8000 tcp:8000`.
+3. `flutter run` (o instalar el APK). Al abrir, los destinos cambian a los de la simulación; con
+   «Iniciar recorrido» la etiqueta pasa de DEMO a EN VIVO y el semáforo muestra el cruce real de la ruta, su
+   distancia y los segundos para el cambio.
+
+Por Wi-Fi: `flutter run --dart-define=API_URL=http://<IP del PC>:8000`.
+
+El cliente está en `lib/via_api.dart`; `test/widget_test.dart` incluye una prueba del modo en vivo con una API simulada.

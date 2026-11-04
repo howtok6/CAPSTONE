@@ -1,6 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:mockup/main.dart';
+import 'package:mockup/via_api.dart';
+
+http.Response _json(Object cuerpo, [int status = 200]) => http.Response.bytes(
+  utf8.encode(jsonEncode(cuerpo)),
+  status,
+  headers: {'content-type': 'application/json'},
+);
 
 void main() {
   for (final size in [
@@ -144,6 +155,88 @@ void main() {
     expect(find.text('Rojo → verde'), findsOneWidget);
     await tester.pump(const Duration(seconds: 25));
     expect(find.text('Verde → amarillo'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('En vivo: el panel muestra el semáforo de la simulación', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final llamadas = <String>[];
+    final viaje = {
+      'id': 'v1',
+      'ruta': 0,
+      'destino': 'Av. General Bustamante',
+      'tiempo_sim': 400.0,
+      'distancia_total_m': 1700,
+    };
+    final cliente = MockClient((req) async {
+      final clave = '${req.method} ${req.url.path}';
+      llamadas.add(clave);
+      switch (clave) {
+        case 'GET /destinos':
+          return _json([
+            {
+              'ruta': 0,
+              'nombre': 'Av. General Bustamante',
+              'distancia_km': 1.7,
+            },
+            {'ruta': 1, 'nombre': 'Matucana', 'distancia_km': 2.9},
+          ]);
+        case 'POST /viajes':
+          return _json({...viaje, 'estado': 'esperando'}, 201);
+        case 'GET /viajes/v1':
+          return _json({
+            ...viaje,
+            'estado': 'en_ruta',
+            'distancia_restante_m': 1500,
+            'proximo_semaforo': {
+              'id': 'GS_1',
+              'nombre': 'Alameda × Santa Rosa',
+              'distancia_m': 120,
+              'color': 'rojo',
+              'segundos_para_cambio': 17,
+              'siguiente_color': 'verde',
+              'exacto': true,
+            },
+          });
+        case 'DELETE /viajes/v1':
+          return http.Response('', 204);
+      }
+      return http.Response('no encontrado', 404);
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MobilityPage(
+          api: ViaApi(baseUrl: 'http://api.test', client: cliente),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Av. General Bustamante · 1,7 km'), findsOneWidget);
+
+    await tester.tap(find.text('Iniciar recorrido'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('EN VIVO'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    expect(find.text('Alameda × Santa Rosa'), findsOneWidget);
+    expect(find.text('17s'), findsOneWidget);
+    expect(find.text('Rojo → verde · a 120 m'), findsOneWidget);
+    expect(
+      find.text('Recorrido en curso · Simulación en vivo'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Finalizar recorrido'));
+    await tester.pump();
+    expect(find.text('DEMO'), findsOneWidget);
+    expect(llamadas, contains('DELETE /viajes/v1'));
     await tester.pumpWidget(const SizedBox());
   });
 }
