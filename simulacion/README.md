@@ -1,8 +1,11 @@
-# API de simulación en vivo — app móvil «Vía»
+# Servicio de simulación — entorno de pruebas del backend
 
-Servicio HTTP que mantiene una simulación SUMO de `scenarios/eje_comunal` corriendo a velocidad real, con los
-semáforos en el **plan Webster coordinado**, y responde lo que la app muestra en el panel «Próximo semáforo».
-Está fuera del alcance experimental de la tesis: solo **importa** `src/tsc`, sin modificarlo.
+Mantiene una simulación SUMO de `tsc-thesis/scenarios/eje_comunal` corriendo a velocidad real, con los semáforos en
+el **plan Webster coordinado**, y la expone como **proveedor de tráfico** para el backend Go: semáforos y su estado
+por acceso, tráfico por calle y viajes simulados. **La app no lo consulta directamente**; en producción se
+reemplaza por una fuente real de datos con el mismo contrato.
+
+Está fuera del alcance experimental de la tesis: solo **importa** `tsc-thesis/src`, sin modificarlo.
 
 ## Cómo funciona
 
@@ -15,26 +18,28 @@ instantáneas protegidas por un candado.
 
 ## Ejecutar
 
-Desde `tsc-thesis/`:
+Desde `simulacion/`:
 
 ```bash
-python scripts/run_api.py                 # tiempo real, puerto 8000
-python scripts/run_api.py --velocidad 5   # 5 veces más rápido, para pruebas
+python run.py                 # tiempo real, 127.0.0.1:8000
+python run.py --velocidad 5   # 5 veces más rápido, para pruebas
+python -m pytest tests        # pruebas
 ```
+
+Con Docker, desde la raíz del repositorio: `docker compose up --build` (levanta también el backend).
 
 Arranca en unos segundos: calienta 300 s simulados para que haya tránsito y luego avanza a velocidad real.
 La documentación interactiva queda en http://127.0.0.1:8000/docs.
-
-**Celular por USB** (recomendado en desarrollo): `adb reverse tcp:8000 tcp:8000` y la app usa
-`http://127.0.0.1:8000`, su valor por defecto. Hay que repetirlo cada vez que se reconecta el cable.
-**Por Wi-Fi:** compilar la app con `--dart-define=API_URL=http://<IP del PC>:8000` y permitir el puerto 8000 en el
-firewall de Windows.
 
 ## Endpoints
 
 | Método | Ruta | Qué hace |
 |---|---|---|
 | GET | `/estado` | Tiempo simulado, vehículos en la red, controlador y viajes activos |
+| GET | `/semaforos` | Semáforos: ubicación, calles y accesos con su rumbo de llegada (estático) |
+| GET | `/semaforos/estado?ids=` | Color, segundos para el cambio y color siguiente de cada acceso |
+| GET | `/red/calles` | Calles con su geometría y velocidad libre (estático) |
+| GET | `/trafico` | Velocidad media, vehículos y nivel de servicio por calle (cada 5 s simulados) |
 | GET | `/destinos` | Destinos disponibles con su distancia desde el origen |
 | POST | `/viajes` | Inicia un recorrido. Cuerpo: `{"ruta": 0}` |
 | GET | `/viajes/{id}` | Estado del recorrido y próximo semáforo |
@@ -78,5 +83,10 @@ un mínimo (el verde mínimo). Cuando se incorpore, `exacto` pasa a `false` y la
 
 ## Pruebas
 
-`tests/test_api.py`: la cuenta regresiva sobre un programa sintético, la predicción contra el cambio real en SUMO y
-la API de punta a punta sobre la red del eje.
+`tests/test_simulacion.py`: la cuenta regresiva sobre un programa sintético, la predicción contra el cambio real en
+SUMO, el rumbo y el nivel de servicio, y el servicio de punta a punta sobre la red del eje (viajes y proveedor de
+tráfico).
+
+El estado de un acceso usa el enlace que sigue derecho; si el acceso no tiene, el de giro a la derecha y luego a la
+izquierda. Los niveles de servicio comparan la velocidad media con la libre: `fluido` ≥ 70 %, `moderado` ≥ 40 %,
+`congestionado` por debajo; `libre` es una calle sin vehículos.

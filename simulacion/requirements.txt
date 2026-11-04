@@ -1,0 +1,11 @@
+# Servicio de simulación (entorno de pruebas). Importa el arnés de ../tsc-thesis/src.
+# SUMO fijado en la misma versión con que se validó la tesis.
+eclipse-sumo==1.27.1
+libsumo==1.27.1
+sumolib==1.27.1
+traci==1.27.1
+pyproj>=3.6     # sumolib lo usa para convertir lon/lat a coordenadas de la red
+fastapi>=0.120
+uvicorn>=0.30
+httpx>=0.27   # TestClient de las pruebas
+pytest>=8.0

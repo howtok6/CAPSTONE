@@ -1,10 +1,16 @@
-"""Simulación en vivo que consulta la app móvil.
+"""Simulación en vivo: el entorno de pruebas que provee datos de tráfico.
 
 Mantiene una simulación SUMO de un escenario corriendo a velocidad real (o
-acelerada), con los semáforos manejados por el plan Webster coordinado. Cada
-viaje que abre la app agrega a la simulación un vehículo propio; con él, SUMO
-entrega directamente lo que la app muestra: el próximo semáforo de la ruta, su
-distancia, su color y cuántos segundos faltan para que cambie.
+acelerada), con los semáforos manejados por el plan Webster coordinado, y la
+expone como un *proveedor de tráfico* que consulta el backend:
+
+- semáforos: ubicación, accesos con su rumbo y, en cada instante, el color y
+  los segundos que faltan para el cambio en cada acceso;
+- tráfico: velocidad media y vehículos por calle;
+- viajes simulados: un vehículo propio dentro de SUMO, para demos sin moverse.
+
+En producción, este servicio se reemplaza por una fuente real (p. ej. UOCT)
+que cumpla el mismo contrato.
 
 Todo el acceso a SUMO ocurre en un único hilo (libsumo no admite llamadas
 concurrentes). Los manejadores HTTP leen instantáneas protegidas por un candado
@@ -17,6 +23,7 @@ from __future__ import annotations
 import html
 import itertools
 import logging
+import math
 import os
 import sys
 import threading
@@ -26,7 +33,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from queue import Empty, Queue
 
-RAIZ = Path(__file__).resolve().parents[1]
+# Raíz del código de la tesis (tsc-thesis/), de donde se importan el arnés y los escenarios.
+RAIZ = Path(os.environ.get("TSC_RAIZ", Path(__file__).resolve().parents[2] / "tsc-thesis"))
 if str(RAIZ / "src") not in sys.path:
     sys.path.insert(0, str(RAIZ / "src"))
 
@@ -98,6 +106,32 @@ def segundos_visibles(segundos: float | None) -> int | None:
     return int(round(segundos)) + 1
 
 
+def rumbo(x0: float, y0: float, x1: float, y1: float) -> float:
+    """Rumbo en grados (0 = norte, 90 = este) del vector de (x0, y0) a (x1, y1).
+
+    Las coordenadas de la red SUMO son UTM con el norte hacia arriba.
+    """
+    return round(math.degrees(math.atan2(x1 - x0, y1 - y0)) % 360, 1)
+
+
+def nivel_de_servicio(velocidad: float, libre: float, vehiculos: int) -> str:
+    """Clasifica una calle según su velocidad media respecto de la libre."""
+    if vehiculos == 0 or libre <= 0:
+        return "libre"
+    razon = velocidad / libre
+    if razon >= 0.7:
+        return "fluido"
+    if razon >= 0.4:
+        return "moderado"
+    return "congestionado"
+
+
+# Preferencia al elegir el enlace que representa un acceso: seguir derecho primero.
+PRIORIDAD_DIRECCION = {"s": 0, "r": 1, "R": 1, "l": 2, "L": 2, "t": 3}
+
+CADA_TRAFICO_S = 5  # cada cuántos segundos simulados se recalcula el tráfico
+
+
 def acortar(nombre: str) -> str:
     # Algunos nombres de OSM llegan con entidades XML sin decodificar (O&apos;Higgins).
     nombre = html.unescape(nombre)
@@ -153,6 +187,14 @@ class SimulacionEnVivo:
         self._rutas: list[dict] = []
         self._programas: dict[str, list] = {}
 
+        # Datos estáticos de la red (se calculan una vez) y dinámicos (cada paso)
+        self._semaforos: list[dict] = []
+        self._accesos: dict[str, list] = {}  # tid -> [(arco, enlace)]
+        self._calles: list[dict] = []
+        self._ids_calles: list[str] = []
+        self._estado_semaforos: dict = {}
+        self._trafico: dict = {"tiempo_sim": None, "calles": []}
+
     # ------------------------------------------------------------------ API
     def iniciar(self, esperar: float = 180.0) -> "SimulacionEnVivo":
         self._hilo = threading.Thread(target=self._bucle, name="sumo", daemon=True)
@@ -201,6 +243,23 @@ class SimulacionEnVivo:
         self._ordenes.put(("finalizar", viaje_id, futuro))
         return futuro.result(timeout=esperar)
 
+    def semaforos(self) -> list[dict]:
+        return self._semaforos
+
+    def estado_semaforos(self, ids: list[str] | None = None) -> dict:
+        with self._candado:
+            todos = self._estado_semaforos
+            tiempo = self._estado.get("tiempo_sim")
+        elegidos = todos if not ids else {t: todos[t] for t in ids if t in todos}
+        return {"tiempo_sim": tiempo, "semaforos": elegidos}
+
+    def calles(self) -> list[dict]:
+        return self._calles
+
+    def trafico(self) -> dict:
+        with self._candado:
+            return dict(self._trafico)
+
     # --------------------------------------------------------------- hilo
     def _bucle(self) -> None:
         try:
@@ -223,8 +282,11 @@ class SimulacionEnVivo:
             if not self._rutas:
                 self._rutas = self._calcular_rutas(sim)
                 self._nombres = self._nombrar_semaforos(sim)
+                self._describir_red(sim)
             log.info("calentando %s s simulados (semilla %s)", self.calentamiento, semilla)
             sim.step(self.calentamiento)
+            self._trafico = {"tiempo_sim": None, "calles": []}
+            self._actualizar(sim)
             self._lista.set()
 
             reloj0, t0 = time.monotonic(), sim.time
@@ -294,6 +356,103 @@ class SimulacionEnVivo:
                             calles.add(acortar(nombre))
             nombres[tid] = sorted(calles)
         return nombres
+
+    def _describir_red(self, sim) -> None:
+        """Ubicación y accesos de cada semáforo, y geometría de las calles."""
+        red = self._red
+        geo = sim.conn.simulation.convertGeo
+        # Una pasada por todas las conexiones: semáforo -> arco de entrada -> enlaces
+        conexiones: dict[str, dict[str, list]] = {}
+        nodos_de: dict[str, set] = {}
+        for arco in red.getEdges():
+            for carril in arco.getLanes():
+                for c in carril.getOutgoing():
+                    tid = c.getTLSID()
+                    if tid and tid in sim.tls:
+                        conexiones.setdefault(tid, {}).setdefault(arco.getID(), []).append(
+                            (PRIORIDAD_DIRECCION.get(c.getDirection(), 9), c.getTLLinkIndex())
+                        )
+                        nodos_de.setdefault(tid, set()).add(arco.getToNode())
+        semaforos = []
+        for tid in sorted(conexiones):
+            por_arco, nodos = conexiones[tid], nodos_de[tid]
+            accesos, enlaces = [], []
+            for arco_id, opciones in sorted(por_arco.items()):
+                arco = red.getEdge(arco_id)
+                forma = arco.getShape()
+                (x0, y0), (x1, y1) = forma[-2], forma[-1]
+                enlace = min(opciones)[1]
+                accesos.append({
+                    "id": arco_id,
+                    "calle": acortar(arco.getName() or ""),
+                    "rumbo": rumbo(x0, y0, x1, y1),
+                })
+                enlaces.append((arco_id, enlace))
+            x = sum(n.getCoord()[0] for n in nodos) / len(nodos)
+            y = sum(n.getCoord()[1] for n in nodos) / len(nodos)
+            lon, lat = geo(x, y)
+            calles = self._nombres.get(tid, [])
+            semaforos.append({
+                "id": tid,
+                "nombre": " × ".join(calles) or tid,
+                "calles": calles,
+                "lat": round(lat, 6),
+                "lon": round(lon, 6),
+                "accesos": accesos,
+            })
+            self._accesos[tid] = enlaces
+        self._semaforos = semaforos
+
+        calles = []
+        for arco in red.getEdges():
+            if arco.getFunction() == "internal" or not arco.allows("passenger"):
+                continue
+            forma = [geo(x, y) for x, y in arco.getShape()]
+            calles.append({
+                "id": arco.getID(),
+                "nombre": acortar(arco.getName() or ""),
+                "velocidad_libre_kmh": round(arco.getSpeed() * 3.6, 1),
+                "forma": [[round(la, 6), round(lo, 6)] for lo, la in forma],
+            })
+        self._calles = calles
+        self._ids_calles = [c["id"] for c in calles]
+        log.info("red descrita: %d semáforos, %d calles", len(semaforos), len(calles))
+
+    def _medir_semaforos(self, sim) -> dict:
+        c = sim.conn.trafficlight
+        estado = {}
+        for tid, enlaces in self._accesos.items():
+            senales = c.getRedYellowGreenState(tid)
+            fases = self._programas.get(tid)
+            fase, restante = c.getPhase(tid), c.getNextSwitch(tid) - sim.time
+            accesos = {}
+            for arco, enlace in enlaces:
+                segundos, siguiente = (None, None)
+                if fases:
+                    segundos, siguiente = tiempo_hasta_cambio(fases, fase, restante, enlace)
+                accesos[arco] = {
+                    "color": categoria(senales[enlace]),
+                    "segundos_para_cambio": segundos_visibles(segundos),
+                    "siguiente_color": siguiente,
+                    "exacto": True,
+                }
+            estado[tid] = accesos
+        return estado
+
+    def _medir_trafico(self, sim) -> dict:
+        arcos = sim.conn.edge
+        libres = {c["id"]: c["velocidad_libre_kmh"] for c in self._calles}
+        calles = []
+        for arco in self._ids_calles:
+            n = arcos.getLastStepVehicleNumber(arco)
+            v = arcos.getLastStepMeanSpeed(arco) * 3.6 if n else libres[arco]
+            calles.append({
+                "id": arco,
+                "velocidad_kmh": round(v, 1),
+                "vehiculos": n,
+                "nivel": nivel_de_servicio(v, libres[arco], n),
+            })
+        return {"tiempo_sim": sim.time, "calles": calles}
 
     def _atender_ordenes(self, sim) -> None:
         while True:
@@ -365,7 +524,14 @@ class SimulacionEnVivo:
                 foto.update(self._medir(sim, v))
             with self._candado:
                 v.instantanea = foto
+        semaforos = self._medir_semaforos(sim)
+        trafico = None
+        if int(sim.time) % CADA_TRAFICO_S == 0 or self._trafico["tiempo_sim"] is None:
+            trafico = self._medir_trafico(sim)
         with self._candado:
+            self._estado_semaforos = semaforos
+            if trafico is not None:
+                self._trafico = trafico
             self._estado = {
                 "lista": True,
                 "escenario": self.escenario.name,

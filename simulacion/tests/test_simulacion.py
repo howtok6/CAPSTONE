@@ -1,8 +1,9 @@
-"""Pruebas de la API de simulación en vivo (app móvil «Vía»).
+"""Pruebas del servicio de simulación (entorno de pruebas del backend).
 
 1. La cuenta regresiva se calcula bien sobre un programa sintético.
 2. Con Webster cargado en SUMO, la predicción coincide con el cambio real.
-3. La API responde de punta a punta sobre la red del eje (simulación sin pausa).
+3. El servicio responde de punta a punta sobre la red del eje: viajes simulados
+   y proveedor de tráfico (semáforos, estado por acceso, calles y tráfico).
 """
 import os
 import sys
@@ -10,11 +11,18 @@ import time
 
 import pytest
 
-RAIZ = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, os.path.join(RAIZ, "src"))
-sys.path.insert(0, RAIZ)
+AQUI = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, AQUI)
 
-from api.simulacion import acortar, categoria, segundos_visibles, tiempo_hasta_cambio  # noqa: E402
+from via_sim.simulacion import (  # noqa: E402
+    RAIZ,
+    acortar,
+    categoria,
+    nivel_de_servicio,
+    rumbo,
+    segundos_visibles,
+    tiempo_hasta_cambio,
+)
 
 GRID = os.path.join(RAIZ, "scenarios", "grid4x4")
 EJE = os.path.join(RAIZ, "scenarios", "eje_comunal")
@@ -35,9 +43,20 @@ def test_cuenta_regresiva_en_programa_sintetico():
     assert acortar("Avenida Portugal") == "Av. Portugal"
 
 
+def test_rumbo_y_nivel_de_servicio():
+    assert rumbo(0, 0, 0, 10) == 0.0  # norte
+    assert rumbo(0, 0, 10, 0) == 90.0  # este
+    assert rumbo(0, 0, 0, -10) == 180.0
+    assert rumbo(0, 0, -10, 0) == 270.0
+    assert nivel_de_servicio(45, 50, 3) == "fluido"
+    assert nivel_de_servicio(25, 50, 3) == "moderado"
+    assert nivel_de_servicio(5, 50, 8) == "congestionado"
+    assert nivel_de_servicio(0, 50, 0) == "libre"
+
+
 @pytest.mark.skipif(not os.path.exists(os.path.join(GRID, "webster_plan.json")), reason="falta grid4x4")
 def test_prediccion_coincide_con_el_cambio_real():
-    from api.simulacion import SimulacionEnVivo
+    from via_sim.simulacion import SimulacionEnVivo
     from tsc.controllers import WebsterController
     from tsc.sumo_env import SumoSimulation
 
@@ -69,7 +88,7 @@ def test_api_de_punta_a_punta(monkeypatch):
     monkeypatch.setenv("TSC_ESCENARIO", EJE)
     monkeypatch.setenv("TSC_VELOCIDAD", "20")
     monkeypatch.setenv("TSC_CALENTAMIENTO", "120")
-    from api.main import app
+    from via_sim.main import app
 
     with TestClient(app) as cliente:
         assert cliente.get("/estado").json()["lista"] is True
@@ -99,3 +118,24 @@ def test_api_de_punta_a_punta(monkeypatch):
         assert cliente.delete(f"/viajes/{viaje_id}").status_code == 204
         assert cliente.get(f"/viajes/{viaje_id}").json()["estado"] == "finalizado"
         assert cliente.get("/viajes/nada").status_code == 404
+
+        # --- proveedor de tráfico
+        semaforos = cliente.get("/semaforos").json()
+        assert len(semaforos) >= 80
+        s0 = semaforos[0]
+        assert -33.6 < s0["lat"] < -33.3 and -70.8 < s0["lon"] < -70.4
+        assert s0["accesos"] and all(0 <= a["rumbo"] < 360 for a in s0["accesos"])
+
+        estado = cliente.get("/semaforos/estado", params={"ids": s0["id"]}).json()
+        accesos = estado["semaforos"][s0["id"]]
+        assert set(accesos) == {a["id"] for a in s0["accesos"]}
+        for a in accesos.values():
+            assert a["color"] in ("verde", "amarillo", "rojo", "apagado")
+            assert a["segundos_para_cambio"] is None or a["segundos_para_cambio"] >= 0
+        assert len(cliente.get("/semaforos/estado").json()["semaforos"]) == len(semaforos)
+
+        calles = cliente.get("/red/calles").json()
+        assert len(calles) > 500 and all(len(c["forma"]) >= 2 for c in calles[:50])
+        trafico = cliente.get("/trafico").json()
+        assert {c["id"] for c in trafico["calles"]} == {c["id"] for c in calles}
+        assert {c["nivel"] for c in trafico["calles"]} <= {"libre", "fluido", "moderado", "congestionado"}
