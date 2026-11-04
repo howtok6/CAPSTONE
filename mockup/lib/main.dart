@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'driving_scene.dart';
 import 'overhead_scene.dart';
+import 'proponer_ruta.dart';
+import 'rutas_osm.dart';
 import 'via_api.dart';
 
 const yellow = Color(0xFFF5CB45);
@@ -35,10 +37,14 @@ class MyApp extends StatelessWidget {
 }
 
 class MobilityPage extends StatefulWidget {
-  const MobilityPage({super.key, this.api});
+  const MobilityPage({super.key, this.api, this.buscador, this.enrutador});
 
   /// Cliente de la API de simulación; null usa la URL configurada (API_URL).
   final ViaApi? api;
+
+  /// Servicios de OpenStreetMap para proponer rutas; null usa los públicos.
+  final BuscadorLugares? buscador;
+  final Enrutador? enrutador;
   @override
   State<MobilityPage> createState() => _MobilityPageState();
 }
@@ -59,9 +65,19 @@ class _MobilityPageState extends State<MobilityPage> {
   bool get enVivo => viaje != null;
   ProximoSemaforo? get semaforoVivo => viaje?.semaforo;
 
-  double get distance => destinos != null && route < destinos!.length
-      ? destinos![route].distanciaKm
-      : (route == 0 ? 4.8 : 6.2);
+  // --- Rutas propuestas por el usuario (OpenStreetMap) ----------------------
+  // Usan valores del selector desde [primeraPropuesta] para no chocar con los
+  // índices de la simulación. No existen en la red SUMO: se recorren en demo.
+  static const primeraPropuesta = 100;
+  final propuestas = <RutaPropuesta>[];
+  RutaPropuesta? get propuesta =>
+      route >= primeraPropuesta ? propuestas[route - primeraPropuesta] : null;
+
+  double get distance =>
+      propuesta?.distanciaKm ??
+      (destinos != null && route < destinos!.length
+          ? destinos![route].distanciaKm
+          : (route == 0 ? 4.8 : 6.2));
   double get liters => distance * efficiency / 100;
   static const _colores = {'verde': 0, 'amarillo': 1, 'rojo': 2};
   static const _nombresColor = ['Verde', 'Amarillo', 'Rojo'];
@@ -151,7 +167,7 @@ class _MobilityPageState extends State<MobilityPage> {
       return;
     }
     setState(() => navigating = true);
-    if (destinos == null) return; // modo demo
+    if (destinos == null || propuesta != null) return; // modo demo
     try {
       final nuevo = await api.crearViaje(route);
       if (mounted && navigating) setState(() => viaje = nuevo);
@@ -163,6 +179,25 @@ class _MobilityPageState extends State<MobilityPage> {
         ),
       );
     }
+  }
+
+  Future<void> proponerRuta() async {
+    if (navigating) await alternarRecorrido();
+    if (!mounted) return;
+    final nueva = await Navigator.push<RutaPropuesta>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProponerRutaPage(
+          buscador: widget.buscador,
+          enrutador: widget.enrutador,
+        ),
+      ),
+    );
+    if (nueva == null || !mounted) return;
+    setState(() {
+      propuestas.add(nueva);
+      route = primeraPropuesta + propuestas.length - 1;
+    });
   }
 
   @override
@@ -299,6 +334,8 @@ class _MobilityPageState extends State<MobilityPage> {
               child: Text(
                 enVivo
                     ? '↑  Hacia ${viaje!.destino}'
+                    : propuesta != null
+                    ? propuesta!.pasos.first.indicacion
                     : route == 0
                     ? '↑  Continúa por Av. Alameda'
                     : '↗  Hacia Parque Forestal',
@@ -748,32 +785,49 @@ class _MobilityPageState extends State<MobilityPage> {
                   isDense: true,
                   dropdownColor: const Color(0xFF20242C),
                   style: const TextStyle(fontSize: 12, color: Colors.white),
-                  items: destinos != null
-                      ? [
-                          for (final d in destinos!)
-                            DropdownMenuItem(
-                              value: d.ruta,
-                              child: Text(
-                                '${d.nombre} · ${d.distanciaKm.toStringAsFixed(1).replaceAll('.', ',')} km',
-                              ),
-                            ),
-                        ]
-                      : const [
-                          DropdownMenuItem(
-                            value: 0,
-                            child: Text('Bustamante · 4,8 km'),
+                  items: [
+                    if (destinos != null)
+                      for (final d in destinos!)
+                        DropdownMenuItem(
+                          value: d.ruta,
+                          child: Text(
+                            '${d.nombre} · ${d.distanciaKm.toStringAsFixed(1).replaceAll('.', ',')} km',
                           ),
-                          DropdownMenuItem(
-                            value: 1,
-                            child: Text('Forestal · 6,2 km'),
-                          ),
-                        ],
+                        )
+                    else ...const [
+                      DropdownMenuItem(
+                        value: 0,
+                        child: Text('Bustamante · 4,8 km'),
+                      ),
+                      DropdownMenuItem(
+                        value: 1,
+                        child: Text('Forestal · 6,2 km'),
+                      ),
+                    ],
+                    for (var i = 0; i < propuestas.length; i++)
+                      DropdownMenuItem(
+                        value: primeraPropuesta + i,
+                        child: Text(
+                          '★ ${propuestas[i].nombre} · ${propuestas[i].distanciaKm.toStringAsFixed(1).replaceAll('.', ',')} km',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
                   onChanged: (value) {
                     if (navigating) alternarRecorrido();
                     setState(() => route = value!);
                   },
                 ),
               ),
+            ),
+            IconButton(
+              key: const Key('propose-route'),
+              tooltip: 'Proponer ruta',
+              onPressed: proponerRuta,
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 32, height: 28),
+              icon: const Icon(Icons.add_road_rounded, color: yellow, size: 19),
             ),
           ],
         ),
@@ -785,6 +839,8 @@ class _MobilityPageState extends State<MobilityPage> {
                 ? (enVivo
                       ? 'Recorrido en curso · Simulación en vivo'
                       : 'Recorrido en curso · Demo')
+                : propuesta != null
+                ? 'Desde ${propuesta!.paradas.first.nombre} · ${propuesta!.duracionMin.round()} min'
                 : 'Desde Plaza de Armas · ${(distance * 2.5).round()} min',
             style: const TextStyle(fontSize: 10, color: subdued),
           ),

@@ -38,3 +38,23 @@ Desde noviembre de 2026 la app puede leer el panel «Próximo semáforo» desde 
 Por Wi-Fi: `flutter run --dart-define=API_URL=http://<IP del PC>:8000`.
 
 El cliente está en `lib/via_api.dart`; `test/widget_test.dart` incluye una prueba del modo en vivo con una API simulada.
+
+## Proponer rutas (OpenStreetMap)
+
+El botón junto al selector de recorrido abre «Proponer ruta». Ahí el usuario fija el origen (por defecto Plaza de
+Armas), el destino y hasta tres paradas, buscándolos por nombre o tocando el mapa. La app compara la ruta más
+rápida con sus alternativas y la elegida se agrega al selector con ★. Su distancia alimenta el gasto energético,
+y su primera indicación aparece sobre el auto.
+
+| Qué | Servicio | Archivo |
+|---|---|---|
+| Mapa | Teselas de OpenStreetMap con `flutter_map` (modo oscuro) | `lib/proponer_ruta.dart` |
+| Buscar lugares y nombrar el punto tocado | Nominatim, limitado al Gran Santiago | `lib/rutas_osm.dart` |
+| Rutas, alternativas e indicaciones | OSRM, perfil auto | `lib/rutas_osm.dart` |
+
+- Las rutas propuestas no existen en la red de la simulación: se recorren en modo demo, aunque la API esté activa.
+- Los servidores públicos son solo para desarrollo. Nominatim admite 1 consulta por segundo (la app lo respeta y
+  busca solo al confirmar, sin autocompletar), y las teselas de OSM piden identificar la app y no usarlas a gran
+  escala. Para producción se cambian al compilar:
+  `flutter run --dart-define=OSRM_URL=https://... --dart-define=NOMINATIM_URL=https://...`
+- Las rutas propuestas se guardan solo en memoria: se pierden al cerrar la app.
