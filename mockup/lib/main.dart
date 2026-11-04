@@ -1,3 +1,12 @@
+// Pantalla principal de «Vía»: vista de conducción con semáforo, paneles de
+// gasolina y gasto energético, y controles de recorrido.
+//
+// La pantalla funciona en tres modos según de dónde salen los datos:
+// - Demo: semáforo, rutas y distancias simuladas dentro de la app.
+// - En vivo: semáforo y destinos desde la simulación SUMO (lib/via_api.dart).
+// - Ruta propuesta: ruta real de OpenStreetMap elegida por el usuario
+//   (lib/rutas_osm.dart y lib/proponer_ruta.dart); se recorre en demo.
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -9,11 +18,16 @@ import 'proponer_ruta.dart';
 import 'rutas_osm.dart';
 import 'via_api.dart';
 
+/// Paleta compartida: amarillo de acento, fondo de tarjetas y texto secundario.
 const yellow = Color(0xFFF5CB45);
 const surface = Color(0xF01C2027);
 const subdued = Color(0xFFB1B6C0);
+
+/// Punto de entrada de la app.
 void main() => runApp(const MyApp());
 
+/// Raíz de la app: tema oscuro Material 3 con acento amarillo y la pantalla
+/// de conducción como inicio.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -36,6 +50,8 @@ class MyApp extends StatelessWidget {
   );
 }
 
+/// Pantalla de conducción. Los clientes se pueden inyectar para las pruebas;
+/// si son null se usan los servicios reales.
 class MobilityPage extends StatefulWidget {
   const MobilityPage({super.key, this.api, this.buscador, this.enrutador});
 
@@ -50,6 +66,11 @@ class MobilityPage extends StatefulWidget {
 }
 
 class _MobilityPageState extends State<MobilityPage> {
+  // --- Estado de la interfaz y del modo demo -------------------------------
+  // octane: octanaje elegido. route: valor del selector de recorrido.
+  // phase/seconds: ciclo local del semáforo (0 verde, 1 amarillo, 2 rojo).
+  // efficiency: consumo de referencia del vehículo, en L/100 km.
+  // expandedPanel: id de la tarjeta desplegada ('fuel', 'energy' o null).
   int octane = 95, route = 0, phase = 0, seconds = 24;
   double efficiency = 7.5;
   bool navigating = false;
@@ -73,21 +94,33 @@ class _MobilityPageState extends State<MobilityPage> {
   RutaPropuesta? get propuesta =>
       route >= primeraPropuesta ? propuestas[route - primeraPropuesta] : null;
 
+  /// Distancia del recorrido elegido, en km. Prioridad: ruta propuesta,
+  /// destino de la simulación y, si no hay API, los valores fijos del demo.
   double get distance =>
       propuesta?.distanciaKm ??
       (destinos != null && route < destinos!.length
           ? destinos![route].distanciaKm
           : (route == 0 ? 4.8 : 6.2));
+
+  /// Combustible estimado: distancia × consumo (L/100 km) ÷ 100.
   double get liters => distance * efficiency / 100;
+  // Traducción entre los colores que envía la API y el índice de fase local.
   static const _colores = {'verde': 0, 'amarillo': 1, 'rojo': 2};
   static const _nombresColor = ['Verde', 'Amarillo', 'Rojo'];
+
+  /// Fase y segundos que muestra el semáforo: los de la simulación si hay un
+  /// semáforo en vivo; si no, los del ciclo demo.
   int get fase =>
       semaforoVivo != null ? (_colores[semaforoVivo!.color] ?? 2) : phase;
   int get segundos =>
       semaforoVivo != null ? (semaforoVivo!.segundos ?? 0) : seconds;
+
+  /// Color del panel del semáforo según la fase: verde, amarillo o rojo.
   Color get signalColor =>
       [const Color(0xFF6BD5A0), yellow, const Color(0xFFFF7773)][fase];
 
+  /// Título del panel del semáforo: el cruce en vivo, o un mensaje según el
+  /// estado del recorrido (entrando a la vía, llegada, reinicio).
   String get nombreSemaforo {
     if (viaje == null) return 'Av. Alameda';
     if (viaje!.estado == 'esperando') return 'Entrando a la vía…';
@@ -97,6 +130,8 @@ class _MobilityPageState extends State<MobilityPage> {
     return s == null ? 'Sin semáforos en la ruta' : s.nombre;
   }
 
+  /// Línea secundaria del panel: el cambio de color que viene y, en vivo, la
+  /// distancia hasta el cruce.
   String get cambioSemaforo {
     final s = semaforoVivo;
     if (s == null) {
@@ -114,6 +149,8 @@ class _MobilityPageState extends State<MobilityPage> {
   @override
   void initState() {
     super.initState();
+    // Un solo reloj de 1 s: en vivo consulta el viaje; en demo avanza el ciclo
+    // del semáforo (verde 30 s, amarillo 5 s, rojo 25 s).
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (enVivo) {
         actualizarViaje();
@@ -131,6 +168,8 @@ class _MobilityPageState extends State<MobilityPage> {
     cargarDestinos();
   }
 
+  /// Pide los destinos a la simulación. Si responde, el selector muestra sus
+  /// destinos y los recorridos pueden ir en vivo; si falla, la app sigue en demo.
   Future<void> cargarDestinos() async {
     try {
       final lista = await api.destinos();
@@ -140,6 +179,9 @@ class _MobilityPageState extends State<MobilityPage> {
     }
   }
 
+  /// Consulta el estado del viaje en vivo; la llama el reloj cada segundo.
+  /// [consultando] evita pedidos superpuestos si la API tarda más de 1 s, y se
+  /// descarta la respuesta si entretanto el viaje terminó o cambió.
   Future<void> actualizarViaje() async {
     final actual = viaje;
     if (actual == null || consultando || !actual.activo) return;
@@ -154,6 +196,11 @@ class _MobilityPageState extends State<MobilityPage> {
     }
   }
 
+  /// Acción del botón Iniciar / Finalizar recorrido.
+  ///
+  /// Al finalizar, retira el vehículo de la simulación sin esperar respuesta.
+  /// Al iniciar, crea un viaje en vivo solo si la API está disponible y la ruta
+  /// es de la simulación; las rutas demo y las propuestas se recorren en demo.
   Future<void> alternarRecorrido() async {
     if (navigating) {
       final actual = viaje;
@@ -181,6 +228,8 @@ class _MobilityPageState extends State<MobilityPage> {
     }
   }
 
+  /// Abre la pantalla «Proponer ruta». Si hay un recorrido en curso lo termina
+  /// primero. La ruta que devuelve se agrega al selector y queda elegida.
   Future<void> proponerRuta() async {
     if (navigating) await alternarRecorrido();
     if (!mounted) return;
@@ -202,6 +251,7 @@ class _MobilityPageState extends State<MobilityPage> {
 
   @override
   void dispose() {
+    // Al salir, detiene el reloj y retira el vehículo si quedaba un viaje activo.
     timer.cancel();
     final actual = viaje;
     if (actual != null && actual.activo) {
@@ -210,6 +260,9 @@ class _MobilityPageState extends State<MobilityPage> {
     super.dispose();
   }
 
+  /// Encuadra la vista como un teléfono: hasta 430 px de ancho y un alto mínimo
+  /// de 640 px. En pantallas anchas (Chrome de escritorio) se centra con bordes
+  /// redondeados.
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
@@ -222,7 +275,7 @@ class _MobilityPageState extends State<MobilityPage> {
           );
           final height = math.min(availableHeight, 900.0);
           final width = math.min(viewport.maxWidth, 430.0);
-          // Short browser windows fit the whole portrait canvas without scrolling.
+          // En ventanas bajas, FittedBox escala toda la vista para que no haya scroll.
           return Center(
             child: FittedBox(
               fit: BoxFit.contain,
@@ -241,6 +294,10 @@ class _MobilityPageState extends State<MobilityPage> {
     ),
   );
 
+  /// Vista completa, en capas de abajo hacia arriba: escena de la ciudad
+  /// (conducción o desde arriba), degradado para que se lea el texto, encabezado,
+  /// semáforo, indicación de la ruta, selector de cámara, paneles laterales y
+  /// controles de recorrido.
   Widget drivingView(double width, double height) {
     final panelWidth = (width * .36).clamp(112.0, 150.0);
     final sideTop = (height * .34).clamp(246.0, 300.0);
@@ -362,6 +419,7 @@ class _MobilityPageState extends State<MobilityPage> {
     );
   }
 
+  /// Estilo común de las tarjetas: fondo oscuro, borde y sombra suave.
   BoxDecoration cardDecoration({Color border = const Color(0xFF454A53)}) =>
       BoxDecoration(
         color: surface,
@@ -376,6 +434,8 @@ class _MobilityPageState extends State<MobilityPage> {
         ],
       );
 
+  /// Panel «Próximo semáforo»: luces, nombre del cruce, cambio que viene y
+  /// segundos que faltan.
   Widget trafficLight() => Container(
     key: const Key('traffic-panel'),
     padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
@@ -463,6 +523,7 @@ class _MobilityPageState extends State<MobilityPage> {
     ),
   );
 
+  /// Selector de cámara entre «Conducción» (vista trasera) y «Desde arriba».
   Widget viewSelector() => Container(
     key: const Key('view-selector'),
     padding: const EdgeInsets.all(3),
@@ -508,6 +569,8 @@ class _MobilityPageState extends State<MobilityPage> {
     ),
   );
 
+  /// Tarjeta desplegable reutilizable. Solo una puede estar abierta a la vez:
+  /// [expandedPanel] guarda el [id] de la abierta y tocarla la abre o la cierra.
   Widget expandablePanel({
     required String id,
     required IconData icon,
@@ -600,6 +663,8 @@ class _MobilityPageState extends State<MobilityPage> {
     );
   }
 
+  /// Panel de gasolina: elige 93, 95 o 97 octanos. Es informativo; el octanaje
+  /// no cambia el consumo calculado.
   Widget fuelPanel() => expandablePanel(
     id: 'fuel',
     icon: Icons.local_gas_station_outlined,
@@ -655,6 +720,8 @@ class _MobilityPageState extends State<MobilityPage> {
     ),
   );
 
+  /// Panel de gasto energético: litros estimados, distancia, equivalente en kWh
+  /// (8,9 kWh/L, supuesto ilustrativo) y consumo de referencia ajustable.
   Widget energyPanel() => expandablePanel(
     id: 'energy',
     icon: Icons.bolt_rounded,
@@ -711,6 +778,9 @@ class _MobilityPageState extends State<MobilityPage> {
       ],
     ),
   );
+
+  /// Hoja inferior para ajustar el consumo del vehículo (4 a 14 L/100 km).
+  /// `updateSheet` redibuja la hoja y `setState` actualiza la pantalla de fondo.
   Future<void> adjustConsumption() async {
     await showModalBottomSheet<void>(
       context: context,
@@ -765,6 +835,9 @@ class _MobilityPageState extends State<MobilityPage> {
     );
   }
 
+  /// Controles inferiores: selector de recorrido (destinos demo o de la
+  /// simulación, más las rutas propuestas marcadas con ★), botón para proponer
+  /// una ruta, tiempo estimado y botón Iniciar / Finalizar.
   Widget routeControls() => Container(
     key: const Key('route-controls'),
     padding: const EdgeInsets.all(12),

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Conceptual city plan sharing the vehicle and route with the rear view.
+/// Plano conceptual de la ciudad visto desde arriba, con el mismo auto y la
+/// misma ruta que la vista de conducción.
 class OverheadScenePainter extends CustomPainter {
   const OverheadScenePainter({required this.alternate});
+
+  /// true para el segundo destino: la ruta dobla hacia la calle transversal.
   final bool alternate;
 
   @override
@@ -24,7 +27,7 @@ class OverheadScenePainter extends CustomPainter {
     }
 
     rect(Offset.zero & size, const Color(0xFF343C43));
-    // Pavements, main avenue and two intersecting streets.
+    // Veredas, avenida principal y dos calles que la cruzan.
     rect(
       Rect.fromLTWH(center - roadWidth / 2 - 8, 0, roadWidth + 16, h),
       const Color(0xFF737771),
@@ -45,7 +48,7 @@ class OverheadScenePainter extends CustomPainter {
       }
     }
 
-    // Roof blocks and small planted courtyards on both sides of the avenue.
+    // Techos de manzanas y patios con árboles a ambos lados de la avenida.
     final blockWidth = (w - roadWidth) / 2 - 27;
     for (int row = 0; row < 9; row++) {
       final y = 28 + row * h / 8;
@@ -94,7 +97,7 @@ class OverheadScenePainter extends CustomPainter {
       }
     }
 
-    // The selected destination changes the route in either camera view.
+    // El destino elegido cambia la ruta, igual que en la vista de conducción.
     final destination = alternate
         ? Offset(w * .86, crossing)
         : Offset(center, h * .30);
@@ -121,7 +124,7 @@ class OverheadScenePainter extends CustomPainter {
     canvas.drawCircle(destination, 8, Paint()..color = yellow);
     canvas.drawCircle(destination, 3, Paint()..color = asphalt);
 
-    // Car roof, front windscreen, rear glass, wheels and lights.
+    // Techo del auto, parabrisas, luneta, ruedas y luces.
     canvas.save();
     canvas.translate(center, carY);
     canvas.drawOval(
@@ -143,6 +146,7 @@ class OverheadScenePainter extends CustomPainter {
     canvas.restore();
   }
 
+  // La escena es estática: solo se redibuja si cambia la ruta.
   @override
   bool shouldRepaint(OverheadScenePainter oldDelegate) =>
       alternate != oldDelegate.alternate;

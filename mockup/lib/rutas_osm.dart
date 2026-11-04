@@ -33,12 +33,15 @@ const recuadroSantiago = '-70.85,-33.30,-70.45,-33.65';
 /// Punto de partida por defecto, el mismo origen del modo demo.
 const plazaDeArmas = Lugar('Plaza de Armas', LatLng(-33.4378, -70.6504));
 
+/// Un punto con nombre: origen, parada o destino de una ruta.
 class Lugar {
   const Lugar(this.nombre, this.punto, {this.detalle = ''});
   final String nombre;
   final LatLng punto;
   final String detalle;
 
+  /// Lee un resultado de Nominatim. Si no trae un nombre corto, usa la primera
+  /// parte de la dirección completa.
   factory Lugar.fromNominatim(Map<String, dynamic> j) {
     final completo = j['display_name'] as String? ?? '';
     final nombre = j['name'] as String? ?? '';
@@ -53,6 +56,7 @@ class Lugar {
   }
 }
 
+/// Una maniobra de la ruta según OSRM: salir, girar, continuar o llegar.
 class Paso {
   const Paso(this.tipo, this.modificador, this.calle, this.distanciaM);
   final String tipo; // depart | turn | arrive | parada | roundabout | ...
@@ -80,6 +84,8 @@ class Paso {
     'uturn': 'Da la vuelta',
   };
 
+  /// Texto para el conductor con su flecha, por ejemplo
+  /// «→  Gira a la derecha por Bandera».
   String get indicacion {
     final via = calle.isEmpty ? 'la vía' : calle;
     final flecha = _flechas[modificador] ?? '↑';
@@ -101,6 +107,7 @@ class Paso {
   }
 }
 
+/// Ruta calculada por OSRM, lista para mostrarse en el mapa y en el selector.
 class RutaPropuesta {
   const RutaPropuesta({
     required this.nombre,
@@ -117,6 +124,9 @@ class RutaPropuesta {
   final List<LatLng> trazado;
   final List<Paso> pasos;
 
+  /// Convierte una ruta de OSRM. Une los pasos de todos los tramos (uno por
+  /// cada par de paradas seguidas): omite la salida repetida de cada tramo y
+  /// marca como «parada» las llegadas intermedias.
   factory RutaPropuesta.fromOsrm(Map<String, dynamic> j, List<Lugar> paradas) {
     // GeoJSON entrega [lon, lat]; LatLng espera (lat, lon).
     final coordenadas = (j['geometry'] as Map<String, dynamic>)['coordinates'];
@@ -153,6 +163,7 @@ class RutaPropuesta {
   }
 }
 
+/// Cliente de Nominatim: busca lugares por nombre y nombra puntos del mapa.
 class BuscadorLugares {
   BuscadorLugares({String? baseUrl, http.Client? client})
     : base = Uri.parse(baseUrl ?? nominatimUrl),
@@ -162,6 +173,7 @@ class BuscadorLugares {
   final http.Client _http;
   DateTime? _ultimaConsulta;
 
+  /// Hasta 5 lugares que coinciden con [texto], solo dentro del Gran Santiago.
   Future<List<Lugar>> buscar(String texto) async {
     final datos = await _consultar('/search', {
       'q': texto,
@@ -203,6 +215,7 @@ class BuscadorLugares {
     }
   }
 
+  /// GET a Nominatim que respeta su límite de una consulta por segundo.
   Future<dynamic> _consultar(
     String ruta,
     Map<String, String> parametros,
@@ -229,6 +242,7 @@ class BuscadorLugares {
   }
 }
 
+/// Cliente de OSRM para calcular rutas en auto.
 class Enrutador {
   Enrutador({String? baseUrl, http.Client? client})
     : base = Uri.parse(baseUrl ?? osrmUrl),
@@ -274,6 +288,7 @@ class Enrutador {
   }
 }
 
+/// Decodifica la respuesta como UTF-8 (para tildes y ñ) y la convierte en JSON.
 dynamic _json(http.Response r) {
   final cuerpo = utf8.decode(r.bodyBytes);
   // OSRM responde 400 con un JSON que explica el error (p. ej. NoRoute).
@@ -283,6 +298,7 @@ dynamic _json(http.Response r) {
   return jsonDecode(cuerpo);
 }
 
+/// Error de Nominatim u OSRM con un mensaje listo para mostrar al usuario.
 class ServicioMapaException implements Exception {
   const ServicioMapaException(this.mensaje);
   final String mensaje;

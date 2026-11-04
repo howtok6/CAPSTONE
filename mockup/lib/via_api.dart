@@ -14,6 +14,7 @@ const apiUrl = String.fromEnvironment(
   defaultValue: 'http://127.0.0.1:8000',
 );
 
+/// Destino que ofrece la simulación (respuesta de `GET /destinos`).
 class Destino {
   const Destino(this.ruta, this.nombre, this.distanciaKm);
   final int ruta;
@@ -27,6 +28,11 @@ class Destino {
   );
 }
 
+/// Próximo semáforo en la ruta del vehículo, según la simulación.
+///
+/// [segundos] es null cuando no se puede predecir el cambio. [exacto] indica
+/// si la cuenta regresiva es exacta (plan fijo) o una estimación (controlador
+/// adaptativo).
 class ProximoSemaforo {
   const ProximoSemaforo({
     required this.nombre,
@@ -53,6 +59,8 @@ class ProximoSemaforo {
   );
 }
 
+/// Estado de un recorrido en la simulación (respuesta de `POST /viajes` y
+/// `GET /viajes/{id}`).
 class EstadoViaje {
   const EstadoViaje({
     required this.id,
@@ -67,6 +75,8 @@ class EstadoViaje {
   final ProximoSemaforo? semaforo;
   final int? distanciaRestanteM;
 
+  /// true mientras el vehículo no ha llegado ni se ha retirado; solo entonces
+  /// tiene sentido seguir consultando.
   bool get activo => estado == 'esperando' || estado == 'en_ruta';
 
   factory EstadoViaje.fromJson(Map<String, dynamic> j) {
@@ -83,6 +93,8 @@ class EstadoViaje {
   }
 }
 
+/// Cliente HTTP de la API de simulación. Cada método lanza una excepción si
+/// la API no responde o devuelve error; quien llama decide si pasar a demo.
 class ViaApi {
   ViaApi({String? baseUrl, http.Client? client})
     : base = Uri.parse(baseUrl ?? apiUrl),
@@ -92,6 +104,7 @@ class ViaApi {
   final http.Client _http;
   static const _espera = Duration(seconds: 4);
 
+  /// Destinos disponibles, con su distancia desde el origen.
   Future<List<Destino>> destinos() async {
     final r = await _http.get(base.resolve('/destinos')).timeout(_espera);
     _revisar(r);
@@ -100,6 +113,8 @@ class ViaApi {
         .toList();
   }
 
+  /// Agrega a la simulación un vehículo hacia el destino [ruta]. Admite una
+  /// espera más larga porque la API aguarda a que el vehículo entre a la red.
   Future<EstadoViaje> crearViaje(int ruta) async {
     final r = await _http
         .post(
@@ -112,12 +127,14 @@ class ViaApi {
     return EstadoViaje.fromJson(_json(r) as Map<String, dynamic>);
   }
 
+  /// Estado actual del viaje [id], con su próximo semáforo.
   Future<EstadoViaje> viaje(String id) async {
     final r = await _http.get(base.resolve('/viajes/$id')).timeout(_espera);
     _revisar(r);
     return EstadoViaje.fromJson(_json(r) as Map<String, dynamic>);
   }
 
+  /// Termina el viaje [id] y retira el vehículo de la simulación.
   Future<void> finalizarViaje(String id) async {
     await _http.delete(base.resolve('/viajes/$id')).timeout(_espera);
   }
@@ -126,6 +143,7 @@ class ViaApi {
   // decodificaría como latin-1 y los nombres con tildes o «×» saldrían mal.
   static dynamic _json(http.Response r) => jsonDecode(utf8.decode(r.bodyBytes));
 
+  /// Lanza [ViaApiException] si la respuesta no es exitosa (código 300 o más).
   void _revisar(http.Response r) {
     if (r.statusCode >= 300) {
       throw ViaApiException(r.statusCode, utf8.decode(r.bodyBytes));
@@ -133,6 +151,7 @@ class ViaApi {
   }
 }
 
+/// Error HTTP de la API, con el código y el detalle que devolvió.
 class ViaApiException implements Exception {
   ViaApiException(this.status, this.detalle);
   final int status;

@@ -19,6 +19,9 @@ class ProponerRutaPage extends StatefulWidget {
 
 class _ProponerRutaPageState extends State<ProponerRutaPage> {
   static const maxParadas = 5; // origen + 3 intermedias + destino
+  // paradas: origen, intermedias y destino; null = aún sin elegir.
+  // editando: índice de la parada que se llenará con la próxima búsqueda o
+  // toque en el mapa. alternativas/elegida: rutas de OSRM y la seleccionada.
   late final buscador = widget.buscador ?? BuscadorLugares();
   late final enrutador = widget.enrutador ?? Enrutador();
   final mapa = MapController();
@@ -32,12 +35,14 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
   String? aviso;
   int _version = 0; // descarta respuestas de consultas ya reemplazadas
 
+  /// Nombre de la posición [i] en la lista: «origen», «parada n» o «destino».
   String etiqueta(int i) => i == 0
       ? 'origen'
       : i == paradas.length - 1
       ? 'destino'
       : 'parada $i';
 
+  /// Kilómetros con coma decimal, como se escribe en Chile (4,2).
   static String km(double valor) =>
       valor.toStringAsFixed(1).replaceAll('.', ',');
 
@@ -48,6 +53,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     super.dispose();
   }
 
+  /// Aplica un cambio a las paradas e invalida todo lo que dependía de ellas:
+  /// rutas calculadas, resultados de búsqueda, avisos y consultas en curso.
   void cambiarParadas(VoidCallback cambio) => setState(() {
     cambio();
     _version++;
@@ -56,6 +63,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     aviso = null;
   });
 
+  /// Asigna [lugar] a la parada que se está editando, pasa a la siguiente
+  /// vacía, centra el mapa y, si ya están todas, calcula la ruta.
   void fijar(Lugar lugar) {
     cambiarParadas(() {
       paradas[editando] = lugar;
@@ -67,6 +76,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     if (!paradas.contains(null)) calcular();
   }
 
+  /// Busca el texto del campo en Nominatim y muestra los resultados.
   Future<void> buscar() async {
     final consulta = texto.text.trim();
     if (consulta.isEmpty) return;
@@ -90,6 +100,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     }
   }
 
+  /// Fija la parada en el punto tocado, con el nombre que entrega Nominatim.
   Future<void> tocarMapa(LatLng punto) async {
     final version = ++_version;
     setState(() => cargando = true);
@@ -99,6 +110,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     if (version == _version) fijar(lugar);
   }
 
+  /// Pide las rutas a OSRM, deja elegida la más rápida y encuadra el mapa para
+  /// que se vean todas las alternativas.
   Future<void> calcular() async {
     final version = ++_version;
     setState(() => cargando = true);
@@ -126,11 +139,13 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     }
   }
 
+  /// Agrega una parada vacía antes del destino y la deja lista para editar.
   void agregarParada() => cambiarParadas(() {
     paradas.insert(paradas.length - 1, null);
     editando = paradas.length - 2;
   });
 
+  /// Quita la parada intermedia [i] y recalcula si las demás están completas.
   void quitarParada(int i) {
     cambiarParadas(() {
       paradas.removeAt(i);
@@ -141,6 +156,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     if (!paradas.contains(null)) calcular();
   }
 
+  /// De arriba hacia abajo: paradas, búsqueda, resultados, mapa y panel con las
+  /// alternativas y los botones.
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -166,6 +183,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ),
   );
 
+  /// Lista de paradas (A, 1, 2…, B). Tocar una la deja como la que se edita.
   Widget listaParadas() => Container(
     margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -215,6 +233,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ),
   );
 
+  /// Círculo con la letra o número de la parada; se usa en la lista y en el mapa.
   Widget marcador(int i, bool activo) {
     final extremo = i == 0 || i == paradas.length - 1;
     return Container(
@@ -237,6 +256,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     );
   }
 
+  /// Campo de búsqueda. Busca solo al confirmar (Enter o lupa), nunca mientras
+  /// se escribe, para respetar los límites de Nominatim.
   Widget campoBusqueda() => Padding(
     padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
     child: TextField(
@@ -265,6 +286,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ),
   );
 
+  /// Resultados de la búsqueda; tocar uno lo fija en la parada que se edita.
   Widget listaResultados() => ConstrainedBox(
     constraints: const BoxConstraints(maxHeight: 180),
     child: ListView(
@@ -288,6 +310,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ),
   );
 
+  /// Mapa de OpenStreetMap en modo oscuro con las alternativas (la elegida en
+  /// amarillo) y los marcadores de las paradas. Tocarlo fija una parada.
   Widget mapaOsm() => FlutterMap(
     mapController: mapa,
     options: MapOptions(
@@ -339,6 +363,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ],
   );
 
+  /// Panel inferior: aviso o ayuda, alternativas para elegir y los botones
+  /// «Parada» y «Proponer ruta».
   Widget panelInferior() => Container(
     padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
     color: const Color(0xFF11151D),

@@ -2,9 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Procedural block city seen from behind the vehicle. No external map assets.
+/// Ciudad dibujada por código, vista desde detrás del auto, en perspectiva.
+/// No usa imágenes ni mapas externos.
 class DrivingScenePainter extends CustomPainter {
   const DrivingScenePainter({required this.alternate});
+
+  /// true para el segundo destino: la ruta dibujada dobla a la derecha.
   final bool alternate;
   @override
   void paint(Canvas canvas, Size size) {
@@ -23,6 +26,8 @@ class DrivingScenePainter extends CustomPainter {
       Path()..addPolygon(points, true),
       Paint()..color = color,
     );
+    // p(x, depth, height) proyecta un punto 3D en pantalla: cuanto más lejos
+    // (depth), más cerca del horizonte y más pequeño.
     Offset p(double x, double depth, [double height = 0]) {
       final scale = 1 / (1 + depth * .55);
       return Offset(
@@ -31,7 +36,7 @@ class DrivingScenePainter extends CustomPainter {
       );
     }
 
-    // Distant silhouette and the roadway converge toward the same horizon.
+    // Siluetas lejanas y calzada convergen hacia el mismo horizonte.
     final random = math.Random(9);
     for (int i = 0; i < 24; i++) {
       final bh = 10 + random.nextDouble() * 40;
@@ -71,7 +76,8 @@ class DrivingScenePainter extends CustomPainter {
         p(.007, z),
       ], const Color(0xFF96968E));
     }
-    // Render far buildings before near ones, including visible side and roof faces.
+    // Edificios del más lejano al más cercano, para que los cercanos queden encima;
+    // incluye las caras laterales y los techos visibles.
     for (int i = 10; i >= 0; i--) {
       for (final side in [-1.0, 1.0]) {
         final z = 1.0 + i * 1.5;
@@ -86,7 +92,7 @@ class DrivingScenePainter extends CustomPainter {
         poly([a, b, bt, at], const Color(0xFF484D58));
         poly([a, d, dt, at], const Color(0xFF363D48));
         poly([at, bt, ct, dt], const Color(0xFF626773));
-        // Small lit windows on the street-facing wall.
+        // Ventanas iluminadas en la fachada que da a la calle.
         for (int floor = 1; floor <= (height / .07).floor(); floor++) {
           for (int col = 0; col < 3; col++) {
             final wz = z + .15 + col * .25;
@@ -114,7 +120,7 @@ class DrivingScenePainter extends CustomPainter {
             p((x + outer) / 2, z + 1, height + .07),
           ], const Color(0xFF54565D));
         }
-        // Sidewalk lamps.
+        // Postes de luz en la vereda.
         final base = p(side * .32, z + .9), top = p(side * .32, z + .9, .18);
         canvas.drawLine(
           base,
@@ -156,7 +162,7 @@ class DrivingScenePainter extends CustomPainter {
       arrow + const Offset(-6, 5),
       arrow + const Offset(6, 5),
     ], const Color(0xFFF5CB45));
-    // Rear view of the car, scaled independently to remain legible on phones.
+    // Parte trasera del auto, con escala propia para que se lea bien en teléfonos.
     canvas.save();
     canvas.translate(w / 2, h < 700 ? h * .67 : h * .72);
     final carScale = math.min(w / 350, 1.25);
@@ -202,6 +208,7 @@ class DrivingScenePainter extends CustomPainter {
     canvas.restore();
   }
 
+  // La escena es estática: solo se redibuja si cambia la ruta.
   @override
   bool shouldRepaint(DrivingScenePainter oldDelegate) =>
       oldDelegate.alternate != alternate;
