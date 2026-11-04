@@ -60,16 +60,22 @@ en la indicación sobre el auto.
 
 Requisitos: Flutter con Dart 3.13.5 o superior, e internet para el mapa y las rutas.
 
+La app está en la raíz del repositorio (rama `dev-benja`), así que se ejecuta desde la carpeta del repo, sin
+entrar a ninguna subcarpeta:
+
 ```powershell
-cd mockup            # la app está en esta carpeta, no en la raíz del repo
+cd "D:\ruta\a\tu\copia\del\repo"   # la carpeta que contiene pubspec.yaml
 flutter pub get
 flutter run -d chrome   # o `flutter run` con un celular conectado
 ```
 
+Si `flutter run` responde «No pubspec.yaml file found», la terminal está en otra carpeta: entra a la que contiene
+`pubspec.yaml`.
+
 Mientras corre: `r` recarga los cambios, `R` reinicia la app y `q` sale.
 
 En Windows, compilar para Android puede pedir activar el **Modo de desarrollador** (Configuración → Para
-programadores), porque `flutter_map` incluye un plugin nativo.
+programadores), porque la app usa plugins nativos (`maplibre_gl` y `geolocator`).
 
 ### Con el backend (en vivo)
 
@@ -147,6 +153,7 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 4-nov-2026 | Benjamín Quiroz | Correcciones del modo en vivo, con 4 pruebas nuevas: un viaje finalizado mientras se creaba ya no queda abierto en la simulación; sin semáforo en la ruta, o con el semáforo apagado, el panel muestra «—» y luces apagadas en vez de datos del demo o rojo; una cuenta regresiva no exacta se muestra como «≈12s · estimado» |
 | 4-nov-2026 | Gabriel Cárdenas | Mapa 3D low poly en «Proponer ruta»: MapLibre (`maplibre_gl`) con teselas vectoriales de OpenFreeMap en lugar de `flutter_map` y teselas raster; edificios extruidos de color plano, cámara inclinada y tres paletas (Noche, Maqueta, Pastel) |
 | 4-nov-2026 | Gabriel Cárdenas | La app habla solo con el backend Go (`/v1`): lugares, rutas con sus semáforos y viajes. Las rutas propuestas se recorren como viaje GPS con la ubicación del celular (`lib/ubicacion.dart`, permisos de ubicación en Android) |
+| 4-nov-2026 | Benjamín Quiroz | El proyecto Flutter pasa de `mockup/` a la raíz del repositorio en `dev-benja`, con el `.gitignore` de Flutter (el anterior dejaba fuera `android/`, `ios/` y `macos/`). Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
 
 ## Limitaciones conocidas y pendientes
 
