@@ -1,0 +1,87 @@
+# Peticiones de prueba de la API v1 de «Vía».
+# Uso: VS Code con la extensión «REST Client» o IntelliJ/GoLand (cliente HTTP
+# integrado). Cada bloque separado por ### se ejecuta por separado.
+# Detalle y respuestas esperadas: docs/integracion-app/endpoints.md
+
+@base = http://127.0.0.1:8080
+
+### 1. Salud
+GET {{base}}/v1/salud
+
+### 2. Buscar lugares
+GET {{base}}/v1/lugares?q=Costanera%20Center
+
+### 3. Nombrar un punto del mapa
+GET {{base}}/v1/lugares/inverso?lat=-33.4372&lon=-70.6275
+
+### 4. Rutas Plaza de Armas → Cerro Santa Lucía, con alternativas
+# @name rutas
+POST {{base}}/v1/rutas
+Content-Type: application/json
+
+{"paradas": [{"lat": -33.4378, "lon": -70.6504}, {"lat": -33.4372, "lon": -70.6275}], "alternativas": true}
+
+### 5. Semáforos en un recuadro (minLon,minLat,maxLon,maxLat)
+GET {{base}}/v1/semaforos?bbox=-70.66,-33.45,-70.62,-33.43
+
+### 6. Un semáforo
+GET {{base}}/v1/semaforos/224544128
+
+### 7. Próximo semáforo sin viaje
+GET {{base}}/v1/semaforos/proximo?lat=-33.44406&lon=-70.6524&rumbo=92.5
+
+### 8. Tráfico en un recuadro, con calles libres
+GET {{base}}/v1/trafico?bbox=-70.66,-33.45,-70.62,-33.43&incluir_libres=true
+
+### 9. Destinos de demostración
+GET {{base}}/v1/simulacion/destinos
+
+### 10. Crear viaje GPS (con un trazado corto de ejemplo)
+# @name viajeGps
+POST {{base}}/v1/viajes
+Content-Type: application/json
+
+{"modo": "gps", "nombre_destino": "Cerro Santa Lucía", "trazado": [[-33.437252, -70.650493], [-33.4372, -70.6275]]}
+
+### 11a. Enviar ubicación exacta
+POST {{base}}/v1/viajes/{{viajeGps.response.body.id}}/ubicacion
+Content-Type: application/json
+
+{"lat": -33.437252, "lon": -70.650493, "rumbo": 90, "velocidad_kmh": 30, "precision_m": 6}
+
+### 11b. Enviar ubicación aproximada (rango 500 m)
+POST {{base}}/v1/viajes/{{viajeGps.response.body.id}}/ubicacion
+Content-Type: application/json
+
+{"lat": -33.437252, "lon": -70.650493, "precision_m": 500}
+
+### 13a. Consultar el viaje GPS
+GET {{base}}/v1/viajes/{{viajeGps.response.body.id}}
+
+### 14a. Terminar el viaje GPS
+DELETE {{base}}/v1/viajes/{{viajeGps.response.body.id}}
+
+### 12. Crear viaje simulado
+# @name viajeSim
+POST {{base}}/v1/viajes
+Content-Type: application/json
+
+{"modo": "simulado", "destino": 0}
+
+### 13b. Consultar el viaje simulado
+GET {{base}}/v1/viajes/{{viajeSim.response.body.id}}
+
+### 14b. Terminar el viaje simulado
+DELETE {{base}}/v1/viajes/{{viajeSim.response.body.id}}
+
+### Error 404: viaje inexistente
+GET {{base}}/v1/viajes/v_no_existe
+
+### Error 400: rumbo fuera de rango
+GET {{base}}/v1/semaforos/proximo?lat=-33.44&lon=-70.65&rumbo=400
+
+### Error 400: una sola parada
+POST {{base}}/v1/rutas
+Content-Type: application/json
+
+{"paradas": [{"lat": -33.4378, "lon": -70.6504}]}

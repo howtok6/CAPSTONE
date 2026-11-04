@@ -18,6 +18,11 @@ go run ./cmd/via-backend          # escucha en :8080
 go test ./...
 ```
 
+Para probar la API completa con el backend y la simulación arriba:
+`powershell -ExecutionPolicy Bypass -File backend\pruebas\probar-endpoints.ps1` (prueba de humo de todos los
+endpoints) o las peticiones de `pruebas/via.http`. La lista con ejemplos y respuestas esperadas está en
+[`docs/integracion-app/endpoints.md`](../docs/integracion-app/endpoints.md).
+
 Necesita la simulación corriendo (`python simulacion/run.py`) para semáforos, tráfico y viajes; sin ella, lugares
 y rutas siguen funcionando (las rutas sin semáforos) y `/v1/salud` informa `degradado`.
 
@@ -45,6 +50,7 @@ segundo: el backend la respeta y guarda las respuestas 24 h en caché. Para prod
 | `internal/almacen` | Viajes activos en memoria (reemplazable por una base de datos) |
 | `internal/geo` | Distancias, rumbos y proyección sobre un trazado |
 | `internal/dominio` | Modelo y errores de dominio |
+| `pruebas` | Prueba de humo de la API (`probar-endpoints.ps1`) y peticiones sueltas (`via.http`) |
 
 ## API v1
 
