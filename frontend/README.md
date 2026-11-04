@@ -87,17 +87,17 @@ tiempo estimado y su primera maniobra en la indicación de la ruta.
 
 Requisitos: Flutter con Dart 3.13.5 o superior, e internet para el mapa y las rutas.
 
-La app está en la raíz del repositorio (rama `dev-benja`), así que se ejecuta desde la carpeta del repo, sin
-entrar a ninguna subcarpeta:
+La app está en la carpeta `frontend/` del repositorio (rama `dev-benja`), así que se ejecuta desde ahí:
 
 ```powershell
-cd "D:\ruta\a\tu\copia\del\repo"   # la carpeta que contiene pubspec.yaml
+cd "D:\ruta\a\tu\copia\del\repo\frontend"   # la carpeta que contiene pubspec.yaml
 flutter pub get
 flutter run -d chrome   # o `flutter run` con un celular conectado
 ```
 
-Si `flutter run` responde «No pubspec.yaml file found», la terminal está en otra carpeta: entra a la que contiene
-`pubspec.yaml`.
+Si `flutter run` responde «No pubspec.yaml file found», la terminal está en otra carpeta, casi siempre la raíz
+del repositorio: entra a `frontend/`. En VS Code, abrir directamente la carpeta `frontend/` hace que la terminal,
+el botón ▶ y F5 funcionen sin el `cd`.
 
 Mientras corre: `r` recarga los cambios, `R` reinicia la app y `q` sale.
 
@@ -191,6 +191,7 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 4-nov-2026 | Gabriel Cárdenas | La app habla solo con el backend Go (`/v1`): lugares, rutas con sus semáforos y viajes. Las rutas propuestas se recorren como viaje GPS con la ubicación del celular (`lib/ubicacion.dart`, permisos de ubicación en Android) |
 | 4-nov-2026 | Benjamín Quiroz | El proyecto Flutter pasa de `mockup/` a la raíz del repositorio en `dev-benja`, con el `.gitignore` de Flutter (el anterior dejaba fuera `android/`, `ios/` y `macos/`). Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
 | 4-nov-2026 | Gabriel Cárdenas | Mapa navegable en la pantalla principal en lugar de los dibujos fijos: ruta elegida con sus semáforos, próximo semáforo con su color, usuario o vehículo simulado, cámara que sigue y botón de recentrar. Ubicación exacta o por rango (250 m, 500 m, 1 km) elegida al abrir la app y guardada; el origen de «Proponer ruta» parte en la ubicación del usuario. 7 pruebas nuevas |
+| 4-nov-2026 | Benjamín Quiroz | Todo el proyecto Flutter pasa a la carpeta `frontend/` del repositorio, junto con su `.gitignore`; en la raíz queda solo un `.gitignore` para la configuración local del editor. Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
 
 ## Limitaciones conocidas y pendientes
 
