@@ -16,6 +16,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 | `anteproyecto/01-anteproyecto-v1.md` | El mismo anteproyecto en texto plano, para buscar y citar. | ★★ |
 | `informe/1.4 Informe -v1.docx` | Borrador del informe final de la tesis. | ★★★ |
 | `informe/informe-avance-2026-10-29.md` | Informe de avance del 15 al 29 de octubre: decisiones, cambios técnicos, avance por objetivo y próximos pasos. | ★★ |
+| `informe/informe-avance-2026-10-29.docx` | El mismo informe de avance en Word, para entregar o imprimir. | ★★ |
 
 ## Arquitectura
 

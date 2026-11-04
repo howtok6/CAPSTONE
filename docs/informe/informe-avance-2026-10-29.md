@@ -107,8 +107,8 @@ Lo urgente es salir a terreno y conseguir demanda realista: de eso dependen Webs
 - [ ] **Perfiles de demanda del eje** y plan Webster por perfil (`build_webster.py --profile`).
 - [ ] **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
 - [ ] **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
-- [ ] **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.
-- [ ] **Completar `requirements.txt`** (faltan `torch`, `torch_geometric` y `WazeRouteCalculator`) y crear un entorno virtual.
+- [x] **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.
+- [x] **Completar `requirements.txt`** (faltan `torch`, `torch_geometric` y `WazeRouteCalculator`) y crear un entorno virtual.
 
 **Riesgos**
 
