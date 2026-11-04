@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Vía usa tu ubicación durante un recorrido para mostrarte el próximo semáforo de tu ruta.</string>
 </dict>
 </plist>

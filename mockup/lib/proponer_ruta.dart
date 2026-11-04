@@ -1,18 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'main.dart' show subdued, surface, yellow;
+import 'mapa_low_poly.dart';
 import 'rutas_osm.dart';
 
 /// Pantalla donde el usuario arma su propia ruta: elige origen, paradas y
-/// destino (buscando o tocando el mapa), compara las alternativas de OSRM y
-/// devuelve la elegida con `Navigator.pop`.
+/// destino (buscando o tocando el mapa 3D low poly), compara las alternativas
+/// y devuelve la elegida con `Navigator.pop`.
+/// Estado que se recuerda entre aperturas de la pantalla mientras la app
+/// esté abierta.
+abstract final class ProponerRutaPageEstado {
+  /// Paleta elegida la última vez.
+  static PaletaMapa ultimaPaleta = PaletaMapa.noche;
+
+  /// Vuelve a la paleta por defecto (para las pruebas).
+  static void reiniciarPaleta() => ultimaPaleta = PaletaMapa.noche;
+}
+
 class ProponerRutaPage extends StatefulWidget {
-  const ProponerRutaPage({super.key, this.buscador, this.enrutador});
+  const ProponerRutaPage({
+    super.key,
+    this.buscador,
+    this.enrutador,
+    this.constructorMapa,
+  });
 
   final BuscadorLugares? buscador;
   final Enrutador? enrutador;
+
+  /// Mapa a usar; null usa [MapaLowPoly]. Las pruebas pasan uno falso.
+  final ConstructorMapa? constructorMapa;
   @override
   State<ProponerRutaPage> createState() => _ProponerRutaPageState();
 }
@@ -24,7 +42,9 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
   // toque en el mapa. alternativas/elegida: rutas de OSRM y la seleccionada.
   late final buscador = widget.buscador ?? BuscadorLugares();
   late final enrutador = widget.enrutador ?? Enrutador();
-  final mapa = MapController();
+  final mapa = ControlMapa();
+
+  PaletaMapa paleta = ProponerRutaPageEstado.ultimaPaleta;
   final texto = TextEditingController();
   final paradas = <Lugar?>[plazaDeArmas, null];
   int editando = 1;
@@ -49,7 +69,6 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
   @override
   void dispose() {
     texto.dispose();
-    mapa.dispose();
     super.dispose();
   }
 
@@ -72,7 +91,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
       final pendiente = paradas.indexOf(null);
       if (pendiente >= 0) editando = pendiente;
     });
-    mapa.move(lugar.punto, 15);
+    mapa.mover(lugar.punto, 16);
     if (!paradas.contains(null)) calcular();
   }
 
@@ -122,12 +141,7 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
         alternativas = rutas;
         elegida = 0;
       });
-      mapa.fitCamera(
-        CameraFit.coordinates(
-          coordinates: [for (final r in rutas) ...r.trazado],
-          padding: const EdgeInsets.all(40),
-        ),
-      );
+      mapa.encuadrar([for (final r in rutas) ...r.trazado]);
     } on ServicioMapaException catch (e) {
       if (mounted) setState(() => aviso = e.mensaje);
     } catch (_) {
@@ -172,7 +186,8 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
         Expanded(
           child: Stack(
             children: [
-              mapaOsm(),
+              mapaLowPoly(),
+              Positioned(top: 8, right: 8, child: selectorPaleta()),
               if (cargando)
                 const LinearProgressIndicator(minHeight: 2, color: yellow),
             ],
@@ -310,57 +325,60 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
     ),
   );
 
-  /// Mapa de OpenStreetMap en modo oscuro con las alternativas (la elegida en
-  /// amarillo) y los marcadores de las paradas. Tocarlo fija una parada.
-  Widget mapaOsm() => FlutterMap(
-    mapController: mapa,
-    options: MapOptions(
-      initialCenter: plazaDeArmas.punto,
-      initialZoom: 13,
-      onTap: (_, punto) => tocarMapa(punto),
-    ),
-    children: [
-      TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'com.example.mockup',
-        tileBuilder: darkModeTileBuilder,
-      ),
-      PolylineLayer(
-        polylines: [
-          // La elegida se dibuja al final para que quede encima.
-          for (var i = 0; i < alternativas.length; i++)
-            if (i != elegida)
-              Polyline(
-                points: alternativas[i].trazado,
-                strokeWidth: 4,
-                color: const Color(0xAA8A909B),
-              ),
-          if (alternativas.isNotEmpty)
-            Polyline(
-              points: alternativas[elegida].trazado,
-              strokeWidth: 6,
-              color: yellow,
-              borderStrokeWidth: 2,
-              borderColor: const Color(0xFF161A21),
+  /// Mapa 3D low poly con las alternativas (la elegida en amarillo) y las
+  /// paradas. Tocarlo fija una parada.
+  Widget mapaLowPoly() {
+    final datos = DatosMapa(
+      control: mapa,
+      centro: plazaDeArmas.punto,
+      paradas: [
+        for (var i = 0; i < paradas.length; i++)
+          if (paradas[i] != null)
+            ParadaMapa(
+              paradas[i]!.punto,
+              i == 0 ? 'A' : (i == paradas.length - 1 ? 'B' : '$i'),
+              extremo: i == 0 || i == paradas.length - 1,
             ),
-        ],
-      ),
-      MarkerLayer(
-        markers: [
-          for (var i = 0; i < paradas.length; i++)
-            if (paradas[i] != null)
-              Marker(
-                point: paradas[i]!.punto,
-                width: 26,
-                height: 26,
-                child: marcador(i, true),
+      ],
+      trazados: [for (final r in alternativas) r.trazado],
+      elegida: elegida,
+      paleta: paleta,
+      alTocar: tocarMapa,
+    );
+    return (widget.constructorMapa ?? MapaLowPoly.new)(datos);
+  }
+
+  /// Botones para elegir la paleta del mapa.
+  Widget selectorPaleta() => Container(
+    padding: const EdgeInsets.all(3),
+    decoration: BoxDecoration(
+      color: surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0xFF454A53)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final p in PaletaMapa.todas)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 1),
+            child: ChoiceChip(
+              key: Key('palette-${p.id}'),
+              label: Text(p.nombre, style: const TextStyle(fontSize: 10)),
+              selected: paleta.id == p.id,
+              selectedColor: yellow,
+              labelStyle: TextStyle(
+                color: paleta.id == p.id ? const Color(0xFF161A21) : null,
               ),
-        ],
-      ),
-      const RichAttributionWidget(
-        attributions: [TextSourceAttribution('OpenStreetMap contributors')],
-      ),
-    ],
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onSelected: (_) => setState(
+                () => paleta = ProponerRutaPageEstado.ultimaPaleta = p,
+              ),
+            ),
+          ),
+      ],
+    ),
   );
 
   /// Panel inferior: aviso o ayuda, alternativas para elegir y los botones

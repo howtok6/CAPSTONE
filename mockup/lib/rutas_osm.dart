@@ -1,34 +1,18 @@
-// Búsqueda de lugares y cálculo de rutas con servicios de OpenStreetMap.
+// Búsqueda de lugares y cálculo de rutas, a través del backend Go de «Vía».
 //
-// - Nominatim convierte texto en coordenadas (y coordenadas en un nombre).
-//   Su política de uso pide máximo 1 consulta por segundo, identificarse y no
-//   autocompletar letra por letra: por eso se busca solo al confirmar.
-// - OSRM calcula rutas en auto con alternativas e indicaciones paso a paso.
+// La app ya no llama directo a OpenStreetMap: el backend (`/v1/lugares` y
+// `/v1/rutas`) consulta Nominatim y OSRM, respeta sus límites de uso, guarda
+// en caché y agrega a cada ruta los semáforos por los que pasa.
 //
-// Los servidores públicos son de demostración. Para producción se cambian al
-// compilar, apuntando a uno propio o a un proveedor:
-//   flutter run --dart-define=OSRM_URL=https://... --dart-define=NOMINATIM_URL=https://...
+// La URL del backend es la misma de via_api.dart (API_URL). Solo las teselas
+// del mapa se piden directo al servidor de OpenStreetMap.
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
-const osrmUrl = String.fromEnvironment(
-  'OSRM_URL',
-  defaultValue: 'https://router.project-osrm.org',
-);
-const nominatimUrl = String.fromEnvironment(
-  'NOMINATIM_URL',
-  defaultValue: 'https://nominatim.openstreetmap.org',
-);
-
-/// Identificación ante Nominatim y el servidor de teselas de OSM.
-const agenteUsuario = 'via-capstone/1.0 (com.example.mockup)';
-
-/// Recuadro de búsqueda: Gran Santiago (oeste, norte, este, sur).
-const recuadroSantiago = '-70.85,-33.30,-70.45,-33.65';
+import 'via_api.dart' show apiUrl;
 
 /// Punto de partida por defecto, el mismo origen del modo demo.
 const plazaDeArmas = Lugar('Plaza de Armas', LatLng(-33.4378, -70.6504));
@@ -40,23 +24,20 @@ class Lugar {
   final LatLng punto;
   final String detalle;
 
-  /// Lee un resultado de Nominatim. Si no trae un nombre corto, usa la primera
-  /// parte de la dirección completa.
-  factory Lugar.fromNominatim(Map<String, dynamic> j) {
-    final completo = j['display_name'] as String? ?? '';
-    final nombre = j['name'] as String? ?? '';
-    return Lugar(
-      nombre.isNotEmpty ? nombre : completo.split(',').first,
-      LatLng(
-        double.parse(j['lat'] as String),
-        double.parse(j['lon'] as String),
-      ),
-      detalle: completo,
-    );
-  }
+  /// Lee un lugar del backend (`GET /v1/lugares`).
+  factory Lugar.fromJson(Map<String, dynamic> j) => Lugar(
+    j['nombre'] as String,
+    LatLng((j['lat'] as num).toDouble(), (j['lon'] as num).toDouble()),
+    detalle: j['detalle'] as String? ?? '',
+  );
+
+  Map<String, dynamic> toJson() => {
+    'lat': punto.latitude,
+    'lon': punto.longitude,
+  };
 }
 
-/// Una maniobra de la ruta según OSRM: salir, girar, continuar o llegar.
+/// Una maniobra de la ruta: salir, girar, continuar, parada o llegar.
 class Paso {
   const Paso(this.tipo, this.modificador, this.calle, this.distanciaM);
   final String tipo; // depart | turn | arrive | parada | roundabout | ...
@@ -107,7 +88,14 @@ class Paso {
   }
 }
 
-/// Ruta calculada por OSRM, lista para mostrarse en el mapa y en el selector.
+/// Semáforo por el que pasa una ruta, según el backend.
+class SemaforoEnRuta {
+  const SemaforoEnRuta(this.nombre, this.distanciaDesdeInicioM);
+  final String nombre;
+  final double distanciaDesdeInicioM;
+}
+
+/// Ruta calculada por el backend, lista para mostrarse en el mapa y en el selector.
 class RutaPropuesta {
   const RutaPropuesta({
     required this.nombre,
@@ -116,6 +104,7 @@ class RutaPropuesta {
     required this.duracionMin,
     required this.trazado,
     required this.pasos,
+    this.semaforos = const [],
   });
   final String nombre;
   final List<Lugar> paradas; // origen, paradas intermedias y destino
@@ -123,72 +112,64 @@ class RutaPropuesta {
   final double duracionMin;
   final List<LatLng> trazado;
   final List<Paso> pasos;
+  final List<SemaforoEnRuta> semaforos;
 
-  /// Convierte una ruta de OSRM. Une los pasos de todos los tramos (uno por
-  /// cada par de paradas seguidas): omite la salida repetida de cada tramo y
-  /// marca como «parada» las llegadas intermedias.
-  factory RutaPropuesta.fromOsrm(Map<String, dynamic> j, List<Lugar> paradas) {
-    // GeoJSON entrega [lon, lat]; LatLng espera (lat, lon).
-    final coordenadas = (j['geometry'] as Map<String, dynamic>)['coordinates'];
-    final tramos = j['legs'] as List;
-    final pasos = <Paso>[];
-    for (var t = 0; t < tramos.length; t++) {
-      for (final s in (tramos[t] as Map<String, dynamic>)['steps'] as List) {
-        final m =
-            (s as Map<String, dynamic>)['maneuver'] as Map<String, dynamic>;
-        var tipo = m['type'] as String;
-        if (tipo == 'depart' && t > 0) continue;
-        if (tipo == 'arrive' && t < tramos.length - 1) tipo = 'parada';
-        pasos.add(
-          Paso(
-            tipo,
-            m['modifier'] as String?,
-            s['name'] as String? ?? '',
-            (s['distance'] as num).toDouble(),
-          ),
-        );
-      }
-    }
+  /// Lee una ruta de `POST /v1/rutas`. El backend ya unió los tramos y marcó
+  /// como «parada» las llegadas intermedias; el trazado viene como [lat, lon].
+  factory RutaPropuesta.fromJson(Map<String, dynamic> j, List<Lugar> paradas) {
     return RutaPropuesta(
       nombre: '${paradas.first.nombre} → ${paradas.last.nombre}',
       paradas: paradas,
-      distanciaKm: (j['distance'] as num) / 1000,
-      duracionMin: (j['duration'] as num) / 60,
+      distanciaKm: (j['distancia_km'] as num).toDouble(),
+      duracionMin: (j['duracion_min'] as num).toDouble(),
       trazado: [
-        for (final c in coordenadas as List)
-          LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()),
+        for (final c in j['trazado'] as List)
+          LatLng((c[0] as num).toDouble(), (c[1] as num).toDouble()),
       ],
-      pasos: pasos,
+      pasos: [
+        for (final p in j['pasos'] as List? ?? const [])
+          Paso(
+            p['tipo'] as String,
+            p['modificador'] as String?,
+            p['calle'] as String? ?? '',
+            (p['distancia_m'] as num).toDouble(),
+          ),
+      ],
+      semaforos: [
+        for (final s in j['semaforos'] as List? ?? const [])
+          SemaforoEnRuta(
+            s['nombre'] as String,
+            (s['distancia_desde_inicio_m'] as num).toDouble(),
+          ),
+      ],
     );
   }
+
+  /// Trazado en el formato que espera el backend: pares [lat, lon].
+  List<List<double>> get trazadoLatLon => [
+    for (final p in trazado) [p.latitude, p.longitude],
+  ];
 }
 
-/// Cliente de Nominatim: busca lugares por nombre y nombra puntos del mapa.
+/// Busca lugares por nombre y nombra puntos del mapa (`/v1/lugares`).
 class BuscadorLugares {
   BuscadorLugares({String? baseUrl, http.Client? client})
-    : base = Uri.parse(baseUrl ?? nominatimUrl),
+    : base = Uri.parse(baseUrl ?? apiUrl),
       _http = client ?? http.Client();
 
   final Uri base;
   final http.Client _http;
-  DateTime? _ultimaConsulta;
 
-  /// Hasta 5 lugares que coinciden con [texto], solo dentro del Gran Santiago.
+  /// Hasta 5 lugares del Gran Santiago que coinciden con [texto].
   Future<List<Lugar>> buscar(String texto) async {
-    final datos = await _consultar('/search', {
-      'q': texto,
-      'format': 'jsonv2',
-      'limit': '5',
-      'countrycodes': 'cl',
-      'viewbox': recuadroSantiago,
-      'bounded': '1',
-    });
+    final r = await _http
+        .get(base.replace(path: '/v1/lugares', queryParameters: {'q': texto}))
+        .timeout(const Duration(seconds: 10));
+    final datos = _json(r);
     if (datos is! List) {
       throw const ServicioMapaException('Respuesta inesperada del buscador');
     }
-    return [
-      for (final l in datos) Lugar.fromNominatim(l as Map<String, dynamic>),
-    ];
+    return [for (final l in datos) Lugar.fromJson(l as Map<String, dynamic>)];
   }
 
   /// Nombre del lugar tocado en el mapa; si no hay, sus coordenadas.
@@ -198,110 +179,83 @@ class BuscadorLugares {
       punto,
     );
     try {
-      final datos = await _consultar('/reverse', {
-        'lat': '${punto.latitude}',
-        'lon': '${punto.longitude}',
-        'format': 'jsonv2',
-        'zoom': '17',
-      });
-      if (datos is! Map<String, dynamic> || datos['lat'] == null) {
-        return respaldo;
-      }
-      final lugar = Lugar.fromNominatim(datos);
-      // Conserva el punto exacto que tocó el usuario, no el del edificio.
+      final r = await _http
+          .get(
+            base.replace(
+              path: '/v1/lugares/inverso',
+              queryParameters: {
+                'lat': '${punto.latitude}',
+                'lon': '${punto.longitude}',
+              },
+            ),
+          )
+          .timeout(const Duration(seconds: 10));
+      final lugar = Lugar.fromJson(_json(r) as Map<String, dynamic>);
+      // Conserva el punto exacto que tocó el usuario.
       return Lugar(lugar.nombre, punto, detalle: lugar.detalle);
     } catch (_) {
       return respaldo;
     }
   }
-
-  /// GET a Nominatim que respeta su límite de una consulta por segundo.
-  Future<dynamic> _consultar(
-    String ruta,
-    Map<String, String> parametros,
-  ) async {
-    // Máximo una consulta por segundo, como exige Nominatim.
-    final ultima = _ultimaConsulta;
-    if (ultima != null) {
-      final espera =
-          const Duration(seconds: 1) - DateTime.now().difference(ultima);
-      if (espera > Duration.zero) await Future<void>.delayed(espera);
-    }
-    _ultimaConsulta = DateTime.now();
-    final r = await _http
-        .get(
-          base.replace(
-            path: ruta,
-            queryParameters: {...parametros, 'accept-language': 'es'},
-          ),
-          // El navegador no deja fijar User-Agent; en web identifica el Referer.
-          headers: kIsWeb ? null : {'User-Agent': agenteUsuario},
-        )
-        .timeout(const Duration(seconds: 8));
-    return _json(r);
-  }
 }
 
-/// Cliente de OSRM para calcular rutas en auto.
+/// Calcula rutas en auto con sus semáforos (`POST /v1/rutas`).
 class Enrutador {
   Enrutador({String? baseUrl, http.Client? client})
-    : base = Uri.parse(baseUrl ?? osrmUrl),
+    : base = Uri.parse(baseUrl ?? apiUrl),
       _http = client ?? http.Client();
 
   final Uri base;
   final http.Client _http;
 
-  /// Rutas en auto entre las paradas, la más rápida primero. OSRM solo
-  /// entrega alternativas cuando hay dos paradas (origen y destino).
+  /// Rutas en auto entre las paradas, la más rápida primero. Solo hay
+  /// alternativas cuando hay dos paradas (origen y destino).
   Future<List<RutaPropuesta>> calcular(List<Lugar> paradas) async {
     if (paradas.length < 2) {
       throw const ServicioMapaException('Faltan el origen o el destino');
     }
-    final puntos = paradas
-        .map((p) => '${p.punto.longitude},${p.punto.latitude}')
-        .join(';');
     final r = await _http
-        .get(
-          base.replace(
-            path: '/route/v1/driving/$puntos',
-            queryParameters: {
-              'overview': 'full',
-              'geometries': 'geojson',
-              'steps': 'true',
-              'alternatives': 'true',
-            },
-          ),
+        .post(
+          base.replace(path: '/v1/rutas'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'paradas': [for (final p in paradas) p.toJson()],
+            'alternativas': true,
+          }),
         )
-        .timeout(const Duration(seconds: 12));
-    final datos = _json(r) as Map<String, dynamic>;
-    if (datos['code'] != 'Ok') {
-      throw ServicioMapaException(
-        datos['code'] == 'NoRoute'
-            ? 'No hay ruta en auto entre esos puntos'
-            : 'No se pudo calcular la ruta (${datos['code']})',
-      );
+        .timeout(const Duration(seconds: 20));
+    final datos = _json(r);
+    if (datos is! List) {
+      throw const ServicioMapaException('Respuesta inesperada del enrutador');
     }
     return [
-      for (final ruta in datos['routes'] as List)
-        RutaPropuesta.fromOsrm(ruta as Map<String, dynamic>, paradas),
+      for (final ruta in datos)
+        RutaPropuesta.fromJson(ruta as Map<String, dynamic>, paradas),
     ];
   }
 }
 
-/// Decodifica la respuesta como UTF-8 (para tildes y ñ) y la convierte en JSON.
-dynamic _json(http.Response r) {
-  final cuerpo = utf8.decode(r.bodyBytes);
-  // OSRM responde 400 con un JSON que explica el error (p. ej. NoRoute).
-  if (r.statusCode >= 300 && !cuerpo.trimLeft().startsWith('{')) {
-    throw ServicioMapaException('Servicio de mapas: error ${r.statusCode}');
-  }
-  return jsonDecode(cuerpo);
-}
-
-/// Error de Nominatim u OSRM con un mensaje listo para mostrar al usuario.
+/// Error de búsqueda o de cálculo de ruta, con un mensaje para el usuario.
 class ServicioMapaException implements Exception {
   const ServicioMapaException(this.mensaje);
   final String mensaje;
   @override
   String toString() => mensaje;
+}
+
+/// Decodifica la respuesta como UTF-8 (para tildes y ñ). Si el backend
+/// respondió un error, lo convierte en un mensaje claro para el usuario.
+dynamic _json(http.Response r) {
+  final cuerpo = utf8.decode(r.bodyBytes);
+  if (r.statusCode < 300) return jsonDecode(cuerpo);
+  String? codigo;
+  try {
+    codigo = ((jsonDecode(cuerpo) as Map)['error'] as Map)['codigo'] as String?;
+  } catch (_) {}
+  throw ServicioMapaException(switch (codigo) {
+    'sin_ruta' => 'No hay ruta en auto entre esos puntos',
+    'servicio_no_disponible' => 'El servicio de mapas no está disponible',
+    'solicitud_invalida' => 'Revisa el origen y el destino',
+    _ => 'Servicio de mapas: error ${r.statusCode}',
+  });
 }

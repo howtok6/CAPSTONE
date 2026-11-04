@@ -1,11 +1,14 @@
 // Pantalla principal de «Vía»: vista de conducción con semáforo, paneles de
 // gasolina y gasto energético, y controles de recorrido.
 //
-// La pantalla funciona en tres modos según de dónde salen los datos:
+// La pantalla funciona en tres modos según de dónde salen los datos. Todo lo
+// que no es demo viene del backend Go (lib/via_api.dart y lib/rutas_osm.dart):
 // - Demo: semáforo, rutas y distancias simuladas dentro de la app.
-// - En vivo: semáforo y destinos desde la simulación SUMO (lib/via_api.dart).
-// - Ruta propuesta: ruta real de OpenStreetMap elegida por el usuario
-//   (lib/rutas_osm.dart y lib/proponer_ruta.dart); se recorre en demo.
+// - Viaje simulado: un vehículo de la simulación recorre un destino de
+//   demostración y el panel muestra sus semáforos.
+// - Viaje GPS: el usuario elige una ruta real (lib/proponer_ruta.dart) y la app
+//   envía la ubicación del celular (lib/ubicacion.dart); el backend responde
+//   el próximo semáforo. Sin permiso de ubicación se recorre en demo.
 
 import 'dart:async';
 import 'dart:math' as math;
@@ -13,9 +16,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'driving_scene.dart';
+import 'mapa_low_poly.dart' show ConstructorMapa;
 import 'overhead_scene.dart';
 import 'proponer_ruta.dart';
 import 'rutas_osm.dart';
+import 'ubicacion.dart';
 import 'via_api.dart';
 
 /// Paleta compartida: amarillo de acento, fondo de tarjetas y texto secundario.
@@ -53,14 +58,27 @@ class MyApp extends StatelessWidget {
 /// Pantalla de conducción. Los clientes se pueden inyectar para las pruebas;
 /// si son null se usan los servicios reales.
 class MobilityPage extends StatefulWidget {
-  const MobilityPage({super.key, this.api, this.buscador, this.enrutador});
+  const MobilityPage({
+    super.key,
+    this.api,
+    this.buscador,
+    this.enrutador,
+    this.ubicacion,
+    this.constructorMapa,
+  });
 
-  /// Cliente de la API de simulación; null usa la URL configurada (API_URL).
+  /// Cliente del backend; null usa la URL configurada (API_URL).
   final ViaApi? api;
 
-  /// Servicios de OpenStreetMap para proponer rutas; null usa los públicos.
+  /// Búsqueda de lugares y rutas (también vía backend); null usa API_URL.
   final BuscadorLugares? buscador;
   final Enrutador? enrutador;
+
+  /// Fuente de ubicación para los viajes GPS; null usa el GPS del celular.
+  final FuenteUbicacion? ubicacion;
+
+  /// Mapa de «Proponer ruta»; null usa el mapa 3D low poly (MapLibre).
+  final ConstructorMapa? constructorMapa;
   @override
   State<MobilityPage> createState() => _MobilityPageState();
 }
@@ -78,18 +96,25 @@ class _MobilityPageState extends State<MobilityPage> {
   String? expandedPanel;
   late final Timer timer;
 
-  // --- Simulación en vivo (tsc-thesis/api) ---------------------------------
+  // --- Viajes en vivo (backend) -------------------------------------------
   late final ViaApi api = widget.api ?? ViaApi();
-  List<Destino>? destinos; // null = API no disponible → modo demo
+  List<Destino>?
+  destinos; // null = simulación no disponible → sin destinos demo
   EstadoViaje? viaje;
   bool consultando = false;
+
+  // --- GPS de los viajes por ruta propuesta ----------------------------------
+  late final FuenteUbicacion gps = widget.ubicacion ?? FuenteGps();
+  StreamSubscription<Posicion>? _seguimiento;
+  bool _enviandoUbicacion = false;
+  Posicion? _ubicacionPendiente; // la última que llegó mientras se enviaba otra
   int _intentoViaje = 0; // identifica el último «Iniciar recorrido» en vivo
   bool get enVivo => viaje != null;
   ProximoSemaforo? get semaforoVivo => viaje?.semaforo;
 
-  // --- Rutas propuestas por el usuario (OpenStreetMap) ----------------------
+  // --- Rutas propuestas por el usuario (OpenStreetMap, vía backend) ---------
   // Usan valores del selector desde [primeraPropuesta] para no chocar con los
-  // índices de la simulación. No existen en la red SUMO: se recorren en demo.
+  // índices de la simulación. Se recorren con el GPS del celular.
   static const primeraPropuesta = 100;
   final propuestas = <RutaPropuesta>[];
   RutaPropuesta? get propuesta =>
@@ -135,6 +160,7 @@ class _MobilityPageState extends State<MobilityPage> {
   /// estado del recorrido (entrando a la vía, llegada, reinicio).
   String get nombreSemaforo {
     if (viaje == null) return 'Av. Alameda';
+    if (viaje!.esGps && !viaje!.tieneUbicacion) return 'Buscando tu ubicación…';
     if (viaje!.estado == 'esperando') return 'Entrando a la vía…';
     if (viaje!.estado == 'llego') return 'Llegaste a ${viaje!.destino}';
     if (viaje!.estado == 'reiniciado') return 'Simulación reiniciada';
@@ -147,11 +173,17 @@ class _MobilityPageState extends State<MobilityPage> {
   String get cambioSemaforo {
     final s = semaforoVivo;
     if (s == null) {
-      return enVivo
-          ? 'Simulación en vivo'
-          : ['Verde → amarillo', 'Amarillo → rojo', 'Rojo → verde'][phase];
+      if (!enVivo) {
+        return ['Verde → amarillo', 'Amarillo → rojo', 'Rojo → verde'][phase];
+      }
+      return viaje!.esGps ? 'Siguiendo tu ubicación' : 'Simulación en vivo';
     }
-    if (fase < 0) return 'Semáforo apagado · a ${s.distanciaM} m';
+    if (fase < 0) {
+      final motivo = s.color == 'apagado'
+          ? 'Semáforo apagado'
+          : 'Sin datos del semáforo';
+      return '$motivo · a ${s.distanciaM} m';
+    }
     final siguiente = _colores[s.siguiente];
     final cambio = siguiente == null
         ? _nombresColor[fase]
@@ -211,12 +243,13 @@ class _MobilityPageState extends State<MobilityPage> {
 
   /// Acción del botón Iniciar / Finalizar recorrido.
   ///
-  /// Al finalizar, retira el vehículo de la simulación sin esperar respuesta.
-  /// Al iniciar, crea un viaje en vivo solo si la API está disponible y la ruta
-  /// es de la simulación; las rutas demo y las propuestas se recorren en demo.
+  /// Al finalizar, deja de seguir el GPS y termina el viaje sin esperar
+  /// respuesta. Al iniciar: una ruta propuesta va como viaje GPS; un destino de
+  /// la simulación, como viaje simulado; sin backend, en demo.
   Future<void> alternarRecorrido() async {
     if (navigating) {
       final actual = viaje;
+      _detenerGps();
       setState(() {
         navigating = false;
         viaje = null;
@@ -227,7 +260,9 @@ class _MobilityPageState extends State<MobilityPage> {
       return;
     }
     setState(() => navigating = true);
-    if (destinos == null || propuesta != null) return; // modo demo
+    final ruta = propuesta;
+    if (ruta != null) return iniciarViajeGps(ruta);
+    if (destinos == null) return; // modo demo
     // Crear el viaje puede tardar varios segundos. Si mientras tanto se finaliza
     // el recorrido, o se inicia otro, este viaje ya no corresponde: se retira de
     // la simulación en vez de dejar el vehículo abierto.
@@ -250,6 +285,71 @@ class _MobilityPageState extends State<MobilityPage> {
     }
   }
 
+  /// Viaje GPS por la ruta propuesta: pide permiso de ubicación, crea el viaje
+  /// en el backend y le envía cada ubicación. Sin permiso o sin backend, el
+  /// recorrido sigue en demo.
+  Future<void> iniciarViajeGps(RutaPropuesta ruta) async {
+    final intento = ++_intentoViaje;
+    bool vigente() => mounted && navigating && intento == _intentoViaje;
+    void aviso(String texto) {
+      if (!vigente()) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(texto)));
+    }
+
+    if (!await gps.permitir()) {
+      aviso('Activa la ubicación para seguir la ruta en vivo: modo demo');
+      return;
+    }
+    if (!vigente()) return;
+    try {
+      final nuevo = await api.crearViajeGps(
+        trazado: ruta.trazadoLatLon,
+        destino: ruta.paradas.last.nombre,
+      );
+      if (!vigente()) {
+        unawaited(api.finalizarViaje(nuevo.id).catchError((_) {}));
+        return;
+      }
+      setState(() => viaje = nuevo);
+      _seguimiento = gps.seguir().listen(
+        enviarUbicacion,
+        onError: (_) => aviso('Se perdió la señal del GPS'),
+      );
+    } catch (_) {
+      aviso('Sin conexión con el backend: modo demo');
+    }
+  }
+
+  /// Envía una ubicación al backend. Si hay otra en camino, guarda solo la
+  /// última y la envía al terminar, para no acumular pedidos atrasados.
+  Future<void> enviarUbicacion(Posicion p) async {
+    final actual = viaje;
+    if (actual == null || !actual.activo) return;
+    if (_enviandoUbicacion) {
+      _ubicacionPendiente = p;
+      return;
+    }
+    _enviandoUbicacion = true;
+    try {
+      final nuevo = await api.enviarUbicacion(actual.id, p);
+      if (mounted && viaje?.id == actual.id) setState(() => viaje = nuevo);
+    } catch (_) {
+      // Se reintenta con la próxima ubicación.
+    } finally {
+      _enviandoUbicacion = false;
+      final siguiente = _ubicacionPendiente;
+      _ubicacionPendiente = null;
+      if (siguiente != null) unawaited(enviarUbicacion(siguiente));
+    }
+  }
+
+  void _detenerGps() {
+    unawaited(_seguimiento?.cancel());
+    _seguimiento = null;
+    _ubicacionPendiente = null;
+  }
+
   /// Abre la pantalla «Proponer ruta». Si hay un recorrido en curso lo termina
   /// primero. La ruta que devuelve se agrega al selector y queda elegida.
   Future<void> proponerRuta() async {
@@ -261,6 +361,7 @@ class _MobilityPageState extends State<MobilityPage> {
         builder: (_) => ProponerRutaPage(
           buscador: widget.buscador,
           enrutador: widget.enrutador,
+          constructorMapa: widget.constructorMapa,
         ),
       ),
     );
@@ -275,6 +376,7 @@ class _MobilityPageState extends State<MobilityPage> {
   void dispose() {
     // Al salir, detiene el reloj y retira el vehículo si quedaba un viaje activo.
     timer.cancel();
+    _detenerGps();
     final actual = viaje;
     if (actual != null && actual.activo) {
       unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
@@ -929,9 +1031,11 @@ class _MobilityPageState extends State<MobilityPage> {
           alignment: Alignment.centerLeft,
           child: Text(
             navigating
-                ? (enVivo
-                      ? 'Recorrido en curso · Simulación en vivo'
-                      : 'Recorrido en curso · Demo')
+                ? (!enVivo
+                      ? 'Recorrido en curso · Demo'
+                      : viaje!.esGps
+                      ? 'Recorrido en curso · GPS en vivo'
+                      : 'Recorrido en curso · Simulación en vivo')
                 : propuesta != null
                 ? 'Desde ${propuesta!.paradas.first.nombre} · ${propuesta!.duracionMin.round()} min'
                 : 'Desde Plaza de Armas · ${(distance * 2.5).round()} min',

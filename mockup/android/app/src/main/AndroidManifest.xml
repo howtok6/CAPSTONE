@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Necesario para consultar la API de simulación (tsc-thesis/api). -->
+    <!-- Necesario para consultar el backend de «Vía». -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Viajes GPS: la app envía la ubicación al backend mientras dura el recorrido. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="mockup"
         android:name="${applicationName}"

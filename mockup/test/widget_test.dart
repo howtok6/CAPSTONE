@@ -178,7 +178,7 @@ void main() {
       final clave = '${req.method} ${req.url.path}';
       llamadas.add(clave);
       switch (clave) {
-        case 'GET /destinos':
+        case 'GET /v1/simulacion/destinos':
           return _json([
             {
               'ruta': 0,
@@ -187,9 +187,9 @@ void main() {
             },
             {'ruta': 1, 'nombre': 'Matucana', 'distancia_km': 2.9},
           ]);
-        case 'POST /viajes':
+        case 'POST /v1/viajes':
           return _json({...viaje, 'estado': 'esperando'}, 201);
-        case 'GET /viajes/v1':
+        case 'GET /v1/viajes/v1':
           return _json({
             ...viaje,
             'estado': 'en_ruta',
@@ -204,7 +204,7 @@ void main() {
               'exacto': true,
             },
           });
-        case 'DELETE /viajes/v1':
+        case 'DELETE /v1/viajes/v1':
           return http.Response('', 204);
       }
       return http.Response('no encontrado', 404);
@@ -237,13 +237,13 @@ void main() {
     await tester.tap(find.text('Finalizar recorrido'));
     await tester.pump();
     expect(find.text('DEMO'), findsOneWidget);
-    expect(llamadas, contains('DELETE /viajes/v1'));
+    expect(llamadas, contains('DELETE /v1/viajes/v1'));
     await tester.pumpWidget(const SizedBox());
   });
 
   group('En vivo: casos límite del semáforo', () {
     /// Abre la app contra una simulación simulada, inicia un recorrido y espera
-    /// una consulta. [viaje] es lo que responde `GET /viajes/v1`.
+    /// una consulta. [viaje] es lo que responde `GET /v1/viajes/v1`.
     Future<void> iniciarEnVivo(
       WidgetTester tester,
       Map<String, Object?> viaje,
@@ -255,7 +255,7 @@ void main() {
       final base = {'id': 'v1', 'ruta': 0, 'destino': 'Av. General Bustamante'};
       final cliente = MockClient((req) async {
         switch ('${req.method} ${req.url.path}') {
-          case 'GET /destinos':
+          case 'GET /v1/simulacion/destinos':
             return _json([
               {
                 'ruta': 0,
@@ -263,9 +263,9 @@ void main() {
                 'distancia_km': 1.7,
               },
             ]);
-          case 'POST /viajes':
+          case 'POST /v1/viajes':
             return _json({...base, 'estado': 'esperando'}, 201);
-          case 'GET /viajes/v1':
+          case 'GET /v1/viajes/v1':
             return _json({...base, ...viaje});
         }
         return http.Response('', 204);
@@ -349,7 +349,7 @@ void main() {
       final clave = '${req.method} ${req.url.path}';
       llamadas.add(clave);
       switch (clave) {
-        case 'GET /destinos':
+        case 'GET /v1/simulacion/destinos':
           return _json([
             {
               'ruta': 0,
@@ -357,7 +357,7 @@ void main() {
               'distancia_km': 1.7,
             },
           ]);
-        case 'POST /viajes':
+        case 'POST /v1/viajes':
           return creacion.future; // la API todavía no responde
       }
       return http.Response('', 204);
@@ -387,7 +387,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(llamadas, contains('DELETE /viajes/v9'));
+    expect(llamadas, contains('DELETE /v1/viajes/v9'));
     expect(find.text('DEMO'), findsOneWidget);
     expect(find.text('Iniciar recorrido'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());

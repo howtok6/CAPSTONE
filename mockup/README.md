@@ -2,7 +2,9 @@
 
 «Vía» es la app móvil del proyecto CAPSTONE de control adaptativo de semáforos. Muestra al conductor el próximo
 semáforo de su ruta, con la cuenta regresiva para el cambio, y estima el combustible del recorrido. La app vive en
-la rama `dev-benja`, y la simulación de tránsito que la alimenta, en la rama `master` (`tsc-thesis/api`).
+la rama `dev-benja`. Habla **solo con el backend Go** del proyecto (`backend/` en la rama `master`), que a su vez
+consulta la simulación de tránsito, OSRM y Nominatim. La arquitectura completa está en `docs/arquitectura.md` de
+`master`.
 
 ## Cómo funciona
 
@@ -26,14 +28,15 @@ Cálculos: consumo = distancia × L/100 km ÷ 100. La equivalencia de 8,9 kWh/L 
 
 | Modo | Cuándo se usa | Semáforo y destinos | Etiqueta |
 |---|---|---|---|
-| **Demo** | La API de simulación no responde | Simulados en la app: ciclo verde 30 s, amarillo 5 s y rojo 25 s; destinos fijos (Bustamante y Forestal) | DEMO |
-| **En vivo** | La API responde y se inicia un recorrido hacia uno de sus destinos | La simulación SUMO crea un vehículo en la ruta y la app consulta cada segundo su próximo semáforo | EN VIVO |
-| **Ruta propuesta** | El usuario eligió una ruta propia (★ en el selector) | Ruta real de OpenStreetMap; el semáforo queda en demo | DEMO |
+| **Demo** | El backend no responde | Simulados en la app: ciclo verde 30 s, amarillo 5 s y rojo 25 s; destinos fijos (Bustamante y Forestal) | DEMO |
+| **Viaje simulado** | Se inicia un recorrido hacia un destino de la simulación | Un vehículo de la simulación recorre el destino; la app consulta cada segundo su próximo semáforo | EN VIVO |
+| **Viaje GPS** | Se inicia una ruta propuesta (★) con permiso de ubicación | La app envía la ubicación del celular al backend, que responde el próximo semáforo de la ruta y su acceso | EN VIVO |
 
-La app nunca se bloquea por falta de conexión: si la API no está, todo sigue en modo demo.
+La app nunca se bloquea por falta de conexión: si el backend no está, o no hay permiso de ubicación, todo sigue en
+modo demo.
 
-Las rutas propuestas se recorren en demo porque sus calles no existen en la red de la simulación, y por eso no
-hay semáforos simulados para ellas.
+En un viaje GPS solo aparecen los semáforos que existen en la red simulada (la franja del eje Alameda →
+Providencia → Apoquindo); en calles fuera de ella el panel muestra «Sin semáforos en la ruta».
 
 ### Proponer una ruta
 
@@ -49,9 +52,9 @@ en la indicación sobre el auto.
 
 | Qué | Servicio | Archivo |
 |---|---|---|
-| Mapa de fondo | Teselas de OpenStreetMap con `flutter_map`, en modo oscuro | `lib/proponer_ruta.dart` |
-| Buscar lugares y nombrar el punto tocado | **Nominatim** (texto ↔ coordenadas) | `lib/rutas_osm.dart` |
-| Rutas, alternativas e indicaciones | **OSRM** (rutas en auto por calles reales) | `lib/rutas_osm.dart` |
+| Mapa 3D low poly | Teselas vectoriales de **OpenFreeMap** (datos de OpenStreetMap) con MapLibre y un estilo propio: edificios como bloques de color plano según su altura, sin íconos ni comercios | `lib/mapa_low_poly.dart` |
+| Buscar lugares y nombrar el punto tocado | Backend `GET /v1/lugares` (Nominatim) | `lib/rutas_osm.dart` |
+| Rutas, alternativas, indicaciones y semáforos de cada ruta | Backend `POST /v1/rutas` (OSRM) | `lib/rutas_osm.dart` |
 
 ## Cómo ejecutarla
 
@@ -68,29 +71,28 @@ Mientras corre: `r` recarga los cambios, `R` reinicia la app y `q` sale.
 En Windows, compilar para Android puede pedir activar el **Modo de desarrollador** (Configuración → Para
 programadores), porque `flutter_map` incluye un plugin nativo.
 
-### Con la simulación en vivo (opcional)
+### Con el backend (en vivo)
 
-1. En el PC, desde `tsc-thesis/` de la rama `master`, ejecuta `python scripts/run_api.py`. Requiere Python 3.13,
-   SUMO y FastAPI.
-2. Si usas un celular por USB, ejecuta `adb reverse tcp:8000 tcp:8000`. Hay que repetirlo cada vez que se
+1. En el PC, en la rama `master`: `docker compose up --build` desde la raíz. Sin Docker, en dos terminales:
+   `python simulacion/run.py` y `go run ./cmd/via-backend` dentro de `backend/`.
+2. Si usas un celular por USB, ejecuta `adb reverse tcp:8080 tcp:8080`. Hay que repetirlo cada vez que se
    reconecta el cable.
 3. `flutter run`. Al abrir, los destinos cambian a los de la simulación; con «Iniciar recorrido» la etiqueta pasa
-   a EN VIVO.
+   a EN VIVO. Una ruta propuesta pide permiso de ubicación la primera vez.
 
 ### Configuración al compilar
 
-Cada servicio se puede cambiar con `--dart-define`, por ejemplo
-`flutter run --dart-define=API_URL=http://192.168.1.50:8000`.
+La URL del backend se cambia con `--dart-define`, por ejemplo
+`flutter run --dart-define=API_URL=http://192.168.1.50:8080` (por Wi-Fi, con el puerto 8080 abierto en el
+firewall del PC).
 
 | Variable | Para qué | Valor por defecto |
 |---|---|---|
-| `API_URL` | API de la simulación | `http://127.0.0.1:8000` |
-| `OSRM_URL` | Cálculo de rutas | `https://router.project-osrm.org` |
-| `NOMINATIM_URL` | Búsqueda de lugares | `https://nominatim.openstreetmap.org` |
+| `API_URL` | Backend Go de «Vía» | `http://127.0.0.1:8080` |
 
-Los servidores públicos de OpenStreetMap son solo para desarrollo. Nominatim admite 1 consulta por segundo (la
-app lo respeta y no autocompleta mientras se escribe), y las teselas piden identificar la app y no usarlas a gran
-escala. Para producción hay que usar un servidor propio o un proveedor.
+Las consultas a Nominatim y OSRM las hace el backend, que respeta el límite de 1 consulta por segundo de
+Nominatim y guarda las respuestas en caché. Las teselas del mapa se piden directo a OpenFreeMap, que es gratis,
+sin clave ni límite de visitas; para producción conviene alojar teselas propias.
 
 ### Verificar
 
@@ -99,16 +101,20 @@ flutter analyze
 flutter test
 ```
 
-Hay 17 pruebas:
+Hay 21 pruebas:
 
 - **Diseño:** los controles caben en pantallas de 360×640, 390×844 y 1440×1000.
 - **Paneles:** gasolina, consumo, cámara y ciclo del semáforo.
 - **Modo en vivo:** con una API simulada, incluidos los casos límite: sin semáforo en la ruta, semáforo apagado,
   cuenta regresiva estimada y finalizar mientras se crea el viaje.
 - **Proponer rutas:**
-  - lectura de las respuestas de OSRM y Nominatim, con errores y paradas;
-  - el flujo completo con la simulación activa, que comprueba que una ruta propuesta va en demo y que un
-    destino de la simulación va en vivo.
+  - lectura de las respuestas del backend (`/v1/rutas` y `/v1/lugares`), con errores, paradas y semáforos;
+  - el flujo completo: una ruta propuesta va como viaje GPS, cada ubicación del GPS va al backend y el panel
+    muestra el semáforo que responde; un destino de la simulación va como viaje simulado;
+  - sin permiso de ubicación, la ruta propuesta se recorre en demo.
+- **Mapa low poly:** el estilo usa OpenFreeMap y levanta los edificios en colores planos sin íconos; el mapa solo
+  se redibuja cuando cambian las rutas o las paradas; elegir paleta y tocar el mapa fija una parada. MapLibre es
+  una vista nativa, así que las pruebas usan un mapa falso en su lugar.
 
 Las pruebas no usan internet: las respuestas de los servicios son simuladas.
 
@@ -119,11 +125,14 @@ Las pruebas no usan internet: las respuestas de los servicios son simuladas.
 | `lib/main.dart` | Pantalla de conducción, estado de los tres modos, paneles y controles |
 | `lib/driving_scene.dart` | Dibujo de la ciudad en perspectiva, vista desde detrás del auto |
 | `lib/overhead_scene.dart` | Dibujo del plano de la ciudad, vista desde arriba |
-| `lib/via_api.dart` | Cliente de la API de simulación: destinos, viajes y próximo semáforo |
-| `lib/rutas_osm.dart` | Clientes de Nominatim y OSRM, y los modelos `Lugar`, `Paso` y `RutaPropuesta` |
-| `lib/proponer_ruta.dart` | Pantalla «Proponer ruta»: mapa, paradas, búsqueda y alternativas |
+| `lib/via_api.dart` | Cliente del backend: destinos simulados, viajes GPS y simulados, ubicación y próximo semáforo |
+| `lib/rutas_osm.dart` | Búsqueda de lugares y rutas vía backend, y los modelos `Lugar`, `Paso` y `RutaPropuesta` |
+| `lib/ubicacion.dart` | GPS del celular (`geolocator`) detrás de la interfaz `FuenteUbicacion` |
+| `lib/proponer_ruta.dart` | Pantalla «Proponer ruta»: paradas, búsqueda, alternativas y selector de paleta |
+| `lib/mapa_low_poly.dart` | Mapa 3D low poly (MapLibre + OpenFreeMap): estilo, tres paletas, rutas y paradas |
 | `test/widget_test.dart` | Pruebas de diseño, paneles y modo en vivo |
 | `test/rutas_test.dart` | Pruebas de proponer rutas |
+| `test/mapa_test.dart` | Pruebas del estilo low poly, las paletas y la conexión con el mapa |
 
 Cada clase y función tiene un comentario que explica qué hace y por qué.
 
@@ -136,16 +145,20 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 3-nov-2026 | Benjamín Quiroz | Proponer rutas con OpenStreetMap (`70c005f`): búsqueda con Nominatim, rutas y alternativas con OSRM, mapa con `flutter_map` y 5 pruebas nuevas |
 | 4-nov-2026 | Benjamín Quiroz | Documentación del código y de este README |
 | 4-nov-2026 | Benjamín Quiroz | Correcciones del modo en vivo, con 4 pruebas nuevas: un viaje finalizado mientras se creaba ya no queda abierto en la simulación; sin semáforo en la ruta, o con el semáforo apagado, el panel muestra «—» y luces apagadas en vez de datos del demo o rojo; una cuenta regresiva no exacta se muestra como «≈12s · estimado» |
+| 4-nov-2026 | Gabriel Cárdenas | Mapa 3D low poly en «Proponer ruta»: MapLibre (`maplibre_gl`) con teselas vectoriales de OpenFreeMap en lugar de `flutter_map` y teselas raster; edificios extruidos de color plano, cámara inclinada y tres paletas (Noche, Maqueta, Pastel) |
+| 4-nov-2026 | Gabriel Cárdenas | La app habla solo con el backend Go (`/v1`): lugares, rutas con sus semáforos y viajes. Las rutas propuestas se recorren como viaje GPS con la ubicación del celular (`lib/ubicacion.dart`, permisos de ubicación en Android) |
 
 ## Limitaciones conocidas y pendientes
 
-- **No hay GPS.** El auto no se mueve en pantalla; la ciudad dibujada es conceptual.
-- **Rutas propuestas:**
-  - se guardan solo en memoria y se pierden al cerrar la app;
-  - se recorren en demo.
+- **GPS:** se usa para el próximo semáforo de una ruta propuesta, pero el auto no se mueve en pantalla; la ciudad
+  dibujada es conceptual. El seguimiento funciona con la app abierta (sin ubicación en segundo plano).
+- **Rutas propuestas:** se guardan solo en memoria y se pierden al cerrar la app.
+- **Mapa low poly:** MapLibre funciona en Android, iOS y web, pero no en Windows, macOS ni Linux de escritorio.
+  La paleta elegida se recuerda solo mientras la app está abierta.
 - **Simulación:**
   - el origen es fijo (Alameda frente a Plaza de Armas);
   - solo hay dos destinos (Bustamante y Matucana), porque la red simulada no está conectada de punta a punta.
-- **iOS:** falta la excepción de ATS para conectarse por HTTP a la API en desarrollo.
+- **iOS:** falta la excepción de ATS para conectarse por HTTP al backend en desarrollo (la descripción de uso de
+  ubicación ya está en `Info.plist`, pero no se ha probado en un iPhone).
 - **Identificador de la app:** es `com.example.mockup`, y también se usa para identificarse ante OpenStreetMap.
   Conviene cambiarlo por el definitivo.
