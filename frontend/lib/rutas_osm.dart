@@ -103,7 +103,23 @@ class SemaforoEnRuta {
   /// semáforo de un viaje) y su ubicación, para dibujarlo en el mapa.
   final String id;
   final LatLng? punto;
+
+  /// Lee un semáforo de `/v1/rutas` o de `/v1/simulacion/destinos`.
+  factory SemaforoEnRuta.fromJson(Map<String, dynamic> s) => SemaforoEnRuta(
+    s['nombre'] as String,
+    (s['distancia_desde_inicio_m'] as num).toDouble(),
+    id: s['id'] as String? ?? '',
+    punto: s['lat'] == null || s['lon'] == null
+        ? null
+        : LatLng((s['lat'] as num).toDouble(), (s['lon'] as num).toDouble()),
+  );
 }
+
+/// Lee un trazado del backend: lista de pares [lat, lon] (o null).
+List<LatLng> trazadoDesdeJson(Object? datos) => [
+  for (final c in datos as List? ?? const [])
+    LatLng((c[0] as num).toDouble(), (c[1] as num).toDouble()),
+];
 
 /// Ruta calculada por el backend, lista para mostrarse en el mapa y en el selector.
 class RutaPropuesta {
@@ -132,10 +148,7 @@ class RutaPropuesta {
       paradas: paradas,
       distanciaKm: (j['distancia_km'] as num).toDouble(),
       duracionMin: (j['duracion_min'] as num).toDouble(),
-      trazado: [
-        for (final c in j['trazado'] as List)
-          LatLng((c[0] as num).toDouble(), (c[1] as num).toDouble()),
-      ],
+      trazado: trazadoDesdeJson(j['trazado']),
       pasos: [
         for (final p in j['pasos'] as List? ?? const [])
           Paso(
@@ -147,17 +160,7 @@ class RutaPropuesta {
       ],
       semaforos: [
         for (final s in j['semaforos'] as List? ?? const [])
-          SemaforoEnRuta(
-            s['nombre'] as String,
-            (s['distancia_desde_inicio_m'] as num).toDouble(),
-            id: s['id'] as String? ?? '',
-            punto: s['lat'] == null || s['lon'] == null
-                ? null
-                : LatLng(
-                    (s['lat'] as num).toDouble(),
-                    (s['lon'] as num).toDouble(),
-                  ),
-          ),
+          SemaforoEnRuta.fromJson(s as Map<String, dynamic>),
       ],
     );
   }

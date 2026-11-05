@@ -143,6 +143,16 @@ class _MobilityPageState extends State<MobilityPage> {
   RutaPropuesta? get propuesta =>
       route >= primeraPropuesta ? propuestas[route - primeraPropuesta] : null;
 
+  /// Destino de la simulación elegido en el selector, si lo hay.
+  Destino? get destinoSimulado =>
+      propuesta == null && destinos != null && route < destinos!.length
+      ? destinos![route]
+      : null;
+
+  /// La ruta que se dibuja en el mapa: la propuesta elegida o el recorrido del
+  /// destino de la simulación (el mismo camino que hará el vehículo simulado).
+  RutaPropuesta? get rutaEnMapa => propuesta ?? destinoSimulado?.comoRuta;
+
   /// Distancia del recorrido elegido, en km. Prioridad: ruta propuesta,
   /// destino de la simulación y, si no hay API, los valores fijos del demo.
   double get distance =>
@@ -345,7 +355,7 @@ class _MobilityPageState extends State<MobilityPage> {
     if (!mounted) return;
     setState(() => miUbicacion = p);
     if (viaje?.esGps == true) unawaited(enviarUbicacion(p));
-    if (siguiendo && (navigating || propuesta == null)) seguirConCamara();
+    if (siguiendo && (navigating || rutaEnMapa == null)) seguirConCamara();
   }
 
   /// Lo que sigue la cámara: el vehículo en un viaje simulado; si no, el
@@ -375,7 +385,7 @@ class _MobilityPageState extends State<MobilityPage> {
   /// ruta elegida y sin recorrido, la encuadra completa.
   void recentrar() {
     final objetivo = objetivoCamara;
-    final ruta = propuesta;
+    final ruta = rutaEnMapa;
     final seguir = navigating || ruta == null;
     setState(() => siguiendo = seguir);
     if (seguir && objetivo != null) {
@@ -399,7 +409,10 @@ class _MobilityPageState extends State<MobilityPage> {
   Future<void> cargarDestinos() async {
     try {
       final lista = await api.destinos();
-      if (mounted && lista.isNotEmpty) setState(() => destinos = lista);
+      if (mounted && lista.isNotEmpty) {
+        setState(() => destinos = lista);
+        recentrar(); // muestra el recorrido de demostración elegido
+      }
     } catch (_) {
       // Sin API: la app sigue en modo demo.
     }
@@ -749,10 +762,11 @@ class _MobilityPageState extends State<MobilityPage> {
 
   static const _hexFase = ['#6BD5A0', '#F5CB45', '#FF7773'];
 
-  /// Mapa navegable de fondo: la ruta elegida con sus paradas y semáforos (el
-  /// próximo con su color actual) y el usuario o el vehículo simulado.
+  /// Mapa navegable de fondo: la ruta elegida (propuesta o de la simulación)
+  /// con sus paradas y semáforos (el próximo con su color actual) y el usuario
+  /// o el vehículo simulado.
   Widget mapaPrincipal() {
-    final ruta = propuesta;
+    final ruta = rutaEnMapa;
     final proximo = semaforoVivo;
     SemaforoMapa? destacado;
     final semaforos = <SemaforoMapa>[

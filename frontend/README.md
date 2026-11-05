@@ -11,13 +11,14 @@ consulta la simulación de tránsito, OSRM y Nominatim. La arquitectura completa
 ### La pantalla de conducción
 
 El fondo es un **mapa 3D low poly navegable** de Santiago: se arrastra, se acerca y aleja con dos dedos, se gira
-y se inclina. Muestra la ruta elegida (en amarillo, con sus paradas A y B), los semáforos por los que pasa y, durante
+y se inclina. Muestra la ruta elegida, sea una propuesta o un destino de la simulación (en amarillo, con sus
+paradas A y B), los semáforos por los que pasa y, durante
 un recorrido, el próximo semáforo con el color que tiene en ese momento. El punto azul es el usuario (con un círculo
 cuando la ubicación es aproximada) y el punto amarillo, el vehículo de un viaje simulado.
 
-La cámara sigue al usuario durante el recorrido. Al mover el mapa con los dedos deja de seguirlo, y el botón de
-recentrar (sobre el panel de recorrido) la devuelve. Sin recorrido, al elegir una ruta propuesta el mapa la encuadra
-completa.
+La cámara sigue al usuario (o al vehículo simulado) durante el recorrido. Al mover el mapa con los dedos deja de
+seguirlo, y el botón de recentrar (sobre el panel de recorrido) la devuelve. Sin recorrido, al elegir una ruta el
+mapa la encuadra completa.
 
 Sobre el mapa:
 
@@ -149,7 +150,9 @@ Hay 28 pruebas:
     muestra el semáforo que responde; un destino de la simulación va como viaje simulado;
   - sin permiso de ubicación, la ruta propuesta se recorre en demo;
   - el mapa principal recibe la ruta elegida, sus paradas y la ubicación, y deja de seguir al usuario cuando este
-    toca el mapa hasta que se recentra.
+    toca el mapa hasta que se recentra;
+  - un destino de la simulación se dibuja con su recorrido y sus semáforos, y en el viaje simulado el mapa muestra
+    el vehículo y el próximo semáforo con su color.
 - **Ubicación:** la primera apertura pregunta y guarda la elección; el modo aproximado ajusta la posición a la
   cuadrícula del rango (y no cambia dentro de una celda); «Ahora no» no pide permiso ni vuelve a preguntar; si el
   sistema solo da ubicación aproximada, el encabezado lo indica.
@@ -192,13 +195,12 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 4-nov-2026 | Benjamín Quiroz | El proyecto Flutter pasa de `mockup/` a la raíz del repositorio en `dev-benja`, con el `.gitignore` de Flutter (el anterior dejaba fuera `android/`, `ios/` y `macos/`). Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
 | 4-nov-2026 | Gabriel Cárdenas | Mapa navegable en la pantalla principal en lugar de los dibujos fijos: ruta elegida con sus semáforos, próximo semáforo con su color, usuario o vehículo simulado, cámara que sigue y botón de recentrar. Ubicación exacta o por rango (250 m, 500 m, 1 km) elegida al abrir la app y guardada; el origen de «Proponer ruta» parte en la ubicación del usuario. 7 pruebas nuevas |
 | 4-nov-2026 | Benjamín Quiroz | Todo el proyecto Flutter pasa a la carpeta `frontend/` del repositorio, junto con su `.gitignore`; en la raíz queda solo un `.gitignore` para la configuración local del editor. Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
+| 5-nov-2026 | Gabriel Cárdenas | Los destinos de la simulación también se dibujan en el mapa: `GET /v1/simulacion/destinos` trae el trazado que sigue el vehículo simulado y los semáforos que cruza, así que al elegir un destino se ve la línea de la ruta y, durante el viaje simulado, el próximo semáforo con su color |
 
 ## Limitaciones conocidas y pendientes
 
 - **GPS:** el seguimiento funciona con la app abierta (sin ubicación en segundo plano). En modo aproximado el
   próximo semáforo es una estimación: el backend lo calcula sobre el centro de la zona.
-- **Mapa principal:** los destinos de demostración de la simulación no traen trazado, así que en un viaje simulado
-  el mapa muestra el vehículo pero no la línea de la ruta.
 - **Rutas propuestas:** se guardan solo en memoria y se pierden al cerrar la app.
 - **Mapa low poly:** MapLibre funciona en Android, iOS y web, pero no en Windows, macOS ni Linux de escritorio (ahí
   la pantalla muestra un fondo liso con un aviso). La paleta elegida se recuerda solo mientras la app está abierta.

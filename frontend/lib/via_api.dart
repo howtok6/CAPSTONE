@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
+import 'rutas_osm.dart';
 import 'ubicacion.dart';
 
 const apiUrl = String.fromEnvironment(
@@ -19,18 +20,52 @@ const apiUrl = String.fromEnvironment(
   defaultValue: 'http://127.0.0.1:8080',
 );
 
-/// Recorrido de demostración de la simulación (`GET /v1/simulacion/destinos`).
+/// Recorrido de demostración de la simulación (`GET /v1/simulacion/destinos`):
+/// el camino que hará el vehículo simulado, con los semáforos que cruza.
 class Destino {
-  const Destino(this.ruta, this.nombre, this.distanciaKm);
+  const Destino(
+    this.ruta,
+    this.nombre,
+    this.distanciaKm, {
+    this.origen = '',
+    this.trazado = const [],
+    this.semaforos = const [],
+  });
   final int ruta;
   final String nombre;
   final double distanciaKm;
+  final String origen;
+  final List<LatLng> trazado;
+  final List<SemaforoEnRuta> semaforos;
 
   factory Destino.fromJson(Map<String, dynamic> j) => Destino(
     j['ruta'] as int,
     j['nombre'] as String,
     (j['distancia_km'] as num).toDouble(),
+    origen: j['origen'] as String? ?? '',
+    trazado: trazadoDesdeJson(j['trazado']),
+    semaforos: [
+      for (final s in j['semaforos'] as List? ?? const [])
+        SemaforoEnRuta.fromJson(s as Map<String, dynamic>),
+    ],
   );
+
+  /// El recorrido como ruta para el mapa: origen (A), destino (B), trazado y
+  /// semáforos. null si la simulación no entregó el trazado.
+  RutaPropuesta? get comoRuta => trazado.length < 2
+      ? null
+      : RutaPropuesta(
+          nombre: nombre,
+          paradas: [
+            Lugar(origen.isEmpty ? 'Origen' : origen, trazado.first),
+            Lugar(nombre, trazado.last),
+          ],
+          distanciaKm: distanciaKm,
+          duracionMin: 0,
+          trazado: trazado,
+          pasos: const [],
+          semaforos: semaforos,
+        );
 }
 
 /// Próximo semáforo en el camino del usuario, según el backend.

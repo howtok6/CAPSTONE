@@ -17,11 +17,11 @@ http.Response _json(Object cuerpo, [int status = 200]) => http.Response.bytes(
 );
 
 /// La app con mapa y GPS falsos (MapLibre y geolocator son nativos).
-Widget _app({ViaApi? api}) => MaterialApp(
+Widget _app({ViaApi? api, MapaFalso? mapa}) => MaterialApp(
   home: MobilityPage(
     api: api,
     ubicacion: sinGps(),
-    constructorMapa: MapaFalso().construir,
+    constructorMapa: (mapa ?? MapaFalso()).construir,
   ),
 );
 
@@ -178,6 +178,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final llamadas = <String>[];
+    final mapa = MapaFalso();
     final viaje = {
       'id': 'v1',
       'ruta': 0,
@@ -194,7 +195,22 @@ void main() {
             {
               'ruta': 0,
               'nombre': 'Av. General Bustamante',
+              'origen': 'Alameda frente a Plaza de Armas',
               'distancia_km': 1.7,
+              'trazado': [
+                [-33.4433, -70.6505],
+                [-33.4430, -70.6450],
+                [-33.4370, -70.6331],
+              ],
+              'semaforos': [
+                {
+                  'id': 'GS_1',
+                  'nombre': 'Alameda × Santa Rosa',
+                  'lat': -33.4430,
+                  'lon': -70.6450,
+                  'distancia_desde_inicio_m': 510,
+                },
+              ],
             },
             {'ruta': 1, 'nombre': 'Matucana', 'distancia_km': 2.9},
           ]);
@@ -205,6 +221,7 @@ void main() {
             ...viaje,
             'estado': 'en_ruta',
             'distancia_restante_m': 1500,
+            'ubicacion': {'lat': -33.4432, 'lon': -70.6490},
             'proximo_semaforo': {
               'id': 'GS_1',
               'nombre': 'Alameda × Santa Rosa',
@@ -221,10 +238,17 @@ void main() {
       return http.Response('no encontrado', 404);
     });
     await tester.pumpWidget(
-      _app(api: ViaApi(baseUrl: 'http://api.test', client: cliente)),
+      _app(
+        api: ViaApi(baseUrl: 'http://api.test', client: cliente),
+        mapa: mapa,
+      ),
     );
     await tester.pump();
     expect(find.text('Av. General Bustamante · 1,7 km'), findsOneWidget);
+    // El destino de la simulación se dibuja con su recorrido y sus semáforos.
+    expect(mapa.ultimo!.trazados.single, hasLength(3));
+    expect(mapa.ultimo!.paradas.map((p) => p.etiqueta), ['A', 'B']);
+    expect(mapa.ultimo!.semaforos.single.id, 'GS_1');
 
     await tester.tap(find.text('Iniciar recorrido'));
     await tester.pump();
@@ -236,6 +260,10 @@ void main() {
     expect(find.text('Alameda × Santa Rosa'), findsOneWidget);
     expect(find.text('17s'), findsOneWidget);
     expect(find.text('Rojo → verde · a 120 m'), findsOneWidget);
+    // En el mapa: el vehículo, y el próximo semáforo en rojo.
+    expect(mapa.ultimo!.posicion!.vehiculo, isTrue);
+    expect(mapa.ultimo!.proximo!.id, 'GS_1');
+    expect(mapa.ultimo!.colorProximo, '#FF7773');
     expect(
       find.text('Recorrido en curso · Simulación en vivo'),
       findsOneWidget,

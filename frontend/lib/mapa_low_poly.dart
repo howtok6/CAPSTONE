@@ -472,11 +472,24 @@ class _MapaLowPolyState extends State<MapaLowPoly> {
     _conectar();
   }
 
+  /// Último movimiento pedido antes de que el mapa estuviera listo; se aplica
+  /// apenas carga el estilo (por ejemplo, encuadrar la ruta al abrir la app).
+  VoidCallback? _pendiente;
+
   void _conectar() {
     final control = widget.datos.control;
-    control._mover = _mover;
-    control._encuadrar = _encuadrar;
-    control._seguir = _seguir;
+    control._mover = (p, z, i) => _cuandoEsteListo(() => _mover(p, z, i));
+    control._encuadrar = (p, i) => _cuandoEsteListo(() => _encuadrar(p, i));
+    control._seguir = (p, r, c) => _cuandoEsteListo(() => _seguir(p, r, c));
+  }
+
+  void _cuandoEsteListo(VoidCallback movimiento) {
+    if (_mapa != null && _estiloListo) {
+      _pendiente = null;
+      movimiento();
+    } else {
+      _pendiente = movimiento;
+    }
   }
 
   void _mover(LatLng punto, double zoom, double? inclinacion) {
@@ -779,6 +792,9 @@ class _MapaLowPolyState extends State<MapaLowPoly> {
         onStyleLoadedCallback: () {
           _estiloListo = true;
           _encolar(_dibujar);
+          final pendiente = _pendiente;
+          _pendiente = null;
+          pendiente?.call();
         },
         onMapClick: (_, punto) =>
             d.alTocar(LatLng(punto.latitude, punto.longitude)),
