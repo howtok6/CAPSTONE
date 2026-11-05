@@ -215,6 +215,9 @@ class SimulacionEnVivo:
             return dict(self._estado)
 
     def destinos(self) -> list[dict]:
+        """Recorridos de demostración, con el trazado que sigue el vehículo
+        ([lat, lon]) y los semáforos por los que pasa, en orden."""
+        por_id = {s["id"]: s for s in self._semaforos}
         return [
             {
                 "ruta": i,
@@ -222,6 +225,18 @@ class SimulacionEnVivo:
                 "nombre": DESTINOS[i][1],
                 "origen": ORIGEN[0],
                 "distancia_km": round(r["largo_m"] / 1000, 1),
+                "trazado": r.get("trazado", []),
+                "semaforos": [
+                    {
+                        "id": tid,
+                        "nombre": por_id[tid]["nombre"],
+                        "lat": por_id[tid]["lat"],
+                        "lon": por_id[tid]["lon"],
+                        "distancia_desde_inicio_m": distancia,
+                    }
+                    for tid, distancia in r.get("semaforos", [])
+                    if tid in por_id
+                ],
             }
             for i, r in enumerate(self._rutas)
         ]
@@ -339,9 +354,45 @@ class SimulacionEnVivo:
                         mejor = r
             if mejor is None:
                 raise RuntimeError(f"no hay ruta hacia «{nombre}»")
-            rutas.append({"edges": list(mejor.edges), "largo_m": mejor.length})
+            trazado, semaforos = self._geometria_ruta(sim, list(mejor.edges))
+            rutas.append({
+                "edges": list(mejor.edges),
+                "largo_m": mejor.length,
+                "trazado": trazado,
+                "semaforos": semaforos,
+            })
             log.info("ruta a %s: %.1f km, %d arcos", nombre, mejor.length / 1000, len(mejor.edges))
         return rutas
+
+    def _geometria_ruta(self, sim, arcos: list[str]) -> tuple[list, list]:
+        """Trazado [lat, lon] de una ruta de SUMO y los semáforos que cruza.
+
+        El trazado une la forma de cada arco. Un semáforo cuenta si controla la
+        conexión entre un arco de la ruta y el siguiente, que es exactamente el
+        que verá el vehículo; su distancia es lo recorrido hasta la línea de
+        detención.
+        """
+        red = self._red
+        geo = sim.conn.simulation.convertGeo
+        trazado: list[list[float]] = []
+        semaforos: list[tuple[str, int]] = []
+        recorrido = 0.0
+        for i, arco_id in enumerate(arcos):
+            arco = red.getEdge(arco_id)
+            for x, y in arco.getShape():
+                lon, lat = geo(x, y)
+                punto = [round(lat, 6), round(lon, 6)]
+                if not trazado or trazado[-1] != punto:
+                    trazado.append(punto)
+            recorrido += arco.getLength()
+            if i + 1 == len(arcos):
+                break
+            for conexion in arco.getConnections(red.getEdge(arcos[i + 1])):
+                tid = conexion.getTLSID()
+                if tid and tid in sim.tls and all(t != tid for t, _ in semaforos):
+                    semaforos.append((tid, round(recorrido)))
+                    break
+        return trazado, semaforos
 
     def _nombrar_semaforos(self, sim) -> dict:
         nombres = {}

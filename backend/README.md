@@ -66,7 +66,7 @@ Todas las respuestas son JSON (UTF-8). Coordenadas en WGS84; los trazados son li
 | GET | `/v1/semaforos/{id}` | Un semáforo con el estado de cada acceso |
 | GET | `/v1/semaforos/proximo?lat=&lon=&rumbo=` | Próximo semáforo hacia donde avanza el usuario, sin viaje |
 | GET | `/v1/trafico?bbox=&incluir_libres=` | Velocidad y nivel de servicio por calle, con su geometría |
-| GET | `/v1/simulacion/destinos` | Recorridos de demostración para viajes simulados |
+| GET | `/v1/simulacion/destinos` | Recorridos de demostración para viajes simulados, con su trazado y sus semáforos |
 | POST | `/v1/viajes` | Iniciar un viaje GPS o simulado |
 | GET | `/v1/viajes/{id}` | Estado del viaje y próximo semáforo (actualizado) |
 | POST | `/v1/viajes/{id}/ubicacion` | Enviar la ubicación del GPS; devuelve el viaje actualizado |

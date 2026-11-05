@@ -98,6 +98,15 @@ func (v *Viajes) crearSimulado(ctx context.Context, s SolicitudViaje) (dominio.V
 	vi := &ViajeInterno{IDSimulacion: vs.ID}
 	vi.Publico = dominio.Viaje{ID: nuevoID(), Modo: dominio.ModoSimulado, CreadoEn: ahora}
 	desdeSimulado(&vi.Publico, vs, ahora)
+	// Los semáforos del recorrido vienen con el destino; si la consulta falla,
+	// el viaje sigue igual y solo queda sin ese conteo.
+	if ds, err := v.sim.Destinos(ctx); err == nil {
+		for _, d := range ds {
+			if d.Ruta == *s.Destino {
+				vi.Publico.SemaforosEnRuta = len(d.Semaforos)
+			}
+		}
+	}
 	v.almacen.Guardar(vi.Publico.ID, vi)
 	return vi.Publico, nil
 }

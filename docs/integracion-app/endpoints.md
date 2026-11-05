@@ -48,7 +48,7 @@ futuras vistas (por ejemplo, una capa de tráfico en el mapa).
 | 6 | GET | `/v1/semaforos/{id}` | — | 200, un semáforo | |
 | 7 | GET | `/v1/semaforos/proximo?lat=&lon=&rumbo=` | — | 200, próximo semáforo sin viaje | |
 | 8 | GET | `/v1/trafico?bbox=&incluir_libres=` | — | 200, nivel de servicio por calle | |
-| 9 | GET | `/v1/simulacion/destinos` | Inicio → selector de recorrido | 200, destinos de demostración | |
+| 9 | GET | `/v1/simulacion/destinos` | Inicio → selector de recorrido y línea de la ruta en el mapa | 200, destinos con trazado y semáforos | |
 | 10 | POST | `/v1/viajes` (`modo: gps`) | Iniciar recorrido con ruta propuesta | 201, viaje `en_ruta` | |
 | 11 | POST | `/v1/viajes/{id}/ubicacion` | Cada ubicación durante el viaje GPS | 200, viaje con próximo semáforo | |
 | 12 | POST | `/v1/viajes` (`modo: simulado`) | Iniciar recorrido con destino de demostración | 201, viaje `esperando` | |
@@ -169,9 +169,17 @@ curl http://127.0.0.1:8080/v1/simulacion/destinos
 ```
 
 ```json
-[{"ruta": 0, "id": "bustamante", "nombre": "Av. General Bustamante", "origen": "Alameda frente a Plaza de Armas", "distancia_km": 1.7},
- {"ruta": 1, "id": "matucana", "nombre": "Matucana", "origen": "Alameda frente a Plaza de Armas", "distancia_km": 2.9}]
+[{"ruta": 0, "id": "bustamante", "nombre": "Av. General Bustamante", "origen": "Alameda frente a Plaza de Armas",
+  "distancia_km": 1.7,
+  "trazado": [[-33.443511, -70.648845], "…84 puntos…", [-33.43698, -70.63319]],
+  "semaforos": [{"id": "GS_cluster_13356548834_13356548882_386140_500862085", "nombre": "Alameda × San Antonio",
+                 "lat": -33.443104, "lon": -70.647623, "distancia_desde_inicio_m": 113}, "…5 en total…"]},
+ {"ruta": 1, "id": "matucana", "nombre": "Matucana", "distancia_km": 2.9, "trazado": ["…109 puntos…"],
+  "semaforos": ["…15 en total…"]}]
 ```
+
+`trazado` es el camino exacto que hará el vehículo simulado y `semaforos`, los que cruza en orden (los mismos ids
+que llegan en `proximo_semaforo` del viaje). La app los dibuja en el mapa apenas se elige el destino.
 
 ## 10 y 11. Viaje GPS
 
@@ -214,7 +222,7 @@ y usa `ubicacion` para mover el marcador del vehículo en el mapa.
 
 ```bash
 curl -X POST http://127.0.0.1:8080/v1/viajes -H "Content-Type: application/json" -d '{"modo": "simulado", "destino": 0}'
-# → 201 {"id": "v_80c4ccfd51f33810", "modo": "simulado", "estado": "esperando", …}
+# → 201 {"id": "v_80c4ccfd51f33810", "modo": "simulado", "estado": "esperando", "semaforos_en_ruta": 5, …}
 
 curl http://127.0.0.1:8080/v1/viajes/v_80c4ccfd51f33810
 ```

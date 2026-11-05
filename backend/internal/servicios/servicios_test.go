@@ -82,7 +82,11 @@ type simFalso struct {
 }
 
 func (s *simFalso) Destinos(context.Context) ([]dominio.DestinoSimulado, error) {
-	return []dominio.DestinoSimulado{{Ruta: 0, ID: "bustamante", Nombre: "Av. General Bustamante", DistanciaKm: 1.7}}, nil
+	return []dominio.DestinoSimulado{{
+		Ruta: 0, ID: "bustamante", Nombre: "Av. General Bustamante", DistanciaKm: 1.7,
+		Trazado:   [][2]float64{{-33.4433, -70.6505}, {-33.4370, -70.6331}},
+		Semaforos: []dominio.SemaforoEnRuta{{ID: "A", Nombre: "Alameda × San Antonio"}, {ID: "B", Nombre: "Alameda × Santa Rosa"}},
+	}}, nil
 }
 func (s *simFalso) CrearViaje(_ context.Context, ruta int) (dominio.ViajeSimulado, error) {
 	if ruta != 0 {
@@ -229,7 +233,7 @@ func TestViajeSimulado(t *testing.T) {
 		t.Errorf("sin destino: %v", err)
 	}
 	v, err := viajes.Crear(ctx, SolicitudViaje{Modo: "simulado", Destino: ptrInt(0)})
-	if err != nil || v.Estado != "esperando" {
+	if err != nil || v.Estado != "esperando" || v.SemaforosEnRuta != 2 {
 		t.Fatalf("crear = %+v, %v", v, err)
 	}
 	v, err = viajes.Obtener(ctx, v.ID)

@@ -40,7 +40,7 @@ La documentación interactiva queda en http://127.0.0.1:8000/docs.
 | GET | `/semaforos/estado?ids=` | Color, segundos para el cambio y color siguiente de cada acceso |
 | GET | `/red/calles` | Calles con su geometría y velocidad libre (estático) |
 | GET | `/trafico` | Velocidad media, vehículos y nivel de servicio por calle (cada 5 s simulados) |
-| GET | `/destinos` | Destinos disponibles con su distancia desde el origen |
+| GET | `/destinos` | Destinos disponibles con su distancia desde el origen, el trazado `[lat, lon]` que sigue el vehículo y los semáforos que cruza, en orden |
 | POST | `/viajes` | Inicia un recorrido. Cuerpo: `{"ruta": 0}` |
 | GET | `/viajes/{id}` | Estado del recorrido y próximo semáforo |
 | DELETE | `/viajes/{id}` | Finaliza el recorrido y retira el vehículo |

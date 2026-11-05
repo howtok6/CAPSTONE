@@ -133,13 +133,16 @@ type Viaje struct {
 	ActualizadoEn      time.Time        `json:"actualizado_en"`
 }
 
-// DestinoSimulado es un recorrido de demostración que ofrece la simulación.
+// DestinoSimulado es un recorrido de demostración que ofrece la simulación,
+// con el trazado que sigue el vehículo y los semáforos que cruza, en orden.
 type DestinoSimulado struct {
-	Ruta        int     `json:"ruta"`
-	ID          string  `json:"id"`
-	Nombre      string  `json:"nombre"`
-	Origen      string  `json:"origen"`
-	DistanciaKm float64 `json:"distancia_km"`
+	Ruta        int              `json:"ruta"`
+	ID          string           `json:"id"`
+	Nombre      string           `json:"nombre"`
+	Origen      string           `json:"origen"`
+	DistanciaKm float64          `json:"distancia_km"`
+	Trazado     [][2]float64     `json:"trazado"` // [lat, lon]
+	Semaforos   []SemaforoEnRuta `json:"semaforos"`
 }
 
 // ViajeSimulado es el viaje tal como lo entrega el proveedor de simulación.

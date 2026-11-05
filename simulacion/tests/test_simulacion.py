@@ -96,6 +96,19 @@ def test_api_de_punta_a_punta(monkeypatch):
         destinos = cliente.get("/destinos").json()
         assert [d["id"] for d in destinos] == ["bustamante", "matucana"]
         assert all(d["distancia_km"] > 1 for d in destinos)
+        for d in destinos:
+            # El trazado parte cerca del origen y llega cerca del destino.
+            assert len(d["trazado"]) >= 2
+            assert abs(d["trazado"][0][0] - (-33.4433)) < 0.003
+            assert abs(d["trazado"][0][1] - (-70.6505)) < 0.003
+            fin = {"bustamante": (-33.43696, -70.63313), "matucana": (-33.45068, -70.67882)}[d["id"]]
+            assert abs(d["trazado"][-1][0] - fin[0]) < 0.003
+            assert abs(d["trazado"][-1][1] - fin[1]) < 0.003
+            # Semáforos en orden de paso, con nombre y ubicación.
+            distancias = [s["distancia_desde_inicio_m"] for s in d["semaforos"]]
+            assert distancias == sorted(distancias)
+            assert all(s["nombre"] and s["lat"] < -33 for s in d["semaforos"])
+        assert any(d["semaforos"] for d in destinos)
 
         r = cliente.post("/viajes", json={"ruta": 0})
         assert r.status_code == 201
