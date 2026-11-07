@@ -22,6 +22,10 @@ import warnings
 warnings.filterwarnings("ignore")
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+# libsumo corre SUMO dentro del proceso: varias veces más rápido que TraCI
+if __name__ == "__main__":
+    os.environ.setdefault("LIBSUMO_AS_TRACI", "1")
+
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -38,11 +42,26 @@ from tsc.metrics import (  # noqa: E402
     parse_tripinfo,
     planned_departures,
 )
-from tsc.rl_env import controlled_tls, make_parallel_env  # noqa: E402
+from tsc.demand import ruta_evaluacion  # noqa: E402
+from tsc.rl_env import accion_real, controlled_tls, make_parallel_env  # noqa: E402
+
+
+def leer_metadatos(modelo: str) -> dict:
+    """Metadatos del entrenamiento: <modelo>.json, o el de la corrida si es un checkpoint."""
+    base = modelo[:-4] if modelo.endswith(".zip") else modelo
+    carpeta = os.path.dirname(base)
+    candidatos = [base + ".json"]
+    if carpeta.endswith("_ckpt"):
+        candidatos.append(carpeta[: -len("_ckpt")] + ".json")
+    for ruta in candidatos:
+        if os.path.exists(ruta):
+            with open(ruta, encoding="utf-8") as f:
+                return json.load(f)
+    return {}
 
 
 def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waze_obs=False,
-             tls_ids=None) -> dict:
+             tls_ids=None, obs_kind="estandar", delta_time=5, min_green=10, max_green=60) -> dict:
     tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
     tmp.close()
     env = make_parallel_env(
@@ -52,23 +71,31 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
         seed=seed,
         use_waze_obs=use_waze_obs,
         tls_ids=tls_ids,
+        obs=obs_kind,
+        delta_time=delta_time,
+        min_green=min_green,
+        max_green=max_green,
     )
     env.unwrapped.env.additional_sumo_cmd = f"--tripinfo-output {tmp.name}"
 
     obs, _ = env.reset()
-    obs_dim = model.observation_space.shape[0]
+    regla = model if callable(model) else None  # regla fija: ver verificar_paridad.py
+    obs_dim = 0 if regla else model.observation_space.shape[0]
     queues = []
     switches = GreenSwitchCounter()
     end_state = {}
     t = 0
     while env.agents:
-        actions = {}
-        for agent, o in obs.items():
-            padded = np.zeros(obs_dim, dtype=np.float32)
-            padded[: len(o)] = o
-            a, _ = model.predict(padded, deterministic=deterministic)
-            n_actions = env.action_space(agent).n
-            actions[agent] = int(a) % n_actions   # deshace el padding de acciones
+        if regla is not None:
+            actions = regla(env.unwrapped.env, env.agents)
+        else:
+            agentes = list(obs)
+            lote = np.zeros((len(agentes), obs_dim), dtype=np.float32)
+            for i, agent in enumerate(agentes):
+                lote[i, : len(obs[agent])] = obs[agent]
+            salidas, _ = model.predict(lote, deterministic=deterministic)
+            actions = {agent: accion_real(salidas[i], env.action_space(agent).n)
+                       for i, agent in enumerate(agentes)}
         obs, _, term, trunc, info = env.step(actions)
         delta = env.unwrapped.env.delta_time
         t += delta
@@ -92,7 +119,7 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
             break
     env.close()
 
-    res = {"controller": "ppo", "seed": seed}
+    res = {"controller": "ppo", "seed": seed, "rutas": rou}
     res.update(parse_tripinfo(tmp.name))
     res.update(end_state)
     combine_delay(res)
@@ -117,6 +144,8 @@ def main() -> None:
     ap.add_argument("--name", default="ppo")
     ap.add_argument("--merge-into", default=None,
                     help="JSON de baselines al que agregar estas filas")
+    ap.add_argument("--stochastic", action="store_true",
+                    help="muestrea la acción en vez de tomar la más probable")
     ap.add_argument("--use-waze-obs", action="store_true")
     ap.add_argument("--control", default="auto", choices=["auto", "eje", "todos"],
                     help="debe coincidir con el usado al entrenar")
@@ -135,20 +164,29 @@ def main() -> None:
     else:
         rou = os.path.join(args.scenario, "routes.rou.xml")
 
-    if not os.path.exists(rou):
+    if not os.path.exists(rou) and ruta_evaluacion(args.scenario, args.profile, 0, rou) == rou:
         sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
 
     model = PPO.load(args.model, device="cpu")
+    # La evaluación repite la especificación del entrenamiento, no la supone
+    meta = leer_metadatos(args.model)
+    entorno = {"obs_kind": meta.get("obs", "estandar"), "delta_time": meta.get("delta_time", 5),
+               "min_green": meta.get("min_green", 10), "max_green": meta.get("max_green", 60)}
+    print(f"Entorno de evaluación: {entorno}")
 
     rows = []
     for seed in range(args.seeds):
-        r = evaluate(model, net, rou, seed, args.seconds, args.warmup, use_waze_obs=args.use_waze_obs,
-                     tls_ids=tls_ids)
+        rou_k = rou if args.routes else ruta_evaluacion(args.scenario, args.profile, seed, rou)
+        r = evaluate(model, net, rou_k, seed, args.seconds, args.warmup,
+                     deterministic=not args.stochastic, use_waze_obs=args.use_waze_obs,
+                     tls_ids=tls_ids, **entorno)
         r["controller"] = args.name
         rows.append(r)
         print(f"  {args.name:12s} seed={seed:2d}  "
+              f"delayAll={r.get('delay_all_mean', float('nan')):7.2f}  "
               f"timeLoss={r.get('time_loss_mean', float('nan')):6.2f}  "
-              f"queue={r.get('queue_mean', float('nan')):6.2f}")
+              f"queue={r.get('queue_mean', float('nan')):6.2f}  "
+              f"fin={r.get('vehicles_finished', 0)}  cambios={r.get('phase_switches', 0)}", flush=True)
 
     tag = f"_{args.profile}" if args.profile else ""
     target = args.merge_into or os.path.join(

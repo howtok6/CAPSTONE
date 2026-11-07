@@ -9,7 +9,8 @@ Decisiones de diseño que conviene poder defender:
 
 * **Verde mínimo y máximo son restricciones del entorno, no penalizaciones
   aprendidas.** Un semáforo que aprende a saltarse el verde mínimo no es
-  desplegable, por bueno que sea su retorno.
+  desplegable, por bueno que sea su retorno. sumo-rl solo aplica el mínimo;
+  el máximo lo hace cumplir `SubsetSumoEnvironment._apply_actions`.
 * **La recompensa por defecto es la variación de la espera acumulada.** Es la
   de sumo-rl y la más usada, lo que hace comparables los resultados con la
   literatura. Las variantes (presión, penalización por conmutación) se
@@ -26,14 +27,14 @@ if "SUMO_HOME" not in os.environ:
 sys.path.append(os.path.join(os.environ["SUMO_HOME"], "tools"))
 
 import json  # noqa: E402
+import random  # noqa: E402
 
-import sumo_rl  # noqa: E402
 from gymnasium.utils import EzPickle  # noqa: E402
 from pettingzoo.utils import agent_selector, wrappers  # noqa: E402
 from pettingzoo.utils.conversions import parallel_wrapper_fn  # noqa: E402
 from sumo_rl.environment.env import SumoEnvironment, SumoEnvironmentPZ  # noqa: E402
 
-from tsc.observations import WazeCongestionObservation  # noqa: E402
+from tsc.observations import PhaseObservation, WazeCongestionObservation  # noqa: E402
 
 
 # --------------------------------------------------------------------------
@@ -46,10 +47,21 @@ from tsc.observations import WazeCongestionObservation  # noqa: E402
 # --------------------------------------------------------------------------
 
 class SubsetSumoEnvironment(SumoEnvironment):
-    """SumoEnvironment que controla solo los semáforos de `controlled_ts`."""
+    """SumoEnvironment con tres agregados que la tesis necesita y sumo-rl no trae.
 
-    def __init__(self, *args, controlled_ts=None, **kwargs):
+    * `controlled_ts`: solo esos semáforos son agentes.
+    * `route_pool`: cada episodio usa otra demanda y otra semilla de SUMO. Sin
+      esto todos los episodios son la misma hora repetida y la política
+      memoriza esos viajes en vez de aprender a controlar.
+    * Verde máximo: sumo-rl guarda `max_green` pero no lo aplica en ningún lado;
+      aquí se fuerza el cambio (ver `_apply_actions`).
+    """
+
+    def __init__(self, *args, controlled_ts=None, route_pool=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self._base_seed = self.sumo_seed if isinstance(self.sumo_seed, int) else 0
+        self._route_pool = list(route_pool or [])
+        random.Random(self._base_seed).shuffle(self._route_pool)
         if controlled_ts:
             pedidos = set(controlled_ts)
             faltan = pedidos - set(self.ts_ids)
@@ -61,6 +73,31 @@ class SubsetSumoEnvironment(SumoEnvironment):
             self.observations = {t: None for t in self.ts_ids}
             self.rewards = {t: None for t in self.ts_ids}
 
+    def reset(self, seed=None, **kwargs):
+        if self._route_pool:
+            self._route = self._route_pool[self.episode % len(self._route_pool)]
+            self.sumo_seed = self._base_seed + self.episode
+            seed = None  # el reseteo automático no debe devolver la semilla fija
+        return super().reset(seed=seed, **kwargs)
+
+    def _apply_actions(self, actions):
+        """Aplica las acciones haciendo cumplir el verde máximo.
+
+        `time_since_last_phase_change` parte al iniciar el ámbar. Se fuerza la
+        fase siguiente en la última decisión que aún respeta el máximo, porque
+        la próxima llegaría `delta_time` segundos tarde.
+        """
+        for ts_id, action in actions.items():
+            ts = self.traffic_signals[ts_id]
+            if not ts.time_to_act:
+                continue
+            accion = int(action)
+            verde = ts.time_since_last_phase_change - ts.yellow_time
+            if (accion == ts.green_phase and ts.num_green_phases > 1
+                    and verde + self.delta_time > ts.max_green):
+                accion = (ts.green_phase + 1) % ts.num_green_phases
+            ts.set_next_phase(accion)
+
 
 class SubsetSumoEnvironmentPZ(SumoEnvironmentPZ):
     """Versión PettingZoo: mismo cuerpo que la de sumo-rl, con el entorno filtrado."""
@@ -68,9 +105,10 @@ class SubsetSumoEnvironmentPZ(SumoEnvironmentPZ):
     def __init__(self, **kwargs):
         EzPickle.__init__(self, **kwargs)
         controlled = kwargs.pop("controlled_ts", None)
+        pool = kwargs.pop("route_pool", None)
         self._kwargs = kwargs
         self.seed()
-        self.env = SubsetSumoEnvironment(controlled_ts=controlled, **kwargs)
+        self.env = SubsetSumoEnvironment(controlled_ts=controlled, route_pool=pool, **kwargs)
         self.agents = self.env.ts_ids
         self.possible_agents = self.env.ts_ids
         self._agent_selector = agent_selector(self.agents)
@@ -124,6 +162,21 @@ REWARDS = {
     "speed": "average-speed",
 }
 
+OBSERVACIONES = {
+    "estandar": None,          # la de sumo-rl: una columna por pista
+    "fase": PhaseObservation,  # una columna por fase, igual en todo cruce
+}
+
+
+def accion_real(accion: int, n_fases: int) -> int:
+    """Traduce la salida de la red a la fase del semáforo.
+
+    La red tiene tantas salidas como el cruce con más fases. En el entrenamiento,
+    `pad_action_space_v0` de SuperSuit convierte las salidas sobrantes en la
+    fase 0; la evaluación debe hacer lo mismo o estaría ejecutando otra política.
+    """
+    return int(accion) if int(accion) < n_fases else 0
+
 
 def make_parallel_env(
     net_file: str,
@@ -140,15 +193,22 @@ def make_parallel_env(
     gui: bool = False,
     use_waze_obs: bool = False,
     tls_ids: list | None = None,
+    obs: str = "estandar",
+    route_pool: list | None = None,
 ):
     """Entorno PettingZoo paralelo: un agente por intersección.
 
     `tls_ids` limita los agentes a esos semáforos; los demás conservan su
     programa de tiempo fijo. None = todos (comportamiento original).
+    `obs` elige la observación ("estandar" de sumo-rl o "fase", ver
+    `tsc.observations.PhaseObservation`). `route_pool` rota la demanda por
+    episodio.
     """
     if reward not in REWARDS:
         raise ValueError(f"reward debe ser uno de {sorted(REWARDS)}")
-        
+    if obs not in OBSERVACIONES:
+        raise ValueError(f"obs debe ser una de {sorted(OBSERVACIONES)}")
+
     env_kwargs = {
         "net_file": net_file,
         "route_file": route_file,
@@ -162,15 +222,19 @@ def make_parallel_env(
         "reward_fn": REWARDS[reward],
         "sumo_seed": seed,
         "sumo_warnings": False,
-        "add_system_info": True,
+        # Métricas por paso: nadie las lee aquí (la evaluación usa tripinfo) y
+        # recorrer vehículo por vehículo en cada decisión domina el tiempo.
+        "add_system_info": False,
+        "add_per_agent_info": False,
     }
-    
+
+    if OBSERVACIONES[obs] is not None:
+        env_kwargs["observation_class"] = OBSERVACIONES[obs]
     if use_waze_obs:
         env_kwargs["observation_class"] = WazeCongestionObservation
 
-    if tls_ids:
-        return subset_parallel_env(controlled_ts=list(tls_ids), **env_kwargs)
-    return sumo_rl.parallel_env(**env_kwargs)
+    return subset_parallel_env(controlled_ts=list(tls_ids) if tls_ids else None,
+                               route_pool=route_pool, **env_kwargs)
 
 
 def make_sb3_vec_env(num_vec_envs: int = 1, num_cpus: int = 1, **kwargs):

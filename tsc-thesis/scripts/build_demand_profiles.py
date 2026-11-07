@@ -113,14 +113,21 @@ def generate_profile(
     end: int = 3600,
     seed: int = 42,
     direction: str = "balanced",  # "balanced", "west_to_east", "east_to_west"
+    out_dir: str | None = None,
+    suffix: str = "",
 ):
-    """Genera trips y routes para un perfil determinado."""
-    demand_dir = os.path.join(scenario_dir, "demand")
+    """Genera trips y routes para un perfil determinado.
+
+    `out_dir` y `suffix` sirven para las réplicas: cada semilla es una
+    realización distinta de la demanda (otros orígenes, destinos y horas de
+    salida), no solo otra semilla de SUMO sobre los mismos viajes.
+    """
+    demand_dir = out_dir or os.path.join(scenario_dir, "demand")
     os.makedirs(demand_dir, exist_ok=True)
 
-    trips_file = os.path.join(demand_dir, f"trips_{profile_name}.trips.xml")
-    routes_file = os.path.join(demand_dir, f"routes_{profile_name}.rou.xml")
-    weights_prefix = os.path.join(demand_dir, f"_weights_{profile_name}")
+    trips_file = os.path.join(demand_dir, f"trips_{profile_name}{suffix}.trips.xml")
+    routes_file = os.path.join(demand_dir, f"routes_{profile_name}{suffix}.rou.xml")
+    weights_prefix = os.path.join(demand_dir, f"_weights_{profile_name}{suffix}")
 
     all_edges = geom["edges"]
     src_weights = {}
@@ -175,9 +182,11 @@ def generate_profile(
 
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Limpiar temporales de pesos
-    for suffix in [".src.xml", ".dst.xml"]:
-        wpath = weights_prefix + suffix
+    # Limpiar temporales de pesos y, en las réplicas, lo que no usa la simulación
+    temporales = [weights_prefix + ".src.xml", weights_prefix + ".dst.xml"]
+    if out_dir:
+        temporales += [trips_file, routes_file.replace(".rou.xml", ".rou.alt.xml")]
+    for wpath in temporales:
         if os.path.exists(wpath):
             try:
                 os.remove(wpath)
@@ -246,6 +255,13 @@ def main():
     ap.add_argument("--end", type=int, default=3600, help="Duración del episodio en segundos")
     ap.add_argument("--seed", type=int, default=42, help="Semilla aleatoria")
     ap.add_argument("--check-end", type=int, default=1200, help="Segundos de prueba de salud")
+    ap.add_argument("--profiles", default=None,
+                    help="perfiles separados por coma (por defecto, los cuatro)")
+    ap.add_argument("--train-replicas", type=int, default=0,
+                    help="demandas de entrenamiento por perfil: demand/train/routes_<perfil>_tNN.rou.xml")
+    ap.add_argument("--eval-replicas", type=int, default=0,
+                    help="demandas de evaluación por perfil: demand/eval/routes_<perfil>_sNN.rou.xml")
+    ap.add_argument("--workers", type=int, default=3, help="réplicas generadas en paralelo")
     args = ap.parse_args()
 
     net = args.net or os.path.join(args.scenario, "net.net.xml")
@@ -284,6 +300,34 @@ def main():
             "direction": "east_to_west",
         },
     ]
+
+    if args.profiles:
+        pedidos = args.profiles.split(",")
+        profiles = [p for p in profiles if p["name"] in pedidos]
+
+    if args.train_replicas or args.eval_replicas:
+        # Semillas separadas: la política nunca se evalúa sobre viajes que vio.
+        # Semilla de evaluación k = réplica k en todos los controladores, para
+        # que la comparación siga siendo pareada.
+        from concurrent.futures import ThreadPoolExecutor
+
+        trabajos = []
+        for p in profiles:
+            for k in range(args.train_replicas):
+                trabajos.append((p, os.path.join(args.scenario, "demand", "train"), f"_t{k:02d}", 1000 + k))
+            for k in range(args.eval_replicas):
+                trabajos.append((p, os.path.join(args.scenario, "demand", "eval"), f"_s{k:02d}", 2000 + k))
+
+        def generar(tr):
+            p, carpeta, suf, seed = tr
+            return generate_profile(args.scenario, net, p["name"], p["period"], geom, end=args.end,
+                                    seed=seed, direction=p["direction"], out_dir=carpeta, suffix=suf)
+
+        with ThreadPoolExecutor(max_workers=args.workers) as ex:
+            for i, ruta in enumerate(ex.map(generar, trabajos), 1):
+                print(f"  [{i}/{len(trabajos)}] {ruta}", flush=True)
+        print(f"\nOK: {len(trabajos)} réplicas de demanda generadas.")
+        return
 
     print("\nGenerando y validando los 4 perfiles de demanda...")
     results = []

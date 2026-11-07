@@ -2,6 +2,73 @@ import numpy as np
 from gymnasium import spaces
 from sumo_rl.environment.observations import ObservationFunction
 
+# Fases verdes del cruce más complejo del eje comunal. Debe cubrir todos los
+# semáforos controlados: `PhaseObservation` falla si encuentra uno con más.
+MAX_FASES = 4
+
+
+class PhaseObservation(ObservationFunction):
+    """Observación del mismo tamaño y significado en todos los cruces.
+
+    La de sumo-rl trae una columna por pista: en el eje hay cruces de 4 a 23
+    pistas, y al rellenar con ceros la misma columna es densidad en un cruce y
+    cola en otro. Con parámetros compartidos, la red no puede aprender eso bien.
+
+    Aquí cada salida i de la red tiene sus columnas: lo que pasaría si diera
+    verde a la fase i. Por fase: densidad y cola medias de las pistas que
+    atiende, y densidad de las pistas a las que descarga (para no soltar
+    vehículos sobre una salida llena).
+
+    [fase actual (4), fases que existen (4), puede cambiar, tiempo de verde,
+     densidad entrada (4), cola entrada (4), densidad salida (4)]  = 22 columnas
+    """
+
+    DIM = 2 * MAX_FASES + 2 + 3 * MAX_FASES
+
+    def __init__(self, ts):
+        super().__init__(ts)
+        self._por_fase = None
+
+    def _preparar(self):
+        ts = self.ts
+        if ts.num_green_phases > MAX_FASES:
+            raise ValueError(f"{ts.id} tiene {ts.num_green_phases} fases; sube MAX_FASES")
+        enlaces = ts.sumo.trafficlight.getControlledLinks(ts.id)
+        self._por_fase = []
+        for fase in ts.green_phases:
+            ent, sal = set(), set()
+            for i, senal in enumerate(fase.state):
+                if senal in "Gg" and i < len(enlaces) and enlaces[i]:
+                    ent.add(enlaces[i][0][0])
+                    sal.add(enlaces[i][0][1])
+            self._por_fase.append((sorted(ent), sorted(sal)))
+
+    def __call__(self):
+        ts = self.ts
+        if self._por_fase is None:
+            self._preparar()
+        densidad = dict(zip(ts.lanes, ts.get_lanes_density()))
+        cola = dict(zip(ts.lanes, ts.get_lanes_queue()))
+        salida = dict(zip(ts.out_lanes, ts.get_out_lanes_density()))
+
+        o = np.zeros(self.DIM, dtype=np.float32)
+        o[ts.green_phase] = 1.0
+        o[MAX_FASES:MAX_FASES + ts.num_green_phases] = 1.0
+        o[2 * MAX_FASES] = float(ts.time_since_last_phase_change >= ts.min_green + ts.yellow_time)
+        o[2 * MAX_FASES + 1] = min(1.0, ts.time_since_last_phase_change / (ts.max_green + ts.yellow_time))
+        base = 2 * MAX_FASES + 2
+        for i, (ent, sal) in enumerate(self._por_fase):
+            if ent:
+                o[base + i] = sum(densidad[p] for p in ent) / len(ent)
+                o[base + MAX_FASES + i] = sum(cola[p] for p in ent) / len(ent)
+            if sal:
+                o[base + 2 * MAX_FASES + i] = sum(salida[p] for p in sal) / len(sal)
+        return o
+
+    def observation_space(self):
+        return spaces.Box(low=0.0, high=1.0, shape=(self.DIM,), dtype=np.float32)
+
+
 class WazeCongestionObservation(ObservationFunction):
     """
     Extiende la observación por defecto de sumo-rl añadiendo un factor de 

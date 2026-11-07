@@ -24,6 +24,11 @@ _health.log
 tsc-thesis/results/*.json
 tsc-thesis/results/tb/
 tsc-thesis/models/
+tsc-thesis/logs/
+docs/informe/generador/node_modules/
+# Réplicas de demanda: se regeneran con scripts/build_demand_profiles.py
+tsc-thesis/scenarios/*/demand/train/
+tsc-thesis/scenarios/*/demand/eval/
 tsc-thesis/data/waze/congestiones_waze_*.json
 tsc-thesis/scenarios/*/map.osm
 tsc-thesis/scenarios/*/trips.trips.xml
