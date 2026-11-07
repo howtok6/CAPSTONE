@@ -1,0 +1,96 @@
+{
+  "id": "penalolen",
+  "commune": "Peñalolén",
+  "name": "Piloto Peñalolén: GRECIA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.579585,
+    "min_lat": -33.482589,
+    "max_lon": -70.522416,
+    "max_lat": -33.467274
+  },
+  "points": [
+    {
+      "id": "J099131",
+      "name": "GRECIA / AMERICO VESPUCIO (PONIENTE)",
+      "corridor": "GRECIA",
+      "latitude": -33.470274,
+      "longitude": -70.576585,
+      "source_page": 22,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,470,274",
+      "source_longitude_raw": "-70,576,585"
+    },
+    {
+      "id": "J175451",
+      "name": "GRECIA / ICTINOS",
+      "corridor": "GRECIA",
+      "latitude": -33.471873,
+      "longitude": -70.562872,
+      "source_page": 26,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,471,873",
+      "source_longitude_raw": "-70,562,872"
+    },
+    {
+      "id": "J175491",
+      "name": "GRECIA / SANCHEZ FONTECILLA",
+      "corridor": "GRECIA",
+      "latitude": -33.473495,
+      "longitude": -70.554376,
+      "source_page": 26,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,473,495",
+      "source_longitude_raw": "-70,554,376"
+    },
+    {
+      "id": "J175561",
+      "name": "GRECIA / EL AMANECER",
+      "corridor": "GRECIA",
+      "latitude": -33.476432,
+      "longitude": -70.539899,
+      "source_page": 26,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,476,432",
+      "source_longitude_raw": "-70,539,899"
+    },
+    {
+      "id": "J175581",
+      "name": "GRECIA / LAS PERDICES",
+      "corridor": "GRECIA",
+      "latitude": -33.477828,
+      "longitude": -70.534461,
+      "source_page": 26,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,477,828",
+      "source_longitude_raw": "-70,534,461"
+    },
+    {
+      "id": "J175621",
+      "name": "GRECIA / LAS TORRES",
+      "corridor": "GRECIA",
+      "latitude": -33.479589,
+      "longitude": -70.525416,
+      "source_page": 26,
+      "source_commune": "PEÑALOLEN",
+      "source_latitude_raw": "-33,479,589",
+      "source_longitude_raw": "-70,525,416"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "penalolen-ida",
+      "origin_id": "J099131",
+      "destination_id": "J175621"
+    },
+    {
+      "id": "penalolen-regreso",
+      "origin_id": "J175621",
+      "destination_id": "J099131"
+    }
+  ]
+}

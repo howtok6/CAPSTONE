@@ -1,0 +1,96 @@
+{
+  "id": "conchali",
+  "commune": "Conchalí",
+  "name": "Piloto Conchalí: INDEPENDENCIA y DORSAL",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.686753,
+    "min_lat": -33.401854,
+    "max_lon": -70.658888,
+    "max_lat": -33.375352
+  },
+  "points": [
+    {
+      "id": "J207241",
+      "name": "DORSAL / FERMIN VIVACETA",
+      "corridor": "DORSAL",
+      "latitude": -33.398854,
+      "longitude": -70.672497,
+      "source_page": 26,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,398,854",
+      "source_longitude_raw": "-70,672,497"
+    },
+    {
+      "id": "J208111",
+      "name": "DORSAL / LA PALMILLA",
+      "corridor": "DORSAL",
+      "latitude": -33.397133,
+      "longitude": -70.666883,
+      "source_page": 26,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,397,133",
+      "source_longitude_raw": "-70,666,883"
+    },
+    {
+      "id": "J208141",
+      "name": "DORSAL / FRANCISCO HINOJOSA",
+      "corridor": "DORSAL",
+      "latitude": -33.396499,
+      "longitude": -70.661888,
+      "source_page": 26,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,396,499",
+      "source_longitude_raw": "-70,661,888"
+    },
+    {
+      "id": "J007161",
+      "name": "INDEPENDENCIA / NEGRETE",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.396271,
+      "longitude": -70.671373,
+      "source_page": 3,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,396,271",
+      "source_longitude_raw": "-70,671,373"
+    },
+    {
+      "id": "J007151",
+      "name": "INDEPENDENCIA / TENIENTE PONCE",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.393386,
+      "longitude": -70.673463,
+      "source_page": 3,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,393,386",
+      "source_longitude_raw": "-70,673,463"
+    },
+    {
+      "id": "J007111",
+      "name": "INDEPENDENCIA / EL CORTIJO",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.378352,
+      "longitude": -70.683753,
+      "source_page": 3,
+      "source_commune": "CONCHALI",
+      "source_latitude_raw": "-33,378,352",
+      "source_longitude_raw": "-70,683,753"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "conchali-ida",
+      "origin_id": "J207241",
+      "destination_id": "J007111"
+    },
+    {
+      "id": "conchali-regreso",
+      "origin_id": "J007111",
+      "destination_id": "J207241"
+    }
+  ]
+}

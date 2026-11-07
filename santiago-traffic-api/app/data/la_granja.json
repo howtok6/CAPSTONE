@@ -1,0 +1,96 @@
+{
+  "id": "la-granja",
+  "commune": "La Granja",
+  "name": "Piloto La Granja: SANTA ROSA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.639599,
+    "min_lat": -33.556854,
+    "max_lon": -70.628963,
+    "max_lat": -33.515718
+  },
+  "points": [
+    {
+      "id": "J031281",
+      "name": "SANTA ROSA / ESPERANZA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.553854,
+      "longitude": -70.631963,
+      "source_page": 9,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,553,854",
+      "source_longitude_raw": "-70,631,963"
+    },
+    {
+      "id": "J031431",
+      "name": "SANTA ROSA / JOSE SANTOS GONZALEZ PONIENTE",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.552927,
+      "longitude": -70.632284,
+      "source_page": 9,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,552,927",
+      "source_longitude_raw": "-70,632,284"
+    },
+    {
+      "id": "J031241",
+      "name": "SANTA ROSA / AMERICO VESPUCIO (NORPONIENTE)",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.542324,
+      "longitude": -70.634146,
+      "source_page": 9,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,542,324",
+      "source_longitude_raw": "-70,634,146"
+    },
+    {
+      "id": "J031191",
+      "name": "SANTA ROSA / COMBARBALA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.530678,
+      "longitude": -70.635015,
+      "source_page": 9,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,530,678",
+      "source_longitude_raw": "-70,635,015"
+    },
+    {
+      "id": "J031311",
+      "name": "SANTA ROSA / LA VICTORIA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.527297,
+      "longitude": -70.635644,
+      "source_page": 9,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,527,297",
+      "source_longitude_raw": "-70,635,644"
+    },
+    {
+      "id": "J131331",
+      "name": "SANTA ROSA / LO OVALLE",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.518718,
+      "longitude": -70.636599,
+      "source_page": 24,
+      "source_commune": "LA GRANJA",
+      "source_latitude_raw": "-33,518,718",
+      "source_longitude_raw": "-70,636,599"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "la-granja-ida",
+      "origin_id": "J031281",
+      "destination_id": "J131331"
+    },
+    {
+      "id": "la-granja-regreso",
+      "origin_id": "J131331",
+      "destination_id": "J031281"
+    }
+  ]
+}

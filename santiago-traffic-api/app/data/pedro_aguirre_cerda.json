@@ -1,0 +1,96 @@
+{
+  "id": "pedro-aguirre-cerda",
+  "commune": "Pedro Aguirre Cerda",
+  "name": "Piloto Pedro Aguirre Cerda: DEPARTAMENTAL",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.687172,
+    "min_lat": -33.503437,
+    "max_lon": -70.662956,
+    "max_lat": -33.485221
+  },
+  "points": [
+    {
+      "id": "J227131",
+      "name": "DEPARTAMENTAL / NUEVA HAITI",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.488221,
+      "longitude": -70.684172,
+      "source_page": 27,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,488,221",
+      "source_longitude_raw": "-70,684,172"
+    },
+    {
+      "id": "J027192",
+      "name": "DEPARTAMENTAL / RANQUIL SUR",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.491729,
+      "longitude": -70.679883,
+      "source_page": 8,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,491,729",
+      "source_longitude_raw": "-70,679,883"
+    },
+    {
+      "id": "J027181",
+      "name": "DEPARTAMENTAL / GALO GONZALEZ NORTE",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.492226,
+      "longitude": -70.678664,
+      "source_page": 8,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,492,226",
+      "source_longitude_raw": "-70,678,664"
+    },
+    {
+      "id": "J027211",
+      "name": "DEPARTAMENTAL / MENDELSSOHN",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.496046,
+      "longitude": -70.673838,
+      "source_page": 8,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,496,046",
+      "source_longitude_raw": "-70,673,838"
+    },
+    {
+      "id": "J027221",
+      "name": "DEPARTAMENTAL / ALCIBIADES NORTE",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.499095,
+      "longitude": -70.669535,
+      "source_page": 8,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,499,095",
+      "source_longitude_raw": "-70,669,535"
+    },
+    {
+      "id": "J027151",
+      "name": "DEPARTAMENTAL / JOSE JOAQUIN PRIETO (ORIENTE)",
+      "corridor": "DEPARTAMENTAL",
+      "latitude": -33.500437,
+      "longitude": -70.665956,
+      "source_page": 8,
+      "source_commune": "PEDRO AGUIRRE CERDA",
+      "source_latitude_raw": "-33,500,437",
+      "source_longitude_raw": "-70,665,956"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "pedro-aguirre-cerda-ida",
+      "origin_id": "J227131",
+      "destination_id": "J027151"
+    },
+    {
+      "id": "pedro-aguirre-cerda-regreso",
+      "origin_id": "J027151",
+      "destination_id": "J227131"
+    }
+  ]
+}

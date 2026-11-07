@@ -1,0 +1,96 @@
+{
+  "id": "cerro-navia",
+  "commune": "Cerro Navia",
+  "name": "Piloto Cerro Navia: JOSE JOAQUIN PEREZ y NEPTUNO",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.764115,
+    "min_lat": -33.441768,
+    "max_lon": -70.714951,
+    "max_lat": -33.418745
+  },
+  "points": [
+    {
+      "id": "J050681",
+      "name": "JOSE JOAQUIN PEREZ / FEDERICO ERRAZURIZ",
+      "corridor": "JOSE JOAQUIN PEREZ",
+      "latitude": -33.427687,
+      "longitude": -70.761115,
+      "source_page": 13,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,427,687",
+      "source_longitude_raw": "-70,761,115"
+    },
+    {
+      "id": "J050231",
+      "name": "JOSE JOAQUIN PEREZ / ESTADOS UNIDOS",
+      "corridor": "JOSE JOAQUIN PEREZ",
+      "latitude": -33.429702,
+      "longitude": -70.737799,
+      "source_page": 13,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,429,702",
+      "source_longitude_raw": "-70,737,799"
+    },
+    {
+      "id": "J050211",
+      "name": "JOSE JOAQUIN PEREZ / LAS TORRES",
+      "corridor": "JOSE JOAQUIN PEREZ",
+      "latitude": -33.429011,
+      "longitude": -70.730736,
+      "source_page": 13,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,429,011",
+      "source_longitude_raw": "-70,730,736"
+    },
+    {
+      "id": "J019231",
+      "name": "NEPTUNO / SAN FRANCISCO N",
+      "corridor": "NEPTUNO",
+      "latitude": -33.438768,
+      "longitude": -70.722525,
+      "source_page": 6,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,438,768",
+      "source_longitude_raw": "-70,722,525"
+    },
+    {
+      "id": "J019181",
+      "name": "JOSE JOAQUIN PEREZ / NEPTUNO",
+      "corridor": "JOSE JOAQUIN PEREZ",
+      "latitude": -33.430608,
+      "longitude": -70.720241,
+      "source_page": 6,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,430,608",
+      "source_longitude_raw": "-70,720,241"
+    },
+    {
+      "id": "J019141",
+      "name": "NEPTUNO / SALVADOR GUTIERREZ",
+      "corridor": "NEPTUNO",
+      "latitude": -33.421745,
+      "longitude": -70.717951,
+      "source_page": 6,
+      "source_commune": "CERRO NAVIA",
+      "source_latitude_raw": "-33,421,745",
+      "source_longitude_raw": "-70,717,951"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "cerro-navia-ida",
+      "origin_id": "J050681",
+      "destination_id": "J019141"
+    },
+    {
+      "id": "cerro-navia-regreso",
+      "origin_id": "J019141",
+      "destination_id": "J050681"
+    }
+  ]
+}

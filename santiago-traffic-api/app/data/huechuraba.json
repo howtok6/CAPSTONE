@@ -1,0 +1,96 @@
+{
+  "id": "huechuraba",
+  "commune": "Huechuraba",
+  "name": "Piloto Huechuraba: RECOLETA y PEDRO FONTOVA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.674052,
+    "min_lat": -33.386338,
+    "max_lon": -70.632594,
+    "max_lat": -33.349581
+  },
+  "points": [
+    {
+      "id": "J112413",
+      "name": "RECOLETA / AMERICO VESPUCIO (SURPONIENTE)",
+      "corridor": "RECOLETA",
+      "latitude": -33.383338,
+      "longitude": -70.640538,
+      "source_page": 23,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,383,338",
+      "source_longitude_raw": "-70,640,538"
+    },
+    {
+      "id": "J212221",
+      "name": "RECOLETA / PRESIDENTE SALVADOR ALLENDE",
+      "corridor": "RECOLETA",
+      "latitude": -33.378283,
+      "longitude": -70.638298,
+      "source_page": 26,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,378,283",
+      "source_longitude_raw": "-70,638,298"
+    },
+    {
+      "id": "J212241",
+      "name": "RECOLETA / LA PINCOYA",
+      "corridor": "RECOLETA",
+      "latitude": -33.371129,
+      "longitude": -70.635594,
+      "source_page": 26,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,371,129",
+      "source_longitude_raw": "-70,635,594"
+    },
+    {
+      "id": "J112214",
+      "name": "PEDRO FONTOVA / AMERICO VESPUCIO (NORORIENTE)",
+      "corridor": "PEDRO FONTOVA",
+      "latitude": -33.370861,
+      "longitude": -70.671052,
+      "source_page": 23,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,370,861",
+      "source_longitude_raw": "-70,671,052"
+    },
+    {
+      "id": "J112241",
+      "name": "PEDRO FONTOVA / SANTA ELENA",
+      "corridor": "PEDRO FONTOVA",
+      "latitude": -33.364544,
+      "longitude": -70.670494,
+      "source_page": 23,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,364,544",
+      "source_longitude_raw": "-70,670,494"
+    },
+    {
+      "id": "J212441",
+      "name": "PEDRO FONTOVA / EL GUANACO",
+      "corridor": "PEDRO FONTOVA",
+      "latitude": -33.352581,
+      "longitude": -70.670529,
+      "source_page": 26,
+      "source_commune": "HUECHURABA",
+      "source_latitude_raw": "-33,352,581",
+      "source_longitude_raw": "-70,670,529"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "huechuraba-ida",
+      "origin_id": "J112413",
+      "destination_id": "J212441"
+    },
+    {
+      "id": "huechuraba-regreso",
+      "origin_id": "J212441",
+      "destination_id": "J112413"
+    }
+  ]
+}

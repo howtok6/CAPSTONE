@@ -1,0 +1,96 @@
+{
+  "id": "la-florida",
+  "commune": "La Florida",
+  "name": "Piloto La Florida: VICUÑA MACKENNA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.613609,
+    "min_lat": -33.563732,
+    "max_lon": -70.582127,
+    "max_lat": -33.505306
+  },
+  "points": [
+    {
+      "id": "J068561",
+      "name": "VICUÑA MACKENNA / MARIA ELENA",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.560732,
+      "longitude": -70.585127,
+      "source_page": 15,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,560,732",
+      "source_longitude_raw": "-70,585,127"
+    },
+    {
+      "id": "J068471",
+      "name": "VICUÑA MACKENNA / TRINIDAD",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.547175,
+      "longitude": -70.587677,
+      "source_page": 15,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,547,175",
+      "source_longitude_raw": "-70,587,677"
+    },
+    {
+      "id": "J068381",
+      "name": "VICUÑA MACKENNA / LOS PIONEROS (PONIENTE)",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.533959,
+      "longitude": -70.593767,
+      "source_page": 15,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,533,959",
+      "source_longitude_raw": "-70,593,767"
+    },
+    {
+      "id": "J083711",
+      "name": "VICUÑA MACKENNA / VICENTE VALDES",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.526484,
+      "longitude": -70.596595,
+      "source_page": 19,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,526,484",
+      "source_longitude_raw": "-70,596,595"
+    },
+    {
+      "id": "J083181",
+      "name": "VICUÑA MACKENNA / PASO EL ROBLE",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.517523,
+      "longitude": -70.604909,
+      "source_page": 19,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,517,523",
+      "source_longitude_raw": "-70,604,909"
+    },
+    {
+      "id": "J083543",
+      "name": "VICUÑA MACKENNA / DEPARTAMENTAL",
+      "corridor": "VICUÑA MACKENNA",
+      "latitude": -33.508306,
+      "longitude": -70.610609,
+      "source_page": 19,
+      "source_commune": "LA FLORIDA",
+      "source_latitude_raw": "-33,508,306",
+      "source_longitude_raw": "-70,610,609"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "la-florida-ida",
+      "origin_id": "J068561",
+      "destination_id": "J083543"
+    },
+    {
+      "id": "la-florida-regreso",
+      "origin_id": "J083543",
+      "destination_id": "J068561"
+    }
+  ]
+}

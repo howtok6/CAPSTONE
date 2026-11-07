@@ -1,0 +1,96 @@
+{
+  "id": "el-bosque",
+  "commune": "El Bosque",
+  "name": "Piloto El Bosque: GRAN AVENIDA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.689251,
+    "min_lat": -33.571399,
+    "max_lon": -70.668034,
+    "max_lat": -33.546119
+  },
+  "points": [
+    {
+      "id": "J037141",
+      "name": "GRAN AVENIDA / AV.CENTRAL",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.568399,
+      "longitude": -70.686251,
+      "source_page": 10,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,568,399",
+      "source_longitude_raw": "-70,686,251"
+    },
+    {
+      "id": "J037121",
+      "name": "GRAN AVENIDA / CLAUDIO ARRAU",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.563986,
+      "longitude": -70.682748,
+      "source_page": 10,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,563,986",
+      "source_longitude_raw": "-70,682,748"
+    },
+    {
+      "id": "J029441",
+      "name": "GRAN AVENIDA / LOS TREBOLES",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.557376,
+      "longitude": -70.677432,
+      "source_page": 9,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,557,376",
+      "source_longitude_raw": "-70,677,432"
+    },
+    {
+      "id": "J029341",
+      "name": "GRAN AVENIDA / VIRAJE TOTTUS (S-P)",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.555033,
+      "longitude": -70.676058,
+      "source_page": 9,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,555,033",
+      "source_longitude_raw": "-70,676,058"
+    },
+    {
+      "id": "J029331",
+      "name": "GRAN AVENIDA / ALEJANDRO GUZMAN",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.553526,
+      "longitude": -70.674498,
+      "source_page": 9,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,553,526",
+      "source_longitude_raw": "-70,674,498"
+    },
+    {
+      "id": "J029311",
+      "name": "GRAN AVENIDA / V.PLAZA MAYORGA",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.549119,
+      "longitude": -70.671034,
+      "source_page": 9,
+      "source_commune": "EL BOSQUE",
+      "source_latitude_raw": "-33,549,119",
+      "source_longitude_raw": "-70,671,034"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "el-bosque-ida",
+      "origin_id": "J037141",
+      "destination_id": "J029311"
+    },
+    {
+      "id": "el-bosque-regreso",
+      "origin_id": "J029311",
+      "destination_id": "J037141"
+    }
+  ]
+}

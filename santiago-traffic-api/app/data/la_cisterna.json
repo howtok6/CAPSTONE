@@ -1,0 +1,96 @@
+{
+  "id": "la-cisterna",
+  "commune": "La Cisterna",
+  "name": "Piloto La Cisterna: GRAN AVENIDA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.671163,
+    "min_lat": -33.548495,
+    "max_lon": -70.655572,
+    "max_lat": -33.513522
+  },
+  "points": [
+    {
+      "id": "J029291",
+      "name": "GRAN AVENIDA / LO ESPEJO - RIQUELME",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.545495,
+      "longitude": -70.668163,
+      "source_page": 9,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,545,495",
+      "source_longitude_raw": "-70,668,163"
+    },
+    {
+      "id": "J029251",
+      "name": "GRAN AVENIDA / OSSA",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.538844,
+      "longitude": -70.664643,
+      "source_page": 9,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,538,844",
+      "source_longitude_raw": "-70,664,643"
+    },
+    {
+      "id": "J029211",
+      "name": "GRAN AVENIDA / PEDRO AGUIRRE CERDA",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.535282,
+      "longitude": -70.663787,
+      "source_page": 9,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,535,282",
+      "source_longitude_raw": "-70,663,787"
+    },
+    {
+      "id": "J029181",
+      "name": "GRAN AVENIDA / SANTA ANSELMA",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.531643,
+      "longitude": -70.662783,
+      "source_page": 9,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,531,643",
+      "source_longitude_raw": "-70,662,783"
+    },
+    {
+      "id": "J029151",
+      "name": "GRAN AVENIDA / FERNANDEZ ALBANO",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.523451,
+      "longitude": -70.660551,
+      "source_page": 9,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,523,451",
+      "source_longitude_raw": "-70,660,551"
+    },
+    {
+      "id": "J029131",
+      "name": "GRAN AVENIDA / BRIONES LUCO - F.URREJOLA",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.516522,
+      "longitude": -70.658572,
+      "source_page": 8,
+      "source_commune": "LA CISTERNA",
+      "source_latitude_raw": "-33,516,522",
+      "source_longitude_raw": "-70,658,572"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "la-cisterna-ida",
+      "origin_id": "J029291",
+      "destination_id": "J029131"
+    },
+    {
+      "id": "la-cisterna-regreso",
+      "origin_id": "J029131",
+      "destination_id": "J029291"
+    }
+  ]
+}

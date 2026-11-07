@@ -1,0 +1,96 @@
+{
+  "id": "macul",
+  "commune": "Macul",
+  "name": "Piloto Macul: QUILIN",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.622015,
+    "min_lat": -33.491321,
+    "max_lon": -70.579992,
+    "max_lat": -33.481842
+  },
+  "points": [
+    {
+      "id": "J078152",
+      "name": "QUILIN / VICUÑA MACKENNA",
+      "corridor": "QUILIN",
+      "latitude": -33.485752,
+      "longitude": -70.619015,
+      "source_page": 18,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,485,752",
+      "source_longitude_raw": "-70,619,015"
+    },
+    {
+      "id": "J077762",
+      "name": "QUILIN / MARATHON (ORIENTE)",
+      "corridor": "QUILIN",
+      "latitude": -33.485272,
+      "longitude": -70.612625,
+      "source_page": 18,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,485,272",
+      "source_longitude_raw": "-70,612,625"
+    },
+    {
+      "id": "J077621",
+      "name": "QUILIN / PEDRO DE VALDIVIA",
+      "corridor": "QUILIN",
+      "latitude": -33.485252,
+      "longitude": -70.606166,
+      "source_page": 18,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,485,252",
+      "source_longitude_raw": "-70,606,166"
+    },
+    {
+      "id": "J077471",
+      "name": "QUILIN / EXEQUIEL FERNANDEZ",
+      "corridor": "QUILIN",
+      "latitude": -33.484842,
+      "longitude": -70.601612,
+      "source_page": 18,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,484,842",
+      "source_longitude_raw": "-70,601,612"
+    },
+    {
+      "id": "J079151",
+      "name": "QUILIN / EL LIBANO",
+      "corridor": "QUILIN",
+      "latitude": -33.486284,
+      "longitude": -70.589772,
+      "source_page": 18,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,486,284",
+      "source_longitude_raw": "-70,589,772"
+    },
+    {
+      "id": "J099341",
+      "name": "QUILIN / NUEVA UNO",
+      "corridor": "QUILIN",
+      "latitude": -33.488321,
+      "longitude": -70.582992,
+      "source_page": 22,
+      "source_commune": "MACUL",
+      "source_latitude_raw": "-33,488,321",
+      "source_longitude_raw": "-70,582,992"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "macul-ida",
+      "origin_id": "J078152",
+      "destination_id": "J099341"
+    },
+    {
+      "id": "macul-regreso",
+      "origin_id": "J099341",
+      "destination_id": "J078152"
+    }
+  ]
+}

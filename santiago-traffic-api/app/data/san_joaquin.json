@@ -1,0 +1,96 @@
+{
+  "id": "san-joaquin",
+  "commune": "San Joaquín",
+  "name": "Piloto San Joaquín: LAS INDUSTRIAS",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.633566,
+    "min_lat": -33.516927,
+    "max_lon": -70.621692,
+    "max_lat": -33.477913
+  },
+  "points": [
+    {
+      "id": "J022552",
+      "name": "LAS INDUSTRIAS / PJE. HORACIO",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.513927,
+      "longitude": -70.624692,
+      "source_page": 7,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,513,927",
+      "source_longitude_raw": "-70,624,692"
+    },
+    {
+      "id": "J022191",
+      "name": "LAS INDUSTRIAS / CARMEN MENA",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.509239,
+      "longitude": -70.625695,
+      "source_page": 6,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,509,239",
+      "source_longitude_raw": "-70,625,695"
+    },
+    {
+      "id": "J022531",
+      "name": "LAS INDUSTRIAS / LLICO",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.504683,
+      "longitude": -70.626623,
+      "source_page": 7,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,504,683",
+      "source_longitude_raw": "-70,626,623"
+    },
+    {
+      "id": "J022151",
+      "name": "LAS INDUSTRIAS / SALVADOR ALLENDE",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.496108,
+      "longitude": -70.628443,
+      "source_page": 6,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,496,108",
+      "source_longitude_raw": "-70,628,443"
+    },
+    {
+      "id": "J022131",
+      "name": "LAS INDUSTRIAS / ALCALDE PEDRO ALARCON",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.490361,
+      "longitude": -70.629315,
+      "source_page": 6,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,490,361",
+      "source_longitude_raw": "-70,629,315"
+    },
+    {
+      "id": "J022111",
+      "name": "LAS INDUSTRIAS / ISABEL RIQUELME",
+      "corridor": "LAS INDUSTRIAS",
+      "latitude": -33.480913,
+      "longitude": -70.630566,
+      "source_page": 6,
+      "source_commune": "SAN JOAQUIN",
+      "source_latitude_raw": "-33,480,913",
+      "source_longitude_raw": "-70,630,566"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "san-joaquin-ida",
+      "origin_id": "J022552",
+      "destination_id": "J022111"
+    },
+    {
+      "id": "san-joaquin-regreso",
+      "origin_id": "J022111",
+      "destination_id": "J022552"
+    }
+  ]
+}

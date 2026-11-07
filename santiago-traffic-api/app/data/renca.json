@@ -1,0 +1,96 @@
+{
+  "id": "renca",
+  "commune": "Renca",
+  "name": "Piloto Renca: DOMINGO SANTA MARIA y MIRAFLORES",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.772459,
+    "min_lat": -33.413229,
+    "max_lon": -70.686726,
+    "max_lat": -33.391527
+  },
+  "points": [
+    {
+      "id": "J111111",
+      "name": "MIRAFLORES / AMERICO VESPUCIO SUR",
+      "corridor": "MIRAFLORES",
+      "latitude": -33.394527,
+      "longitude": -70.769459,
+      "source_page": 23,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,394,527",
+      "source_longitude_raw": "-70,769,459"
+    },
+    {
+      "id": "J111121",
+      "name": "MIRAFLORES / VENTISQUERO/DOS ORIENTE",
+      "corridor": "MIRAFLORES",
+      "latitude": -33.396476,
+      "longitude": -70.763993,
+      "source_page": 23,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,396,476",
+      "source_longitude_raw": "-70,763,993"
+    },
+    {
+      "id": "J111161",
+      "name": "MIRAFLORES / VICUÑA MACKENNA",
+      "corridor": "MIRAFLORES",
+      "latitude": -33.402868,
+      "longitude": -70.745328,
+      "source_page": 23,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,402,868",
+      "source_longitude_raw": "-70,745,328"
+    },
+    {
+      "id": "J108211",
+      "name": "DOMINGO SANTA MARIA / SENADOR JAIME GUZMAN (DORSAL)",
+      "corridor": "DOMINGO SANTA MARIA",
+      "latitude": -33.405381,
+      "longitude": -70.704108,
+      "source_page": 22,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,405,381",
+      "source_longitude_raw": "-70,704,108"
+    },
+    {
+      "id": "J108131",
+      "name": "DOMINGO SANTA MARIA / MARURI",
+      "corridor": "DOMINGO SANTA MARIA",
+      "latitude": -33.408245,
+      "longitude": -70.695639,
+      "source_page": 22,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,408,245",
+      "source_longitude_raw": "-70,695,639"
+    },
+    {
+      "id": "J108112",
+      "name": "DOMINGO SANTA MARIA / APOSTOL SANTIAGO",
+      "corridor": "DOMINGO SANTA MARIA",
+      "latitude": -33.410229,
+      "longitude": -70.689726,
+      "source_page": 22,
+      "source_commune": "RENCA",
+      "source_latitude_raw": "-33,410,229",
+      "source_longitude_raw": "-70,689,726"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "renca-ida",
+      "origin_id": "J111111",
+      "destination_id": "J108112"
+    },
+    {
+      "id": "renca-regreso",
+      "origin_id": "J108112",
+      "destination_id": "J111111"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "santiago",
+  "commune": "Santiago",
+  "name": "Piloto Santiago: ALAMEDA B. O'HIGGINS",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.683474,
+    "min_lat": -33.454516,
+    "max_lon": -70.643243,
+    "max_lat": -33.439811
+  },
+  "points": [
+    {
+      "id": "J046122",
+      "name": "ALAMEDA B. O'HIGGINS / BORJA",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.451516,
+      "longitude": -70.680474,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,451,516",
+      "source_longitude_raw": "-70,680,474"
+    },
+    {
+      "id": "J046172",
+      "name": "ALAMEDA B. O'HIGGINS / MOLINA",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.449328,
+      "longitude": -70.672633,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,449,328",
+      "source_longitude_raw": "-70,672,633"
+    },
+    {
+      "id": "J046191",
+      "name": "ALAMEDA B. O'HIGGINS / CUMMING",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.447742,
+      "longitude": -70.667339,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,447,742",
+      "source_longitude_raw": "-70,667,339"
+    },
+    {
+      "id": "J046221",
+      "name": "ALAMEDA B. O'HIGGINS / CIENFUEGOS VERGARA",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.446401,
+      "longitude": -70.662604,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,446,401",
+      "source_longitude_raw": "-70,662,604"
+    },
+    {
+      "id": "J046262",
+      "name": "ALAMEDA B. O'HIGGINS / NATANIEL COX",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.444933,
+      "longitude": -70.654049,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,444,933",
+      "source_longitude_raw": "-70,654,049"
+    },
+    {
+      "id": "J046321",
+      "name": "ALAMEDA B. O'HIGGINS / MAC IVER - SANTA ROSA",
+      "corridor": "ALAMEDA B. O'HIGGINS",
+      "latitude": -33.442811,
+      "longitude": -70.646243,
+      "source_page": 12,
+      "source_commune": "SANTIAGO",
+      "source_latitude_raw": "-33,442,811",
+      "source_longitude_raw": "-70,646,243"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "santiago-ida",
+      "origin_id": "J046122",
+      "destination_id": "J046321"
+    },
+    {
+      "id": "santiago-regreso",
+      "origin_id": "J046321",
+      "destination_id": "J046122"
+    }
+  ]
+}

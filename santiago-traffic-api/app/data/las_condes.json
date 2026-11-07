@@ -1,0 +1,28 @@
+{
+  "id": "las-condes",
+  "commune": "Las Condes",
+  "name": "Piloto Las Condes: Apoquindo y Manquehue",
+  "timezone": "America/Santiago",
+  "scope": "Ventana piloto; no representa el límite administrativo ni toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "La conexión al sistema UOCT corresponde al inventario de 2023. Su estado operativo actual y las coordenadas deben revalidarse antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.600,
+    "min_lat": -33.423,
+    "max_lon": -70.560,
+    "max_lat": -33.400
+  },
+  "points": [
+    {"id": "J001421", "name": "Apoquindo / Enrique Foster", "corridor": "Apoquindo", "latitude": -33.416258, "longitude": -70.594058, "source_page": 1},
+    {"id": "J001431", "name": "Apoquindo / Gertrudis Echenique - El Golf", "corridor": "Apoquindo", "latitude": -33.415817, "longitude": -70.591756, "source_page": 1},
+    {"id": "J001441", "name": "Apoquindo / Málaga", "corridor": "Apoquindo", "latitude": -33.414857, "longitude": -70.587105, "source_page": 1},
+    {"id": "J158111", "name": "Apoquindo / Manquehue", "corridor": "Apoquindo / Manquehue", "latitude": -33.408677, "longitude": -70.567186, "source_page": 25},
+    {"id": "J059481", "name": "Manquehue / Los Militares", "corridor": "Manquehue", "latitude": -33.405132, "longitude": -70.568613, "source_page": 14},
+    {"id": "J062151", "name": "Manquehue / Colón", "corridor": "Manquehue", "latitude": -33.416601, "longitude": -70.564832, "source_page": 15}
+  ],
+  "route_pairs": [
+    {"id": "apoquindo-oriente", "origin_id": "J001421", "destination_id": "J158111"},
+    {"id": "apoquindo-poniente", "origin_id": "J158111", "destination_id": "J001421"}
+  ]
+}

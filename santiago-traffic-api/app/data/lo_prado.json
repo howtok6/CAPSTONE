@@ -1,0 +1,96 @@
+{
+  "id": "lo-prado",
+  "commune": "Lo Prado",
+  "name": "Piloto Lo Prado: SAN PABLO",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.743566,
+    "min_lat": -33.447635,
+    "max_lon": -70.707337,
+    "max_lat": -33.439301
+  },
+  "points": [
+    {
+      "id": "J032151",
+      "name": "SAN PABLO / TENIENTE CRUZ",
+      "corridor": "SAN PABLO",
+      "latitude": -33.444635,
+      "longitude": -70.740566,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,444,635",
+      "source_longitude_raw": "-70,740,566"
+    },
+    {
+      "id": "J032162",
+      "name": "SAN PABLO / TUPUNGATO",
+      "corridor": "SAN PABLO",
+      "latitude": -33.444622,
+      "longitude": -70.733638,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,444,622",
+      "source_longitude_raw": "-70,733,638"
+    },
+    {
+      "id": "J032331",
+      "name": "SAN PABLO / GENERAL BUENDIA",
+      "corridor": "SAN PABLO",
+      "latitude": -33.444503,
+      "longitude": -70.726702,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,444,503",
+      "source_longitude_raw": "-70,726,702"
+    },
+    {
+      "id": "J032211",
+      "name": "SAN PABLO / SAN GERMAN",
+      "corridor": "SAN PABLO",
+      "latitude": -33.443798,
+      "longitude": -70.719644,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,443,798",
+      "source_longitude_raw": "-70,719,644"
+    },
+    {
+      "id": "J032231",
+      "name": "SAN PABLO / NECOCHEA",
+      "corridor": "SAN PABLO",
+      "latitude": -33.442845,
+      "longitude": -70.713154,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,442,845",
+      "source_longitude_raw": "-70,713,154"
+    },
+    {
+      "id": "J032221",
+      "name": "SAN PABLO / TALCAHUANO - LOS COPIHUES",
+      "corridor": "SAN PABLO",
+      "latitude": -33.442301,
+      "longitude": -70.710337,
+      "source_page": 9,
+      "source_commune": "LO PRADO",
+      "source_latitude_raw": "-33,442,301",
+      "source_longitude_raw": "-70,710,337"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "lo-prado-ida",
+      "origin_id": "J032151",
+      "destination_id": "J032221"
+    },
+    {
+      "id": "lo-prado-regreso",
+      "origin_id": "J032221",
+      "destination_id": "J032151"
+    }
+  ]
+}

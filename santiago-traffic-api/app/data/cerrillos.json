@@ -1,0 +1,96 @@
+{
+  "id": "cerrillos",
+  "commune": "Cerrillos",
+  "name": "Piloto Cerrillos: PEDRO AGUIRRE CERDA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.721202,
+    "min_lat": -33.511277,
+    "max_lon": -70.681969,
+    "max_lat": -33.470613
+  },
+  "points": [
+    {
+      "id": "J009641",
+      "name": "PEDRO AGUIRRE CERDA / LOS CEIBOS",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.508277,
+      "longitude": -70.718202,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,508,277",
+      "source_longitude_raw": "-70,718,202"
+    },
+    {
+      "id": "J009591",
+      "name": "PEDRO AGUIRRE CERDA / LO ERRAZURIZ",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.500811,
+      "longitude": -70.710199,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,500,811",
+      "source_longitude_raw": "-70,710,199"
+    },
+    {
+      "id": "J009533",
+      "name": "PEDRO AGUIRRE CERDA / LAS ENCINAS-LAS AMERICAS PT S",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.491987,
+      "longitude": -70.702878,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,491,987",
+      "source_longitude_raw": "-70,702,878"
+    },
+    {
+      "id": "J009481",
+      "name": "PEDRO AGUIRRE CERDA / DEPARTAMENTAL",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.483463,
+      "longitude": -70.695156,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,483,463",
+      "source_longitude_raw": "-70,695,156"
+    },
+    {
+      "id": "J009421",
+      "name": "PEDRO AGUIRRE CERDA / CARLOS VALDOVINOS",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.478158,
+      "longitude": -70.690716,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,478,158",
+      "source_longitude_raw": "-70,690,716"
+    },
+    {
+      "id": "J009121",
+      "name": "PEDRO AGUIRRE CERDA / HIPOLITO VILLEGAS",
+      "corridor": "PEDRO AGUIRRE CERDA",
+      "latitude": -33.473613,
+      "longitude": -70.684969,
+      "source_page": 3,
+      "source_commune": "CERRILLOS",
+      "source_latitude_raw": "-33,473,613",
+      "source_longitude_raw": "-70,684,969"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "cerrillos-ida",
+      "origin_id": "J009641",
+      "destination_id": "J009121"
+    },
+    {
+      "id": "cerrillos-regreso",
+      "origin_id": "J009121",
+      "destination_id": "J009641"
+    }
+  ]
+}

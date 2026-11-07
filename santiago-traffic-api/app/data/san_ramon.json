@@ -1,0 +1,96 @@
+{
+  "id": "san-ramon",
+  "commune": "San Ramón",
+  "name": "Piloto San Ramón: SANTA ROSA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.639616,
+    "min_lat": -33.559021,
+    "max_lon": -70.628589,
+    "max_lat": -33.515687
+  },
+  "points": [
+    {
+      "id": "J031441",
+      "name": "SANTA ROSA / CAPITAN AVALOS PONIENTE",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.556021,
+      "longitude": -70.631589,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,556,021",
+      "source_longitude_raw": "-70,631,589"
+    },
+    {
+      "id": "J031251",
+      "name": "SANTA ROSA / VICUÑA MACKENNA - SAN MARTIN",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.547565,
+      "longitude": -70.633279,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,547,565",
+      "source_longitude_raw": "-70,633,279"
+    },
+    {
+      "id": "J031231",
+      "name": "SANTA ROSA / SAN GREGORIO",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.537286,
+      "longitude": -70.634523,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,537,286",
+      "source_longitude_raw": "-70,634,523"
+    },
+    {
+      "id": "J031211",
+      "name": "SANTA ROSA / TOME (ARGENTINA)",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.532882,
+      "longitude": -70.634774,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,532,882",
+      "source_longitude_raw": "-70,634,774"
+    },
+    {
+      "id": "J031171",
+      "name": "SANTA ROSA / FERNANDEZ ALBANO",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.528148,
+      "longitude": -70.635563,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,528,148",
+      "source_longitude_raw": "-70,635,563"
+    },
+    {
+      "id": "J031151",
+      "name": "SANTA ROSA / AV. CENTRAL (MAYO)",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.518687,
+      "longitude": -70.636616,
+      "source_page": 9,
+      "source_commune": "SAN RAMON",
+      "source_latitude_raw": "-33,518,687",
+      "source_longitude_raw": "-70,636,616"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "san-ramon-ida",
+      "origin_id": "J031441",
+      "destination_id": "J031151"
+    },
+    {
+      "id": "san-ramon-regreso",
+      "origin_id": "J031151",
+      "destination_id": "J031441"
+    }
+  ]
+}

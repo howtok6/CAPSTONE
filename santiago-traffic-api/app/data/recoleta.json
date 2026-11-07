@@ -1,0 +1,96 @@
+{
+  "id": "recoleta",
+  "commune": "Recoleta",
+  "name": "Piloto Recoleta: RECOLETA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.650076,
+    "min_lat": -33.432623,
+    "max_lon": -70.639429,
+    "max_lat": -33.387946
+  },
+  "points": [
+    {
+      "id": "J036281",
+      "name": "RECOLETA / SANTA FILOMENA",
+      "corridor": "RECOLETA",
+      "latitude": -33.429623,
+      "longitude": -70.647076,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,429,623",
+      "source_longitude_raw": "-70,647,076"
+    },
+    {
+      "id": "J036211",
+      "name": "RECOLETA / SANTOS DUMONT",
+      "corridor": "RECOLETA",
+      "latitude": -33.421997,
+      "longitude": -70.644814,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,421,997",
+      "source_longitude_raw": "-70,644,814"
+    },
+    {
+      "id": "J036191",
+      "name": "RECOLETA / UNION NORTE",
+      "corridor": "RECOLETA",
+      "latitude": -33.415942,
+      "longitude": -70.643689,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,415,942",
+      "source_longitude_raw": "-70,643,689"
+    },
+    {
+      "id": "J036161",
+      "name": "RECOLETA / MEXICO",
+      "corridor": "RECOLETA",
+      "latitude": -33.408257,
+      "longitude": -70.643271,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,408,257",
+      "source_longitude_raw": "-70,643,271"
+    },
+    {
+      "id": "J036351",
+      "name": "RECOLETA / EMILIANO ZAPATA",
+      "corridor": "RECOLETA",
+      "latitude": -33.399204,
+      "longitude": -70.642817,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,399,204",
+      "source_longitude_raw": "-70,642,817"
+    },
+    {
+      "id": "J036111",
+      "name": "RECOLETA / ZAPADORES",
+      "corridor": "RECOLETA",
+      "latitude": -33.390946,
+      "longitude": -70.642429,
+      "source_page": 10,
+      "source_commune": "RECOLETA",
+      "source_latitude_raw": "-33,390,946",
+      "source_longitude_raw": "-70,642,429"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "recoleta-ida",
+      "origin_id": "J036281",
+      "destination_id": "J036111"
+    },
+    {
+      "id": "recoleta-regreso",
+      "origin_id": "J036111",
+      "destination_id": "J036281"
+    }
+  ]
+}

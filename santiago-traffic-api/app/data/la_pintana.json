@@ -1,0 +1,96 @@
+{
+  "id": "la-pintana",
+  "commune": "La Pintana",
+  "name": "Piloto La Pintana: SANTA ROSA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.634037,
+    "min_lat": -33.618447,
+    "max_lon": -70.623681,
+    "max_lat": -33.555059
+  },
+  "points": [
+    {
+      "id": "J038271",
+      "name": "SANTA ROSA / EL OLIVAR",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.615447,
+      "longitude": -70.626681,
+      "source_page": 11,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,615,447",
+      "source_longitude_raw": "-70,626,681"
+    },
+    {
+      "id": "J038241",
+      "name": "SANTA ROSA / NEGHME",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.600481,
+      "longitude": -70.627021,
+      "source_page": 11,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,600,481",
+      "source_longitude_raw": "-70,627,021"
+    },
+    {
+      "id": "J038131",
+      "name": "SANTA ROSA / AV. GABRIELA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.585633,
+      "longitude": -70.628598,
+      "source_page": 11,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,585,633",
+      "source_longitude_raw": "-70,628,598"
+    },
+    {
+      "id": "J038171",
+      "name": "SANTA ROSA / VETERINARIA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.573555,
+      "longitude": -70.629891,
+      "source_page": 11,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,573,555",
+      "source_longitude_raw": "-70,629,891"
+    },
+    {
+      "id": "J038111",
+      "name": "SANTA ROSA / OBSERVATORIO",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.565611,
+      "longitude": -70.630503,
+      "source_page": 11,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,565,611",
+      "source_longitude_raw": "-70,630,503"
+    },
+    {
+      "id": "J031291",
+      "name": "SANTA ROSA / VENANCIA LEIVA",
+      "corridor": "SANTA ROSA",
+      "latitude": -33.558059,
+      "longitude": -70.631037,
+      "source_page": 9,
+      "source_commune": "LA PINTANA",
+      "source_latitude_raw": "-33,558,059",
+      "source_longitude_raw": "-70,631,037"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "la-pintana-ida",
+      "origin_id": "J038271",
+      "destination_id": "J031291"
+    },
+    {
+      "id": "la-pintana-regreso",
+      "origin_id": "J031291",
+      "destination_id": "J038271"
+    }
+  ]
+}

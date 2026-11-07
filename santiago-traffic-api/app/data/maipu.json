@@ -1,0 +1,96 @@
+{
+  "id": "maipu",
+  "commune": "Maipú",
+  "name": "Piloto Maipú: PAJARITOS y LOS PAJARITOS",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.760461,
+    "min_lat": -33.528365,
+    "max_lon": -70.736896,
+    "max_lat": -33.472292
+  },
+  "points": [
+    {
+      "id": "J010691",
+      "name": "LOS PAJARITOS / NUEVA SAN MARTIN",
+      "corridor": "LOS PAJARITOS",
+      "latitude": -33.525365,
+      "longitude": -70.757211,
+      "source_page": 4,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,525,365",
+      "source_longitude_raw": "-70,757,211"
+    },
+    {
+      "id": "J010612",
+      "name": "PAJARITOS / CARMEN LUISA CORREA",
+      "corridor": "PAJARITOS",
+      "latitude": -33.511705,
+      "longitude": -70.757454,
+      "source_page": 4,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,511,705",
+      "source_longitude_raw": "-70,757,454"
+    },
+    {
+      "id": "J010531",
+      "name": "LOS PAJARITOS / AV. CHILE",
+      "corridor": "LOS PAJARITOS",
+      "latitude": -33.503579,
+      "longitude": -70.757345,
+      "source_page": 4,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,503,579",
+      "source_longitude_raw": "-70,757,345"
+    },
+    {
+      "id": "J010111",
+      "name": "LOS PAJARITOS / UNO NORTE - BUERAS",
+      "corridor": "LOS PAJARITOS",
+      "latitude": -33.496279,
+      "longitude": -70.757461,
+      "source_page": 3,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,496,279",
+      "source_longitude_raw": "-70,757,461"
+    },
+    {
+      "id": "J018561",
+      "name": "PAJARITOS / AMERICO VESPUCIO",
+      "corridor": "PAJARITOS",
+      "latitude": -33.488887,
+      "longitude": -70.752199,
+      "source_page": 6,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,488,887",
+      "source_longitude_raw": "-70,752,199"
+    },
+    {
+      "id": "J018512",
+      "name": "PAJARITOS / HUGO BRAVO",
+      "corridor": "PAJARITOS",
+      "latitude": -33.475292,
+      "longitude": -70.739896,
+      "source_page": 6,
+      "source_commune": "MAIPU",
+      "source_latitude_raw": "-33,475,292",
+      "source_longitude_raw": "-70,739,896"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "maipu-ida",
+      "origin_id": "J010691",
+      "destination_id": "J018512"
+    },
+    {
+      "id": "maipu-regreso",
+      "origin_id": "J018512",
+      "destination_id": "J010691"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "quinta-normal",
+  "commune": "Quinta Normal",
+  "name": "Piloto Quinta Normal: CARRASCAL",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.718851,
+    "min_lat": -33.426567,
+    "max_lon": -70.686892,
+    "max_lat": -33.412095
+  },
+  "points": [
+    {
+      "id": "J026681",
+      "name": "CARRASCAL / NEPTUNO",
+      "corridor": "CARRASCAL",
+      "latitude": -33.415095,
+      "longitude": -70.715851,
+      "source_page": 8,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,415,095",
+      "source_longitude_raw": "-70,715,851"
+    },
+    {
+      "id": "J026111",
+      "name": "CARRASCAL / SAMUEL IZQUIERDO",
+      "corridor": "CARRASCAL",
+      "latitude": -33.416443,
+      "longitude": -70.711784,
+      "source_page": 7,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,416,443",
+      "source_longitude_raw": "-70,711,784"
+    },
+    {
+      "id": "J026671",
+      "name": "CARRASCAL / JUJUY",
+      "corridor": "CARRASCAL",
+      "latitude": -33.420172,
+      "longitude": -70.703966,
+      "source_page": 8,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,420,172",
+      "source_longitude_raw": "-70,703,966"
+    },
+    {
+      "id": "J026661",
+      "name": "CARRASCAL / ENTRERIOS",
+      "corridor": "CARRASCAL",
+      "latitude": -33.421829,
+      "longitude": -70.697464,
+      "source_page": 8,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,421,829",
+      "source_longitude_raw": "-70,697,464"
+    },
+    {
+      "id": "J126121",
+      "name": "CARRASCAL / GENERAL BRAYER",
+      "corridor": "CARRASCAL",
+      "latitude": -33.423026,
+      "longitude": -70.692985,
+      "source_page": 24,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,423,026",
+      "source_longitude_raw": "-70,692,985"
+    },
+    {
+      "id": "J126131",
+      "name": "CARRASCAL / AUGUSTO MATTE",
+      "corridor": "CARRASCAL",
+      "latitude": -33.423567,
+      "longitude": -70.689892,
+      "source_page": 24,
+      "source_commune": "QUINTA NORMAL",
+      "source_latitude_raw": "-33,423,567",
+      "source_longitude_raw": "-70,689,892"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "quinta-normal-ida",
+      "origin_id": "J026681",
+      "destination_id": "J126131"
+    },
+    {
+      "id": "quinta-normal-regreso",
+      "origin_id": "J126131",
+      "destination_id": "J026681"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "lo-barnechea",
+  "commune": "Lo Barnechea",
+  "name": "Piloto Lo Barnechea: La Dehesa y Alcalde Delano",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia de La Dehesa y Alcalde Delano. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {"min_lon": -70.526, "min_lat": -33.372, "max_lon": -70.507, "max_lat": -33.349},
+  "points": [
+    {"id": "J055261", "name": "La Dehesa / Monseñor Escrivá de Balaguer", "corridor": "La Dehesa", "latitude": -33.368222, "longitude": -70.511991, "source_page": 14},
+    {"id": "J091311", "name": "La Dehesa / Raúl Labbé", "corridor": "La Dehesa", "latitude": -33.364264, "longitude": -70.514525, "source_page": 21},
+    {"id": "J091321", "name": "La Dehesa / Los Robles", "corridor": "La Dehesa", "latitude": -33.362203, "longitude": -70.515266, "source_page": 21},
+    {"id": "J091331", "name": "La Dehesa / Comandante Malbec", "corridor": "La Dehesa", "latitude": -33.360903, "longitude": -70.515774, "source_page": 21},
+    {"id": "J091352", "name": "La Dehesa / El Gabino (poniente)", "corridor": "La Dehesa", "latitude": -33.356459, "longitude": -70.517234, "source_page": 21},
+    {"id": "J091242", "name": "Alcalde Delano / Av. Central", "corridor": "Alcalde Delano", "latitude": -33.353242, "longitude": -70.521852, "source_page": 21}
+  ],
+  "route_pairs": [
+    {"id": "la-dehesa-norte", "origin_id": "J055261", "destination_id": "J091242"},
+    {"id": "la-dehesa-sur", "origin_id": "J091242", "destination_id": "J055261"}
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "san-miguel",
+  "commune": "San Miguel",
+  "name": "Piloto San Miguel: GRAN AVENIDA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.661061,
+    "min_lat": -33.517684,
+    "max_lon": -70.645199,
+    "max_lat": -33.474597
+  },
+  "points": [
+    {
+      "id": "J029121",
+      "name": "GRAN AVENIDA / LO OVALLE",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.514684,
+      "longitude": -70.658061,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,514,684",
+      "source_longitude_raw": "-70,658,061"
+    },
+    {
+      "id": "J028831",
+      "name": "GRAN AVENIDA / MIGUEL LEON PRADO",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.504996,
+      "longitude": -70.655345,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,504,996",
+      "source_longitude_raw": "-70,655,345"
+    },
+    {
+      "id": "J028731",
+      "name": "GRAN AVENIDA / URETA COX",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.497318,
+      "longitude": -70.653126,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,497,318",
+      "source_longitude_raw": "-70,653,126"
+    },
+    {
+      "id": "J028661",
+      "name": "GRAN AVENIDA / SALESIANOS",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.492269,
+      "longitude": -70.651727,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,492,269",
+      "source_longitude_raw": "-70,651,727"
+    },
+    {
+      "id": "J028571",
+      "name": "GRAN AVENIDA / ALCALDE PEDRO ALARCON",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.486158,
+      "longitude": -70.650107,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,486,158",
+      "source_longitude_raw": "-70,650,107"
+    },
+    {
+      "id": "J028421",
+      "name": "GRAN AVENIDA / ISABEL RIQUELME",
+      "corridor": "GRAN AVENIDA",
+      "latitude": -33.477597,
+      "longitude": -70.648199,
+      "source_page": 8,
+      "source_commune": "SAN MIGUEL",
+      "source_latitude_raw": "-33,477,597",
+      "source_longitude_raw": "-70,648,199"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "san-miguel-ida",
+      "origin_id": "J029121",
+      "destination_id": "J028421"
+    },
+    {
+      "id": "san-miguel-regreso",
+      "origin_id": "J028421",
+      "destination_id": "J029121"
+    }
+  ]
+}

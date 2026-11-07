@@ -1,0 +1,96 @@
+{
+  "id": "estacion-central",
+  "commune": "Estación Central",
+  "name": "Piloto Estación Central: ALAMEDA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.710559,
+    "min_lat": -33.461063,
+    "max_lon": -70.682031,
+    "max_lat": -33.449508
+  },
+  "points": [
+    {
+      "id": "J008311",
+      "name": "ALAMEDA / LOS ALERCES",
+      "corridor": "ALAMEDA",
+      "latitude": -33.458063,
+      "longitude": -70.707559,
+      "source_page": 3,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,458,063",
+      "source_longitude_raw": "-70,707,559"
+    },
+    {
+      "id": "J008171",
+      "name": "ALAMEDA / RADAL",
+      "corridor": "ALAMEDA",
+      "latitude": -33.456237,
+      "longitude": -70.701082,
+      "source_page": 3,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,456,237",
+      "source_longitude_raw": "-70,701,082"
+    },
+    {
+      "id": "J008221",
+      "name": "ALAMEDA / CON CON",
+      "corridor": "ALAMEDA",
+      "latitude": -33.455046,
+      "longitude": -70.695892,
+      "source_page": 3,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,455,046",
+      "source_longitude_raw": "-70,695,892"
+    },
+    {
+      "id": "J030112",
+      "name": "ALAMEDA / GENERAL VELASQUEZ (ORIENTE)",
+      "corridor": "ALAMEDA",
+      "latitude": -33.453997,
+      "longitude": -70.690801,
+      "source_page": 9,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,453,997",
+      "source_longitude_raw": "-70,690,801"
+    },
+    {
+      "id": "J030141",
+      "name": "ALAMEDA / RUIZ TAGLE",
+      "corridor": "ALAMEDA",
+      "latitude": -33.453128,
+      "longitude": -70.687732,
+      "source_page": 9,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,453,128",
+      "source_longitude_raw": "-70,687,732"
+    },
+    {
+      "id": "J030211",
+      "name": "ALAMEDA / OBISPO UMAÑA",
+      "corridor": "ALAMEDA",
+      "latitude": -33.452508,
+      "longitude": -70.685031,
+      "source_page": 9,
+      "source_commune": "ESTACION CENTRAL",
+      "source_latitude_raw": "-33,452,508",
+      "source_longitude_raw": "-70,685,031"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "estacion-central-ida",
+      "origin_id": "J008311",
+      "destination_id": "J030211"
+    },
+    {
+      "id": "estacion-central-regreso",
+      "origin_id": "J030211",
+      "destination_id": "J008311"
+    }
+  ]
+}

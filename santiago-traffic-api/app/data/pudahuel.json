@@ -1,0 +1,96 @@
+{
+  "id": "pudahuel",
+  "commune": "Pudahuel",
+  "name": "Piloto Pudahuel: SAN PABLO",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.782121,
+    "min_lat": -33.447673,
+    "max_lon": -70.741801,
+    "max_lat": -33.439064
+  },
+  "points": [
+    {
+      "id": "J032911",
+      "name": "SAN PABLO / AMERICO VESPUCIO (VIA LOCAL)",
+      "corridor": "SAN PABLO",
+      "latitude": -33.443963,
+      "longitude": -70.779121,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,443,963",
+      "source_longitude_raw": "-70,779,121"
+    },
+    {
+      "id": "J032811",
+      "name": "SAN PABLO / TRANQUE",
+      "corridor": "SAN PABLO",
+      "latitude": -33.443293,
+      "longitude": -70.770925,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,443,293",
+      "source_longitude_raw": "-70,770,925"
+    },
+    {
+      "id": "J032121",
+      "name": "SAN PABLO / FEDERICO ERRAZURIZ",
+      "corridor": "SAN PABLO",
+      "latitude": -33.442064,
+      "longitude": -70.764109,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,442,064",
+      "source_longitude_raw": "-70,764,109"
+    },
+    {
+      "id": "J032321",
+      "name": "SAN PABLO / SANTA VICTORIA",
+      "corridor": "SAN PABLO",
+      "latitude": -33.443125,
+      "longitude": -70.758382,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,443,125",
+      "source_longitude_raw": "-70,758,382"
+    },
+    {
+      "id": "J032141",
+      "name": "SAN PABLO / EL SALITRE",
+      "corridor": "SAN PABLO",
+      "latitude": -33.444433,
+      "longitude": -70.749824,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,444,433",
+      "source_longitude_raw": "-70,749,824"
+    },
+    {
+      "id": "J032171",
+      "name": "SAN PABLO / LOS EDILES",
+      "corridor": "SAN PABLO",
+      "latitude": -33.444673,
+      "longitude": -70.744801,
+      "source_page": 9,
+      "source_commune": "PUDAHUEL",
+      "source_latitude_raw": "-33,444,673",
+      "source_longitude_raw": "-70,744,801"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "pudahuel-ida",
+      "origin_id": "J032911",
+      "destination_id": "J032171"
+    },
+    {
+      "id": "pudahuel-regreso",
+      "origin_id": "J032171",
+      "destination_id": "J032911"
+    }
+  ]
+}

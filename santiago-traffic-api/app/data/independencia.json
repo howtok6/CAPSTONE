@@ -1,0 +1,96 @@
+{
+  "id": "independencia",
+  "commune": "Independencia",
+  "name": "Piloto Independencia: INDEPENDENCIA",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.677775,
+    "min_lat": -33.434662,
+    "max_lon": -70.649837,
+    "max_lat": -33.388335
+  },
+  "points": [
+    {
+      "id": "J017271",
+      "name": "INDEPENDENCIA / SANTA MARIA",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.431662,
+      "longitude": -70.652837,
+      "source_page": 5,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,431,662",
+      "source_longitude_raw": "-70,652,837"
+    },
+    {
+      "id": "J007331",
+      "name": "INDEPENDENCIA / ECHEVERRIA - RIVERA",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.425265,
+      "longitude": -70.654716,
+      "source_page": 3,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,425,265",
+      "source_longitude_raw": "-70,654,716"
+    },
+    {
+      "id": "J007291",
+      "name": "INDEPENDENCIA / SANTOS DUMONT - GAMERO",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.420615,
+      "longitude": -70.655811,
+      "source_page": 3,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,420,615",
+      "source_longitude_raw": "-70,655,811"
+    },
+    {
+      "id": "J007242",
+      "name": "INDEPENDENCIA / NUEVA.MATTE",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.409661,
+      "longitude": -70.659983,
+      "source_page": 3,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,409,661",
+      "source_longitude_raw": "-70,659,983"
+    },
+    {
+      "id": "J007351",
+      "name": "INDEPENDENCIA / RECABARREN",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.400774,
+      "longitude": -70.666208,
+      "source_page": 3,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,400,774",
+      "source_longitude_raw": "-70,666,208"
+    },
+    {
+      "id": "J007142",
+      "name": "INDEPENDENCIA / EL OLIVO",
+      "corridor": "INDEPENDENCIA",
+      "latitude": -33.391335,
+      "longitude": -70.674775,
+      "source_page": 3,
+      "source_commune": "INDEPENDENCIA",
+      "source_latitude_raw": "-33,391,335",
+      "source_longitude_raw": "-70,674,775"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "independencia-ida",
+      "origin_id": "J017271",
+      "destination_id": "J007142"
+    },
+    {
+      "id": "independencia-regreso",
+      "origin_id": "J007142",
+      "destination_id": "J017271"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "nunoa",
+  "commune": "Ñuñoa",
+  "name": "Piloto Ñuñoa: eje Irarrázaval",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia del eje Irarrázaval. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {"min_lon": -70.624, "min_lat": -33.458, "max_lon": -70.599, "max_lat": -33.449},
+  "points": [
+    {"id": "J074361", "name": "Irarrázaval / Salvador", "corridor": "Irarrázaval", "latitude": -33.453473, "longitude": -70.620622, "source_page": 17},
+    {"id": "J074351", "name": "Irarrázaval / José Miguel Infante", "corridor": "Irarrázaval", "latitude": -33.453063, "longitude": -70.617762, "source_page": 17},
+    {"id": "J074331", "name": "Irarrázaval / Manuel Montt", "corridor": "Irarrázaval", "latitude": -33.453288, "longitude": -70.612467, "source_page": 17},
+    {"id": "J074311", "name": "Irarrázaval / Antonio Varas", "corridor": "Irarrázaval", "latitude": -33.453698, "longitude": -70.608908, "source_page": 17},
+    {"id": "J074281", "name": "Irarrázaval / Pedro de Valdivia", "corridor": "Irarrázaval", "latitude": -33.454134, "longitude": -70.604899, "source_page": 17},
+    {"id": "J074271", "name": "Irarrázaval / Villaseca", "corridor": "Irarrázaval", "latitude": -33.454292, "longitude": -70.603368, "source_page": 17}
+  ],
+  "route_pairs": [
+    {"id": "irarrazaval-oriente", "origin_id": "J074361", "destination_id": "J074271"},
+    {"id": "irarrazaval-poniente", "origin_id": "J074271", "destination_id": "J074361"}
+  ]
+}

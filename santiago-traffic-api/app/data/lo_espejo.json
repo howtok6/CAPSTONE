@@ -1,0 +1,96 @@
+{
+  "id": "lo-espejo",
+  "commune": "Lo Espejo",
+  "name": "Piloto Lo Espejo: AV. CENTRAL y LO ESPEJO",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.705535,
+    "min_lat": -33.539388,
+    "max_lon": -70.689808,
+    "max_lat": -33.510933
+  },
+  "points": [
+    {
+      "id": "J050782",
+      "name": "LO ESPEJO / LA DIVISA",
+      "corridor": "LO ESPEJO",
+      "latitude": -33.536388,
+      "longitude": -70.692808,
+      "source_page": 13,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,536,388",
+      "source_longitude_raw": "-70,692,808"
+    },
+    {
+      "id": "J050761",
+      "name": "LO ESPEJO / SANTA MARGARITA",
+      "corridor": "LO ESPEJO",
+      "latitude": -33.534217,
+      "longitude": -70.698893,
+      "source_page": 13,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,534,217",
+      "source_longitude_raw": "-70,698,893"
+    },
+    {
+      "id": "J050771",
+      "name": "LO ESPEJO / GABRIELA MISTRAL",
+      "corridor": "LO ESPEJO",
+      "latitude": -33.532729,
+      "longitude": -70.702535,
+      "source_page": 13,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,532,729",
+      "source_longitude_raw": "-70,702,535"
+    },
+    {
+      "id": "J110712",
+      "name": "AV. CENTRAL / AMERICO VESPUCIO (SUR)",
+      "corridor": "AV. CENTRAL",
+      "latitude": -33.523617,
+      "longitude": -70.698442,
+      "source_page": 23,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,523,617",
+      "source_longitude_raw": "-70,698,442"
+    },
+    {
+      "id": "J033291",
+      "name": "AV. CENTRAL / PDTE. E. FREI",
+      "corridor": "AV. CENTRAL",
+      "latitude": -33.519519,
+      "longitude": -70.695648,
+      "source_page": 10,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,519,519",
+      "source_longitude_raw": "-70,695,648"
+    },
+    {
+      "id": "J033281",
+      "name": "AV. CENTRAL / PDTE. S. ALLENDE (F.ALBANO)",
+      "corridor": "AV. CENTRAL",
+      "latitude": -33.513933,
+      "longitude": -70.692896,
+      "source_page": 10,
+      "source_commune": "LO ESPEJO",
+      "source_latitude_raw": "-33,513,933",
+      "source_longitude_raw": "-70,692,896"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "lo-espejo-ida",
+      "origin_id": "J050782",
+      "destination_id": "J033281"
+    },
+    {
+      "id": "lo-espejo-regreso",
+      "origin_id": "J033281",
+      "destination_id": "J050782"
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comunas · Mediciones de tránsito</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #173044; background: #f3f6f8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px 24px 48px; }
+    main { max-width: 1440px; margin: auto; }
+    .eyebrow { color: #526778; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: clamp(26px, 4vw, 38px); margin: 8px 0 12px; }
+    p { line-height: 1.6; max-width: 900px; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 24px 0; }
+    button { background: #164e63; color: white; border: 0; border-radius: 8px; padding: 13px 20px; font: inherit; font-weight: 650; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .commune-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+    .commune-picker label { font-weight: 650; }
+    select { font: inherit; color: #173044; background: white; border: 1px solid #9eb3c1; border-radius: 8px; padding: 11px 16px; min-width: 220px; }
+    a { color: #075c83; text-underline-offset: 3px; }
+    .status { border: 1px solid #c7d6df; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; background: white; }
+    .status.error { border-color: #bb5454; color: #822f2f; background: #fff5f5; }
+    .status.partial { border-color: #a57923; background: #fff9e9; }
+    .table-wrap { overflow-x: auto; background: white; border: 1px solid #d6e0e7; border-radius: 10px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 16px 12px; text-align: right; border-bottom: 1px solid #e4ebef; vertical-align: top; }
+    th { background: #eaf0f4; font-size: 13px; color: #304b5e; }
+    th:first-child, td:first-child { text-align: left; min-width: 225px; }
+    th:not(:first-child) { min-width: 105px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    td small { display: block; color: #607585; margin-top: 5px; font-size: 12px; }
+    td.unavailable { color: #687b88; }
+    .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+    .note { border: 1px solid #d6e0e7; border-radius: 10px; background: white; padding: 18px; }
+    .note h2 { font-size: 17px; margin: 0 0 8px; }
+    .note p { font-size: 14px; margin: 0; }
+    details { margin-top: 22px; padding: 18px; border: 1px solid #d6e0e7; border-radius: 8px; background: white; }
+    summary { cursor: pointer; font-weight: 600; }
+    code { font-family: ui-monospace, monospace; font-size: .9em; }
+    .muted { color: #526778; font-size: 14px; }
+    @media (max-width: 600px) { body { padding: 24px 12px; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow" id="eyebrow">CAPSTONE · Provincia de Santiago</div>
+  <h1>Mediciones de tránsito</h1>
+  <p id="study-description">Selecciona una comuna para consultar las velocidades y los tiempos de viaje de sus puntos de referencia.</p>
+  <div class="commune-picker">
+    <label for="commune">Comuna</label>
+    <select id="commune" disabled aria-label="Seleccionar comuna"><option>Cargando comunas…</option></select>
+    <span class="muted" id="coverage"></span>
+    <span class="muted">Cambiar de comuna no consulta TomTom; pulsa el botón cuando quieras una captura.</span>
+  </div>
+  <div class="toolbar">
+    <button id="capture" type="button" disabled>Consultar velocidades y tiempos</button>
+    <span class="muted" id="capture-cost">Sin actualización automática.</span>
+    <a href="/docs" target="_blank" rel="noopener">Swagger</a>
+  </div>
+  <div id="status" class="status" role="status" aria-live="polite">Cargando los puntos del piloto…</div>
+  <div class="table-wrap">
+    <table aria-label="Velocidades y tiempos de la comuna seleccionada">
+      <thead><tr>
+        <th scope="col">Punto de referencia</th>
+        <th scope="col">Velocidad actual<br>km/h</th>
+        <th scope="col">Velocidad de flujo libre<br>km/h</th>
+        <th scope="col">Tiempo actual del tramo<br>segundos</th>
+        <th scope="col">Tiempo de referencia<br>segundos</th>
+        <th scope="col">Demora adicional<br>segundos</th>
+        <th scope="col">Confianza<br>0 a 1</th>
+        <th scope="col">Tramo cerrado</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <section class="note"><h2>¿Y la aceleración?</h2><p>No está disponible en esta integración. TomTom entrega velocidades promedio de tramos, no trayectorias individuales con las que medir aceleraciones.</p></section>
+    <section class="note"><h2>Cómo leer los tiempos</h2><p>El tiempo de referencia corresponde al mismo tramo con flujo libre. La demora es la diferencia no negativa con el tiempo actual; no equivale al tiempo de luz roja.</p></section>
+    <section class="note"><h2>Validación pendiente</h2><p>La vía y el sentido elegidos por TomTom deben comprobarse. En cruces a desnivel el tramo podría pertenecer a otra calzada. Los puntos son una selección piloto; no representan toda la comuna.</p></section>
+  </div>
+  <details>
+    <summary>Ver los nombres de los campos y el JSON de esta captura</summary>
+    <p><code>current_speed_kmh</code>: velocidad actual · <code>free_flow_speed_kmh</code>: velocidad de flujo libre · <code>current_travel_time_s</code>: tiempo actual · <code>free_flow_travel_time_s</code>: tiempo de referencia · <code>delay_s</code>: demora · <code>confidence</code>: calidad · <code>road_closed</code>: cierre.</p>
+    <p>En el JSON del piloto están dentro de <code>flows → flow</code>. <code>point</code> y <code>coordinates</code> contienen ubicaciones y geometrías.</p>
+    <div class="toolbar">
+      <button id="download-json" type="button" disabled>Descargar JSON de esta captura</button>
+      <button id="download-csv" type="button" disabled>Descargar tabla CSV</button>
+    </div>
+    <p class="muted">Estas descargas reutilizan la captura que ves en pantalla y no hacen nuevas consultas. No hay un histórico guardado en el servidor.</p>
+  </details>
+</main>
+<script>
+  const captureButton = document.getElementById('capture');
+  const statusBox = document.getElementById('status');
+  const rows = document.getElementById('rows');
+  const jsonButton = document.getElementById('download-json');
+  const csvButton = document.getElementById('download-csv');
+  const communeSelect = document.getElementById('commune');
+  const numberFormat = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 3 });
+  const timeFormat = new Intl.DateTimeFormat('es-CL', {
+    dateStyle: 'short', timeStyle: 'medium', timeZone: 'America/Santiago'
+  });
+  const fields = [
+    'current_speed_kmh', 'free_flow_speed_kmh', 'current_travel_time_s',
+    'free_flow_travel_time_s', 'delay_s', 'confidence', 'road_closed'
+  ];
+  let study = null;
+  let snapshot = null;
+
+  function setStatus(message, state = '') {
+    statusBox.textContent = message;
+    statusBox.className = `status ${state}`;
+  }
+
+  function render() {
+    rows.replaceChildren();
+    const observations = new Map((snapshot?.flows || []).map(item => [item.point.id, item]));
+    const errors = new Map((snapshot?.errors || []).map(item => [item.target, item]));
+    for (const point of study.points) {
+      const observation = observations.get(point.id);
+      const tr = document.createElement('tr');
+      const title = document.createElement('td');
+      title.textContent = point.name;
+      const detail = document.createElement('small');
+      if (observation) {
+        detail.textContent = `${point.id} · recibido ${timeFormat.format(new Date(observation.flow.fetched_at))}`;
+      } else {
+        detail.textContent = snapshot
+          ? `${point.id} · ${errors.get(point.id)?.code || 'Sin medición'}`
+          : `${point.id} · aún no consultado`;
+      }
+      title.append(detail);
+      tr.append(title);
+      for (const field of fields) {
+        const td = document.createElement('td');
+        const value = observation?.flow[field];
+        if (typeof value === 'boolean') td.textContent = value ? 'Sí' : 'No';
+        else if (typeof value === 'number' && Number.isFinite(value)) td.textContent = numberFormat.format(value);
+        else { td.textContent = '—'; td.className = 'unavailable'; }
+        tr.append(td);
+      }
+      rows.append(tr);
+    }
+  }
+
+  async function loadStudy(studyId) {
+    captureButton.disabled = true;
+    communeSelect.disabled = true;
+    jsonButton.disabled = true;
+    csvButton.disabled = true;
+    snapshot = null;
+    study = null;
+    rows.replaceChildren();
+    setStatus('Cargando los puntos de referencia de la comuna…');
+    try {
+      const response = await fetch(`/api/studies/${encodeURIComponent(studyId)}`);
+      if (!response.ok) throw new Error('No se pudo cargar la configuración del piloto.');
+      study = await response.json();
+      document.title = `${study.commune} · Mediciones de tránsito`;
+      document.getElementById('eyebrow').textContent = `CAPSTONE · Piloto ${study.commune}`;
+      document.getElementById('study-description').textContent = `${study.name}. ${study.scope}`;
+      document.getElementById('capture-cost').textContent = `Cada clic realiza ${study.points.length} consultas a TomTom. Sin actualización automática.`;
+      communeSelect.value = study.id;
+      history.replaceState(null, '', `/${study.id}`);
+      render();
+      captureButton.disabled = false;
+      setStatus('Puntos listos. Pulsa “Consultar velocidades y tiempos” para obtener mediciones reales. Los guiones indican que todavía no hay datos.');
+    } catch (error) { setStatus(error.message, 'error'); }
+    finally { communeSelect.disabled = false; }
+  }
+
+  async function loadCommunes() {
+    try {
+      const response = await fetch('/api/studies');
+      if (!response.ok) throw new Error('No se pudo cargar el listado de comunas.');
+      const data = await response.json();
+      const pointCount = data.studies.reduce((total, entry) => total + entry.point_count, 0);
+      document.getElementById('coverage').textContent = `${data.studies.length} comunas · ${pointCount} puntos piloto`;
+      communeSelect.replaceChildren();
+      for (const entry of data.studies) {
+        const option = document.createElement('option');
+        option.value = entry.id;
+        option.textContent = entry.commune;
+        communeSelect.append(option);
+      }
+      const requested = location.pathname.split('/').filter(Boolean)[0];
+      const initial = data.studies.some(entry => entry.id === requested) ? requested : 'las-condes';
+      await loadStudy(initial);
+    } catch (error) { setStatus(error.message, 'error'); }
+  }
+
+  communeSelect.addEventListener('change', () => loadStudy(communeSelect.value));
+
+  captureButton.addEventListener('click', async () => {
+    captureButton.disabled = true;
+    communeSelect.disabled = true;
+    jsonButton.disabled = true;
+    csvButton.disabled = true;
+    snapshot = null;
+    render();
+    setStatus(`Consultando ${study.points.length} tramos de ${study.commune} en TomTom. La captura puede tardar unos segundos…`);
+    try {
+      const response = await fetch(`/api/studies/${encodeURIComponent(study.id)}/snapshot?include_incidents=false`, { cache: 'no-store' });
+      const data = await response.json();
+      if (!Array.isArray(data.flows)) {
+        throw new Error(data.detail?.message || `No se pudieron obtener las mediciones (HTTP ${response.status}).`);
+      }
+      snapshot = data;
+      render();
+      jsonButton.disabled = false;
+      csvButton.disabled = false;
+      const successes = data.flows.length;
+      const started = timeFormat.format(new Date(data.local_started_at));
+      const message = `${study.commune}: ${successes} de ${study.points.length} puntos con datos. Captura iniciada ${started}, hora de Santiago. Las mediciones son estimaciones de tramos, no de vehículos individuales.`;
+      setStatus(message, data.status === 'failed' ? 'error' : data.status === 'partial' ? 'partial' : '');
+    } catch (error) {
+      setStatus(`${error.message} No se sustituyen datos faltantes por ceros.`, 'error');
+    } finally { captureButton.disabled = false; communeSelect.disabled = false; }
+  });
+
+  function download(content, type, extension) {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${snapshot.study_id.replace(/-/g, '_')}_${snapshot.started_at.replace(/[:.]/g, '-')}.${extension}`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  jsonButton.addEventListener('click', () => {
+    if (snapshot) download(JSON.stringify(snapshot, null, 2), 'application/json', 'json');
+  });
+
+  csvButton.addEventListener('click', () => {
+    if (!snapshot) return;
+    const observations = new Map(snapshot.flows.map(item => [item.point.id, item.flow]));
+    const errors = new Map(snapshot.errors.map(item => [item.target, item.code]));
+    const csvRows = [['study_id', 'commune', 'uoct_id', 'name', 'fetched_at_utc', ...fields, 'error_code']];
+    for (const point of study.points) {
+      const flow = observations.get(point.id);
+      csvRows.push([snapshot.study_id, snapshot.commune, point.id, point.name, flow?.fetched_at || '',
+        ...fields.map(field => flow?.[field] ?? ''), errors.get(point.id) || '']);
+    }
+    const escape = value => `"${String(value).replace(/"/g, '""')}"`;
+    download('\ufeff' + csvRows.map(row => row.map(escape).join(',')).join('\r\n'), 'text/csv;charset=utf-8', 'csv');
+  });
+
+  loadCommunes();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "id": "providencia",
+  "commune": "Providencia",
+  "name": "Piloto Providencia: eje Providencia",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia del eje Providencia. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {"min_lon": -70.626, "min_lat": -33.434, "max_lon": -70.601, "max_lat": -33.416},
+  "points": [
+    {"id": "J001111", "name": "Providencia / Miguel Claro", "corridor": "Providencia", "latitude": -33.429978, "longitude": -70.622176, "source_page": 1},
+    {"id": "J001121", "name": "Providencia / Manuel Montt", "corridor": "Providencia", "latitude": -33.428811, "longitude": -70.620355, "source_page": 1},
+    {"id": "J001141", "name": "Providencia / Antonio Varas", "corridor": "Providencia", "latitude": -33.427645, "longitude": -70.617667, "source_page": 1},
+    {"id": "J001234", "name": "Providencia / Pedro de Valdivia", "corridor": "Providencia", "latitude": -33.423653, "longitude": -70.612442, "source_page": 1},
+    {"id": "J001271", "name": "Providencia / Suecia", "corridor": "Providencia", "latitude": -33.420746, "longitude": -70.608097, "source_page": 1},
+    {"id": "J001311", "name": "Providencia / Los Leones", "corridor": "Providencia", "latitude": -33.419875, "longitude": -70.606011, "source_page": 1}
+  ],
+  "route_pairs": [
+    {"id": "providencia-oriente", "origin_id": "J001111", "destination_id": "J001311"},
+    {"id": "providencia-poniente", "origin_id": "J001311", "destination_id": "J001111"}
+  ]
+}

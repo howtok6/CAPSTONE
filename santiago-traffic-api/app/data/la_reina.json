@@ -1,0 +1,96 @@
+{
+  "id": "la-reina",
+  "commune": "La Reina",
+  "name": "Piloto La Reina: LARRAIN",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.571443,
+    "min_lat": -33.456068,
+    "max_lon": -70.525412,
+    "max_lat": -33.447967
+  },
+  "points": [
+    {
+      "id": "J071142",
+      "name": "LARRAIN / PAULA JARAQUEMADA",
+      "corridor": "LARRAIN",
+      "latitude": -33.453068,
+      "longitude": -70.568443,
+      "source_page": 16,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,453,068",
+      "source_longitude_raw": "-70,568,443"
+    },
+    {
+      "id": "J071171",
+      "name": "LARRAIN / TOBALABA",
+      "corridor": "LARRAIN",
+      "latitude": -33.452163,
+      "longitude": -70.558914,
+      "source_page": 16,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,452,163",
+      "source_longitude_raw": "-70,558,914"
+    },
+    {
+      "id": "J071181",
+      "name": "LARRAIN / P.MALLORCA-LOS MAITENES",
+      "corridor": "LARRAIN",
+      "latitude": -33.451719,
+      "longitude": -70.555457,
+      "source_page": 16,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,451,719",
+      "source_longitude_raw": "-70,555,457"
+    },
+    {
+      "id": "J071222",
+      "name": "LARRAIN / EL OLMO",
+      "corridor": "LARRAIN",
+      "latitude": -33.450967,
+      "longitude": -70.549092,
+      "source_page": 16,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,450,967",
+      "source_longitude_raw": "-70,549,092"
+    },
+    {
+      "id": "J071252",
+      "name": "LARRAIN / NUEVA VALENZUELA LLANOS",
+      "corridor": "LARRAIN",
+      "latitude": -33.451359,
+      "longitude": -70.541344,
+      "source_page": 16,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,451,359",
+      "source_longitude_raw": "-70,541,344"
+    },
+    {
+      "id": "J098421",
+      "name": "LARRAIN / LAS PERDICES",
+      "corridor": "LARRAIN",
+      "latitude": -33.452622,
+      "longitude": -70.528412,
+      "source_page": 22,
+      "source_commune": "LA REINA",
+      "source_latitude_raw": "-33,452,622",
+      "source_longitude_raw": "-70,528,412"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "la-reina-ida",
+      "origin_id": "J071142",
+      "destination_id": "J098421"
+    },
+    {
+      "id": "la-reina-regreso",
+      "origin_id": "J098421",
+      "destination_id": "J071142"
+    }
+  ]
+}

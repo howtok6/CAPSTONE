@@ -1,0 +1,23 @@
+{
+  "id": "vitacura",
+  "commune": "Vitacura",
+  "name": "Piloto Vitacura: eje Vitacura",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia del eje Vitacura. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {"min_lon": -70.603, "min_lat": -33.410, "max_lon": -70.574, "max_lat": -33.390},
+  "points": [
+    {"id": "J088251", "name": "Vitacura / Nueva Costanera", "corridor": "Vitacura", "latitude": -33.406276, "longitude": -70.598673, "source_page": 20},
+    {"id": "J088271", "name": "Vitacura / Francisco de Aguirre", "corridor": "Vitacura", "latitude": -33.403859, "longitude": -70.596086, "source_page": 20},
+    {"id": "J088331", "name": "Vitacura / Alonso de Córdova", "corridor": "Vitacura", "latitude": -33.401936, "longitude": -70.593987, "source_page": 20},
+    {"id": "J088311", "name": "Vitacura / Candelaria Goyenechea", "corridor": "Vitacura", "latitude": -33.400928, "longitude": -70.592921, "source_page": 20},
+    {"id": "J088322", "name": "Vitacura / Los Laureles", "corridor": "Vitacura", "latitude": -33.399491, "longitude": -70.589803, "source_page": 20},
+    {"id": "J088411", "name": "Vitacura / Luis Carrera", "corridor": "Vitacura", "latitude": -33.394371, "longitude": -70.578541, "source_page": 20}
+  ],
+  "route_pairs": [
+    {"id": "vitacura-oriente", "origin_id": "J088251", "destination_id": "J088411"},
+    {"id": "vitacura-poniente", "origin_id": "J088411", "destination_id": "J088251"}
+  ]
+}

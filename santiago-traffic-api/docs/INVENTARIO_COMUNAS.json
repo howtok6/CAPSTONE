@@ -1,0 +1,406 @@
+{
+  "source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "revision": "2023-05-15",
+  "sha256": "f8a7ebc012c9f0dcd8ed3c71b20ed9561dd89d6b155faa8e2422539bfc3f4a1d",
+  "pages": 29,
+  "scope_source": "https://dprmetropolitana.dpr.gob.cl/conozca-la-region/",
+  "scope": "32 comunas de la provincia de Santiago",
+  "method": "Se conservan los cinco pilotos originales. Para los 27 nuevos: comuna exacta del inventario, dos accesos, coordenadas -33,ddd,ddd / -70,ddd,ddd dentro de la ventana urbana, sin etiquetas peatonales. Seis puntos por separación espacial en los ejes indicados, al menos 80 m entre puntos. No confirma polígonos comunales, acceso vehicular ni vigencia del semáforo.",
+  "rejected_rows": {
+    "ambiguous_or_out_of_range_coordinates": 762,
+    "pedestrian_label": 179,
+    "outside_scope_or_shared_commune": 380,
+    "incomplete_or_malformed_row": 21,
+    "manual_coordinate_outlier": 1
+  },
+  "manual_exclusions": {
+    "J121811": "Longitud incompatible con el resto del eje Matta en Quilicura"
+  },
+  "new_studies": {
+    "cerrillos": {
+      "eligible_inventory_rows": 35,
+      "corridors": [
+        "PEDRO AGUIRRE CERDA"
+      ],
+      "selected_ids": [
+        "J009641",
+        "J009591",
+        "J009533",
+        "J009481",
+        "J009421",
+        "J009121"
+      ]
+    },
+    "cerro-navia": {
+      "eligible_inventory_rows": 23,
+      "corridors": [
+        "JOSE JOAQUIN PEREZ",
+        "NEPTUNO"
+      ],
+      "selected_ids": [
+        "J050681",
+        "J050231",
+        "J050211",
+        "J019231",
+        "J019181",
+        "J019141"
+      ]
+    },
+    "conchali": {
+      "eligible_inventory_rows": 35,
+      "corridors": [
+        "INDEPENDENCIA",
+        "DORSAL"
+      ],
+      "selected_ids": [
+        "J207241",
+        "J208111",
+        "J208141",
+        "J007161",
+        "J007151",
+        "J007111"
+      ]
+    },
+    "el-bosque": {
+      "eligible_inventory_rows": 17,
+      "corridors": [
+        "GRAN AVENIDA"
+      ],
+      "selected_ids": [
+        "J037141",
+        "J037121",
+        "J029441",
+        "J029341",
+        "J029331",
+        "J029311"
+      ]
+    },
+    "estacion-central": {
+      "eligible_inventory_rows": 86,
+      "corridors": [
+        "ALAMEDA"
+      ],
+      "selected_ids": [
+        "J008311",
+        "J008171",
+        "J008221",
+        "J030112",
+        "J030141",
+        "J030211"
+      ]
+    },
+    "huechuraba": {
+      "eligible_inventory_rows": 20,
+      "corridors": [
+        "RECOLETA",
+        "PEDRO FONTOVA"
+      ],
+      "selected_ids": [
+        "J112413",
+        "J212221",
+        "J212241",
+        "J112214",
+        "J112241",
+        "J212441"
+      ]
+    },
+    "independencia": {
+      "eligible_inventory_rows": 34,
+      "corridors": [
+        "INDEPENDENCIA"
+      ],
+      "selected_ids": [
+        "J017271",
+        "J007331",
+        "J007291",
+        "J007242",
+        "J007351",
+        "J007142"
+      ]
+    },
+    "la-cisterna": {
+      "eligible_inventory_rows": 25,
+      "corridors": [
+        "GRAN AVENIDA"
+      ],
+      "selected_ids": [
+        "J029291",
+        "J029251",
+        "J029211",
+        "J029181",
+        "J029151",
+        "J029131"
+      ]
+    },
+    "la-florida": {
+      "eligible_inventory_rows": 129,
+      "corridors": [
+        "VICUÑA MACKENNA"
+      ],
+      "selected_ids": [
+        "J068561",
+        "J068471",
+        "J068381",
+        "J083711",
+        "J083181",
+        "J083543"
+      ]
+    },
+    "la-granja": {
+      "eligible_inventory_rows": 43,
+      "corridors": [
+        "SANTA ROSA"
+      ],
+      "selected_ids": [
+        "J031281",
+        "J031431",
+        "J031241",
+        "J031191",
+        "J031311",
+        "J131331"
+      ]
+    },
+    "la-pintana": {
+      "eligible_inventory_rows": 23,
+      "corridors": [
+        "SANTA ROSA"
+      ],
+      "selected_ids": [
+        "J038271",
+        "J038241",
+        "J038131",
+        "J038171",
+        "J038111",
+        "J031291"
+      ]
+    },
+    "la-reina": {
+      "eligible_inventory_rows": 66,
+      "corridors": [
+        "LARRAIN"
+      ],
+      "selected_ids": [
+        "J071142",
+        "J071171",
+        "J071181",
+        "J071222",
+        "J071252",
+        "J098421"
+      ]
+    },
+    "lo-espejo": {
+      "eligible_inventory_rows": 14,
+      "corridors": [
+        "AV. CENTRAL",
+        "LO ESPEJO"
+      ],
+      "selected_ids": [
+        "J050782",
+        "J050761",
+        "J050771",
+        "J110712",
+        "J033291",
+        "J033281"
+      ]
+    },
+    "lo-prado": {
+      "eligible_inventory_rows": 23,
+      "corridors": [
+        "SAN PABLO"
+      ],
+      "selected_ids": [
+        "J032151",
+        "J032162",
+        "J032331",
+        "J032211",
+        "J032231",
+        "J032221"
+      ]
+    },
+    "macul": {
+      "eligible_inventory_rows": 62,
+      "corridors": [
+        "QUILIN"
+      ],
+      "selected_ids": [
+        "J078152",
+        "J077762",
+        "J077621",
+        "J077471",
+        "J079151",
+        "J099341"
+      ]
+    },
+    "maipu": {
+      "eligible_inventory_rows": 117,
+      "corridors": [
+        "PAJARITOS",
+        "LOS PAJARITOS"
+      ],
+      "selected_ids": [
+        "J010691",
+        "J010612",
+        "J010531",
+        "J010111",
+        "J018561",
+        "J018512"
+      ]
+    },
+    "pedro-aguirre-cerda": {
+      "eligible_inventory_rows": 36,
+      "corridors": [
+        "DEPARTAMENTAL"
+      ],
+      "selected_ids": [
+        "J227131",
+        "J027192",
+        "J027181",
+        "J027211",
+        "J027221",
+        "J027151"
+      ]
+    },
+    "penalolen": {
+      "eligible_inventory_rows": 70,
+      "corridors": [
+        "GRECIA"
+      ],
+      "selected_ids": [
+        "J099131",
+        "J175451",
+        "J175491",
+        "J175561",
+        "J175581",
+        "J175621"
+      ]
+    },
+    "pudahuel": {
+      "eligible_inventory_rows": 26,
+      "corridors": [
+        "SAN PABLO"
+      ],
+      "selected_ids": [
+        "J032911",
+        "J032811",
+        "J032121",
+        "J032321",
+        "J032141",
+        "J032171"
+      ]
+    },
+    "quilicura": {
+      "eligible_inventory_rows": 35,
+      "corridors": [
+        "MANUEL ANTONIO MATTA",
+        "LO CRUZAT"
+      ],
+      "selected_ids": [
+        "J121711",
+        "J121511",
+        "J121531",
+        "J121561",
+        "J121311",
+        "J121121"
+      ]
+    },
+    "quinta-normal": {
+      "eligible_inventory_rows": 52,
+      "corridors": [
+        "CARRASCAL"
+      ],
+      "selected_ids": [
+        "J026681",
+        "J026111",
+        "J026671",
+        "J026661",
+        "J126121",
+        "J126131"
+      ]
+    },
+    "recoleta": {
+      "eligible_inventory_rows": 59,
+      "corridors": [
+        "RECOLETA"
+      ],
+      "selected_ids": [
+        "J036281",
+        "J036211",
+        "J036191",
+        "J036161",
+        "J036351",
+        "J036111"
+      ]
+    },
+    "renca": {
+      "eligible_inventory_rows": 36,
+      "corridors": [
+        "DOMINGO SANTA MARIA",
+        "MIRAFLORES"
+      ],
+      "selected_ids": [
+        "J111111",
+        "J111121",
+        "J111161",
+        "J108211",
+        "J108131",
+        "J108112"
+      ]
+    },
+    "san-joaquin": {
+      "eligible_inventory_rows": 51,
+      "corridors": [
+        "LAS INDUSTRIAS"
+      ],
+      "selected_ids": [
+        "J022552",
+        "J022191",
+        "J022531",
+        "J022151",
+        "J022131",
+        "J022111"
+      ]
+    },
+    "san-miguel": {
+      "eligible_inventory_rows": 44,
+      "corridors": [
+        "GRAN AVENIDA"
+      ],
+      "selected_ids": [
+        "J029121",
+        "J028831",
+        "J028731",
+        "J028661",
+        "J028571",
+        "J028421"
+      ]
+    },
+    "san-ramon": {
+      "eligible_inventory_rows": 21,
+      "corridors": [
+        "SANTA ROSA"
+      ],
+      "selected_ids": [
+        "J031441",
+        "J031251",
+        "J031231",
+        "J031211",
+        "J031171",
+        "J031151"
+      ]
+    },
+    "santiago": {
+      "eligible_inventory_rows": 360,
+      "corridors": [
+        "ALAMEDA B. O'HIGGINS"
+      ],
+      "selected_ids": [
+        "J046122",
+        "J046172",
+        "J046191",
+        "J046221",
+        "J046262",
+        "J046321"
+      ]
+    }
+  }
+}

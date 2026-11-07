@@ -1,0 +1,96 @@
+{
+  "id": "quilicura",
+  "commune": "Quilicura",
+  "name": "Piloto Quilicura: MANUEL ANTONIO MATTA y LO CRUZAT",
+  "timezone": "America/Santiago",
+  "scope": "Seis cruces de referencia seleccionados en uno o dos ejes. La ventana piloto no es el límite administrativo ni representa toda la comuna.",
+  "inventory_source": "https://www.transporteinforma.cl/content/uploads/2023/10/Intersecciones-de-Semaforos-conectados-a-Sistema-UOCT-RM.pdf",
+  "inventory_revision": "2023-05-15",
+  "inventory_note": "Referencia del inventario UOCT de 2023. Coordenadas de seis decimales normalizadas desde sus grupos de comas; se omiten formatos ambiguos. Comuna según el inventario, sin verificación con polígonos administrativos. Revalidar ubicación, vía, sentido y estado operativo antes de modelar accesos.",
+  "bbox": {
+    "min_lon": -70.733097,
+    "min_lat": -33.370435,
+    "max_lon": -70.698912,
+    "max_lat": -33.351625
+  },
+  "points": [
+    {
+      "id": "J121711",
+      "name": "MANUEL ANTONIO MATTA / O'HIGGINS",
+      "corridor": "MANUEL ANTONIO MATTA",
+      "latitude": -33.365694,
+      "longitude": -70.730097,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,365,694",
+      "source_longitude_raw": "-70,730,097"
+    },
+    {
+      "id": "J121511",
+      "name": "MANUEL ANTONIO MATTA / LO CRUZAT",
+      "corridor": "MANUEL ANTONIO MATTA",
+      "latitude": -33.366527,
+      "longitude": -70.721345,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,366,527",
+      "source_longitude_raw": "-70,721,345"
+    },
+    {
+      "id": "J121531",
+      "name": "LO CRUZAT / LAS TORRES",
+      "corridor": "LO CRUZAT",
+      "latitude": -33.361511,
+      "longitude": -70.721016,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,361,511",
+      "source_longitude_raw": "-70,721,016"
+    },
+    {
+      "id": "J121561",
+      "name": "LO CRUZAT / ANTUMALAL",
+      "corridor": "LO CRUZAT",
+      "latitude": -33.354625,
+      "longitude": -70.720756,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,354,625",
+      "source_longitude_raw": "-70,720,756"
+    },
+    {
+      "id": "J121311",
+      "name": "MANUEL ANTONIO MATTA / CUATRO ORIENTE",
+      "corridor": "MANUEL ANTONIO MATTA",
+      "latitude": -33.367435,
+      "longitude": -70.716843,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,367,435",
+      "source_longitude_raw": "-70,716,843"
+    },
+    {
+      "id": "J121121",
+      "name": "MANUEL ANTONIO MATTA / CALLE LOCAL PONIENTE",
+      "corridor": "MANUEL ANTONIO MATTA",
+      "latitude": -33.365627,
+      "longitude": -70.701912,
+      "source_page": 23,
+      "source_commune": "QUILICURA",
+      "source_latitude_raw": "-33,365,627",
+      "source_longitude_raw": "-70,701,912"
+    }
+  ],
+  "route_pairs": [
+    {
+      "id": "quilicura-ida",
+      "origin_id": "J121711",
+      "destination_id": "J121121"
+    },
+    {
+      "id": "quilicura-regreso",
+      "origin_id": "J121121",
+      "destination_id": "J121711"
+    }
+  ]
+}
