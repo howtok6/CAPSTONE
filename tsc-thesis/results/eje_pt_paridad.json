@@ -1,0 +1,29 @@
+[
+ {
+  "seed": 0,
+  "runner": 112.28782129518929,
+  "sumo_rl": 110.45517828173351,
+  "fin_runner": 4502,
+  "fin_sumo_rl": 4509,
+  "cambios_runner": 8292,
+  "cambios_sumo_rl": 6613
+ },
+ {
+  "seed": 1,
+  "runner": 108.19426031249925,
+  "sumo_rl": 110.86144007467107,
+  "fin_runner": 4516,
+  "fin_sumo_rl": 4509,
+  "cambios_runner": 8232,
+  "cambios_sumo_rl": 6569
+ },
+ {
+  "seed": 2,
+  "runner": 107.73090548849038,
+  "sumo_rl": 109.60594612223719,
+  "fin_runner": 4525,
+  "fin_sumo_rl": 4520,
+  "cambios_runner": 8305,
+  "cambios_sumo_rl": 6608
+ }
+]

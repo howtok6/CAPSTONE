@@ -11,17 +11,17 @@ inmediatas) y tiene una garantía teórica de estabilidad: maximiza la región
 de demandas para las que las colas permanecen acotadas. Por eso es la línea
 base más exigente, y no un simple punto de comparación.
 
-Dos ajustes prácticos respecto de la formulación teórica:
-  * normalización por capacidad de la pista, para no penalizar pistas cortas;
-  * histéresis (`switch_penalty`), porque la formulación original no castiga
-    la conmutación frecuente y en la práctica genera oscilación de fases.
+Dos parámetros, ajustados en el eje comunal solo con demandas de entrenamiento
+(scripts/ajustar_baselines.py, punta tarde, 5-nov-2026):
+  * `medida`: conteo de vehículos, como en la formulación original. Normalizar
+    por capacidad rindió peor: en pistas cortas un solo vehículo satura la medida.
+  * `switch_penalty` (histéresis): 0. El verde mínimo ya limita la conmutación y
+    cualquier penalización mayor rindió peor.
 
 ATENCIÓN al calibrar `switch_penalty`: debe estar en la misma escala que la
-medida de ocupación. Con `normalize=True` las presiones son del orden de
-0,1–0,5, de modo que una penalización de 0,5 congela el controlador en una
-sola fase hasta agotar el verde máximo — y el resultado es *peor* que tiempo
-fijo. Este error es fácil de cometer y difícil de diagnosticar: si Max-Pressure
-no supera a tiempo fijo, lo primero que hay que revisar es este parámetro.
+medida de ocupación, y depende de la red. Si es demasiado alta, el controlador
+se queda en una fase hasta agotar el verde máximo: si Max-Pressure rinde mal,
+este es el primer parámetro que hay que revisar.
 """
 from __future__ import annotations
 
@@ -30,25 +30,28 @@ from .base import PhaseSwitchingController
 
 class MaxPressureController(PhaseSwitchingController):
     name = "maxpressure"
-    decision_interval = 5
 
     def __init__(
         self,
         min_green: int = 10,
         max_green: int = 60,
         yellow_time: int = 3,
-        normalize: bool = True,
-        switch_penalty: float = 0.05,
+        medida: str = "vehiculos",
+        switch_penalty: float = 0.0,
     ):
+        if medida not in ("densidad", "vehiculos", "cola"):
+            raise ValueError(f"medida desconocida: {medida}")
         self.min_green = min_green
         self.max_green = max_green
         self.yellow_time = yellow_time
-        self.normalize = normalize
+        self.medida = medida
         self.switch_penalty = switch_penalty
 
     def _occupancy(self, tl, lane: str) -> float:
-        if self.normalize:
+        if self.medida == "densidad":
             return tl.density(lane)
+        if self.medida == "cola":
+            return float(tl.queue(lane))
         return float(tl.vehicles(lane))
 
     def pressure(self, tl, phase) -> float:

@@ -15,6 +15,7 @@ con los mismos datos, y no el plan por defecto sin optimizar.
 from __future__ import annotations
 
 import json
+import math
 from collections import defaultdict
 
 from .base import Controller
@@ -55,20 +56,22 @@ def webster_plan(
     return {"cycle": cycle, "greens": greens, "Y": Y, "lost_time": L}
 
 
-def coordinate_cycles(plans: dict, groups: dict) -> dict:
+def coordinate_cycles(plans: dict, groups: dict, quantile: float = 1.0) -> dict:
     """Ciclo común por grupo (corredor coordinado).
 
     `groups` asigna cada semáforo a un grupo (p. ej. su avenida). Todos los del
-    grupo toman el ciclo mayor del grupo: así el cruce más cargado no queda
-    sobresaturado y los demás pueden coordinarse con él. Los verdes se
-    reparten de nuevo en el controlador, en proporción a los de Webster.
+    grupo toman el ciclo de ese cuantil: 1,0 es el mayor del grupo, que protege
+    al cruce más cargado pero deja que un solo cruce imponga su ciclo a toda la
+    avenida; con cuantiles menores se ignoran esos casos extremos. Los verdes
+    se reparten de nuevo en el controlador, en proporción a los de Webster.
     """
     by_group = defaultdict(list)
     for tid, g in groups.items():
         if tid in plans:
             by_group[g].append(tid)
     for g, tids in by_group.items():
-        common = max(plans[t]["cycle"] for t in tids)
+        ciclos = sorted(plans[t]["cycle"] for t in tids)
+        common = ciclos[max(0, math.ceil(quantile * len(ciclos)) - 1)]
         for t in tids:
             plans[t]["cycle_webster"] = plans[t]["cycle"]
             plans[t]["cycle"] = common
@@ -82,8 +85,8 @@ def progression_offsets(positions: dict, cycle: float, speed_mps: float, directi
     `positions` en metros a lo largo del eje, creciendo hacia el oriente. Un
     pelotón que sale con el verde del primer cruce llega al cruce i después de
     d_i / v segundos; ese es su desfase (módulo el ciclo). En una avenida de
-    doble sentido la onda solo puede ser perfecta en uno: se elige el de la
-    punta (hacia el centro en la mañana, hacia el oriente en la tarde).
+    doble sentido la onda solo puede ser perfecta en uno: se elige el del flujo
+    dominante del perfil (ver SENTIDO_POR_PERFIL en scripts/build_webster.py).
     """
     if direction not in ("oriente", "poniente") or not positions:
         return {t: 0.0 for t in positions}

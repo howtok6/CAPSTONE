@@ -28,6 +28,8 @@ from tsc.controllers import (
     MaxPressureController,
     WebsterController,
 )
+from tsc.controllers.base import PhaseSwitchingController
+from tsc.demand import ruta_evaluacion
 from tsc.runner import run_episode
 
 
@@ -79,16 +81,27 @@ def main() -> None:
     else:
         rou = os.path.join(args.scenario, "routes.rou.xml")
 
-    if not os.path.exists(rou):
+    if not os.path.exists(rou) and ruta_evaluacion(args.scenario, args.profile, 0, rou) == rou:
         sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
 
     factories = build_controllers(args.scenario, args.controllers.split(","), args.profile)
+
+    eje = None
+    ruta_eje = os.path.join(args.scenario, "tls_eje.json")
+    if os.path.exists(ruta_eje):
+        with open(ruta_eje, encoding="utf-8") as f:
+            eje = json.load(f)["eje"]
+        print(f"  Adaptativos: {len(eje)} semáforos del eje; el resto sigue su programa")
 
     rows = []
     for factory in factories:
         for seed in range(args.seeds):
             ctrl = factory()
-            r = run_episode(ctrl, net, rou, seed=seed, end=args.end, warmup=args.warmup)
+            if eje and isinstance(ctrl, PhaseSwitchingController):
+                ctrl.tls_ids = eje  # mismo alcance que el agente
+            rou_k = rou if args.routes else ruta_evaluacion(args.scenario, args.profile, seed, rou)
+            r = run_episode(ctrl, net, rou_k, seed=seed, end=args.end, warmup=args.warmup)
+            r["rutas"] = rou_k
             rows.append(r)
             print(
                 f"  {r['controller']:12s} seed={seed:2d}  "

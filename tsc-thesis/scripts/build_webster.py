@@ -34,6 +34,8 @@ from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from tsc.controllers.webster import coordinate_cycles, progression_offsets, webster_plan  # noqa: E402
+from tsc.controllers import GreedyQueueController  # noqa: E402
+from tsc.demand import rutas_entrenamiento  # noqa: E402
 from tsc.runner import measure_phase_flows  # noqa: E402
 
 if sys.platform == "win32":
@@ -43,9 +45,10 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-# Sentido de la onda verde según el perfil (punta mañana: hacia el centro)
-SENTIDO_POR_PERFIL = {"punta_manana": "poniente", "punta_tarde": "oriente",
-                      "sobresaturado": "oriente", "valle": "ninguno"}
+# La onda verde sigue al flujo dominante del perfil (build_demand_profiles.py):
+# mañana de poniente a oriente; tarde y sobresaturado de oriente a poniente.
+SENTIDO_POR_PERFIL = {"punta_manana": "oriente", "punta_tarde": "poniente",
+                      "sobresaturado": "poniente", "valle": "ninguno"}
 
 
 def avenida(nombre: str) -> str | None:
@@ -103,6 +106,40 @@ def commit_actual() -> str:
         return "desconocido"
 
 
+def armar_plan(flows: dict, scenario: str, net: str, *, sentido: str, coordinar: bool,
+               max_cycle: float = 150.0, cuantil: float = 1.0, speed_kmh: float = 40.0) -> tuple:
+    """Plan de Webster a partir de flujos ya medidos; devuelve (planes, resumen)."""
+    plans = {}
+    for tls_id, phase_flows in flows.items():
+        pf = {int(k): v for k, v in phase_flows.items()}
+        plan = webster_plan(pf, max_cycle=max_cycle)
+        plans[tls_id] = {
+            "cycle": round(plan["cycle"], 1),
+            "Y": round(plan["Y"], 3),
+            "greens": {str(k): round(v, 1) for k, v in plan["greens"].items()},
+            "measured_flows": {str(k): round(v, 1) for k, v in pf.items()},
+        }
+
+    resumen_grupos = {}
+    if coordinar:
+        with open(os.path.join(scenario, "tls_eje.json"), encoding="utf-8") as f:
+            eje = json.load(f)["eje"]
+        grupo, posicion = geometria_eje(net, eje)
+        coordinate_cycles(plans, grupo, quantile=cuantil)
+        for g in sorted(set(grupo.values())):
+            miembros = {t: posicion[t] for t in grupo if grupo[t] == g and t in plans and t in posicion}
+            if not miembros:
+                continue
+            ciclo = plans[next(iter(miembros))]["cycle"]
+            offs = progression_offsets(miembros, ciclo, speed_kmh / 3.6, sentido)
+            for t, o in offs.items():
+                plans[t]["offset"] = o
+                plans[t]["position_m"] = round(miembros[t], 1)
+            resumen_grupos[g] = {"semaforos": len(miembros), "ciclo": ciclo,
+                                 "largo_m": round(max(miembros.values()), 0)}
+    return plans, resumen_grupos
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--scenario", required=True)
@@ -111,18 +148,27 @@ def main() -> None:
     ap.add_argument("--routes", default=None)
     ap.add_argument("--end", type=int, default=3600)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--coordinate", default="auto", choices=["auto", "avenida", "ninguna"],
-                    help="ciclo común por avenida del eje (auto: si existe tls_eje.json)")
+    ap.add_argument("--coordinate", default="ninguna", choices=["auto", "avenida", "ninguna"],
+                    help="ciclo común por avenida (ninguna: la mejor en el ajuste del 5-nov)")
+    ap.add_argument("--flujos", default="voraz", choices=["fijo", "voraz"],
+                    help="controlador de la corrida de calibración. Con tiempo fijo y red "
+                         "congestionada se mide lo que el semáforo deja pasar, no lo que llega")
     ap.add_argument("--offsets", default="auto", choices=["auto", "oriente", "poniente", "ninguno"],
                     help="sentido de la onda verde (auto: según el perfil)")
     ap.add_argument("--speed-kmh", type=float, default=40.0,
                     help="velocidad de progresión de la onda verde")
+    ap.add_argument("--max-cycle", type=float, default=120.0, help="ciclo máximo (s)")
+    ap.add_argument("--cuantil-ciclo", type=float, default=1.0,
+                    help="cuantil de los ciclos que define el ciclo común (1 = el mayor)")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
     net = args.net or os.path.join(args.scenario, "net.net.xml")
     if args.routes:
         rou = args.routes
+    elif rutas_entrenamiento(args.scenario, args.profile):
+        # Nunca con demandas de evaluación: el plan se calibra con la primera de entrenamiento
+        rou = rutas_entrenamiento(args.scenario, args.profile)[0]
     elif args.profile:
         rou = os.path.join(args.scenario, "demand", f"routes_{args.profile}.rou.xml")
     else:
@@ -132,46 +178,28 @@ def main() -> None:
     sufijo = f"_{args.profile}" if args.profile else ""
     out = args.out or os.path.join(args.scenario, f"webster_plan{sufijo}.json")
 
-    print(f"Corrida de calibración (tiempo fijo, {args.end} s) con {rou} …")
-    flows = measure_phase_flows(net, rou, seed=args.seed, end=args.end)
-
-    plans = {}
-    for tls_id, phase_flows in flows.items():
-        pf = {int(k): v for k, v in phase_flows.items()}
-        plan = webster_plan(pf)
-        plans[tls_id] = {
-            "cycle": round(plan["cycle"], 1),
-            "Y": round(plan["Y"], 3),
-            "greens": {str(k): round(v, 1) for k, v in plan["greens"].items()},
-            "measured_flows": {str(k): round(v, 1) for k, v in pf.items()},
-        }
-
     tls_json = os.path.join(args.scenario, "tls_eje.json")
+    print(f"Corrida de calibración ({args.flujos}, {args.end} s) con {rou} …")
+    calibrador = None
+    if args.flujos == "voraz":
+        calibrador = GreedyQueueController()
+        if os.path.exists(tls_json):
+            with open(tls_json, encoding="utf-8") as f:
+                calibrador.tls_ids = json.load(f)["eje"]
+    flows = measure_phase_flows(net, rou, seed=args.seed, end=args.end, controller=calibrador)
+
     coordinar = args.coordinate == "avenida" or (args.coordinate == "auto" and os.path.exists(tls_json))
     sentido = args.offsets
     if sentido == "auto":
         sentido = SENTIDO_POR_PERFIL.get(args.profile or "", "ninguno")
-    resumen_grupos = {}
-    if coordinar:
-        with open(tls_json, encoding="utf-8") as f:
-            eje = json.load(f)["eje"]
-        grupo, posicion = geometria_eje(net, eje)
-        coordinate_cycles(plans, grupo)
-        for g in sorted(set(grupo.values())):
-            miembros = {t: posicion[t] for t in grupo if grupo[t] == g and t in plans and t in posicion}
-            if not miembros:
-                continue
-            ciclo = plans[next(iter(miembros))]["cycle"]
-            offs = progression_offsets(miembros, ciclo, args.speed_kmh / 3.6, sentido)
-            for t, o in offs.items():
-                plans[t]["offset"] = o
-                plans[t]["position_m"] = round(miembros[t], 1)
-            resumen_grupos[g] = {"semaforos": len(miembros), "ciclo": ciclo,
-                                 "largo_m": round(max(miembros.values()), 0)}
+    plans, resumen_grupos = armar_plan(flows, args.scenario, net, sentido=sentido, coordinar=coordinar,
+                                       max_cycle=args.max_cycle, cuantil=args.cuantil_ciclo,
+                                       speed_kmh=args.speed_kmh)
 
     plans["_meta"] = {
         "rutas": rou, "perfil": args.profile, "coordinacion": "avenida" if coordinar else "ninguna",
         "onda_verde": sentido, "velocidad_kmh": args.speed_kmh, "semilla": args.seed,
+        "ciclo_maximo": args.max_cycle, "cuantil_ciclo": args.cuantil_ciclo,
         "duracion_calibracion_s": args.end, "commit_git": commit_actual(),
         "fecha": dt.datetime.now().isoformat(timespec="seconds"), "grupos": resumen_grupos,
     }

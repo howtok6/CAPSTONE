@@ -117,8 +117,13 @@ def measure_phase_flows(
     end: int = 3600,
     warmup: int = 300,
     sample_every: int = 2,
+    controller=None,
 ) -> dict:
     """Corrida de calibración: flujo de llegada por fase, en veh/h.
+
+    Con tiempo fijo (por defecto) y red congestionada se mide lo que el semáforo
+    deja pasar, no lo que llega. `controller` permite calibrar con un controlador
+    adaptativo, que deja pasar la demanda y mide un flujo más cercano al real.
 
     Alimenta el método de Webster. El flujo por pista se mide contando
     vehículos *distintos* observados sobre la pista de aproximación, no
@@ -135,14 +140,17 @@ def measure_phase_flows(
     flows: dict = {}
 
     with sim:
-        FixedTimeController().setup(sim)
+        ctrl = controller or FixedTimeController()
+        ctrl.setup(sim)
         seen = {
             tid: {ln: set() for ln in tl.incoming_lanes}
             for tid, tl in sim.tls.items()
         }
         t = 0
         while sim.running():
-            sim.step(sample_every)
+            for _ in range(sample_every):
+                sim.step(1)
+                ctrl.act(sim)
             t += sample_every
             if t < warmup:
                 continue

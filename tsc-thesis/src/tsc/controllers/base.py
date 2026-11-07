@@ -33,13 +33,25 @@ class PhaseSwitchingController(Controller):
     min_green = 10
     max_green = 60
     yellow_time = 3
+    #: El reloj avanza de a 1 s para que el ámbar dure exactamente `yellow_time`;
+    #: con un reloj de 5 s duraría 5 s y restaría verde frente al agente, que
+    #: decide cada 5 s pero con ámbar de 3 s.
+    decision_interval = 1
+    #: cada cuántos segundos la política elige fase (igual que el agente)
+    decision_every = 5
+    #: semáforos que controla; None = todos. El resto sigue su programa, igual
+    #: que en el agente: todos los controladores deben tener el mismo alcance.
+    tls_ids = None
 
     def setup(self, sim) -> None:
-        self._since_change = {tid: 0.0 for tid in sim.tls}
+        self._tids = [t for t in sim.tls if self.tls_ids is None or t in set(self.tls_ids)]
+        self._clock = 0
+        self._since_change = {tid: 0.0 for tid in self._tids}
         self._target = {}
-        self._in_yellow = {tid: False for tid in sim.tls}
-        self._yellow_left = {tid: 0.0 for tid in sim.tls}
-        for tid, tl in sim.tls.items():
+        self._in_yellow = {tid: False for tid in self._tids}
+        self._yellow_left = {tid: 0.0 for tid in self._tids}
+        for tid in self._tids:
+            tl = sim.tls[tid]
             if tl.green_indices:
                 tl.set_phase(tl.green_indices[0])
                 tl.set_phase_duration(10_000)
@@ -49,7 +61,10 @@ class PhaseSwitchingController(Controller):
 
     def act(self, sim) -> None:
         dt = self.decision_interval
-        for tid, tl in sim.tls.items():
+        self._clock += dt
+        toca_decidir = self._clock % self.decision_every == 0
+        for tid in self._tids:
+            tl = sim.tls[tid]
             if not tl.green_indices:
                 continue
 
@@ -63,12 +78,13 @@ class PhaseSwitchingController(Controller):
                 continue
 
             self._since_change[tid] += dt
-            if self._since_change[tid] < self.min_green:
+            if not toca_decidir or self._since_change[tid] < self.min_green:
                 continue
 
             current = tl.current_phase()
             desired = self.choose_phase(tl)
-            forced = self._since_change[tid] >= self.max_green
+            # última decisión que aún respeta el máximo: la próxima llegaría tarde
+            forced = self._since_change[tid] + self.decision_every > self.max_green
             if desired == current and not forced:
                 continue
             if desired == current and forced:

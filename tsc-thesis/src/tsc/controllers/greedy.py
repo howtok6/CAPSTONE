@@ -11,7 +11,6 @@ from .base import PhaseSwitchingController
 
 class GreedyQueueController(PhaseSwitchingController):
     name = "greedy"
-    decision_interval = 5
 
     def choose_phase(self, tl) -> int:
         best_idx, best_val = tl.current_phase(), float("-inf")
