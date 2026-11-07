@@ -39,6 +39,45 @@ Solo los **64 del eje** (`scenarios/eje_comunal/tls_eje.json`, generado por `scr
 las transversales siguen su programa de tiempo fijo. `train_rl.py` y `eval_rl.py` usan la misma lista
 (`--control auto|eje|todos`), así que no puede evaluarse un agente con un alcance distinto al de su entrenamiento.
 
+## Condiciones del entrenamiento (5-nov-2026)
+
+Revisión hecha antes de la primera corrida larga. Cada punto corrige algo que habría invalidado el resultado.
+
+| Punto | Antes | Ahora |
+|---|---|---|
+| **Salidas sobrantes de la red** | 49 de los 64 semáforos tienen 2 fases y la red 4 salidas. Al entrenar, SuperSuit lleva las sobrantes a la fase 0; `eval_rl.py` usaba `a % n`, otra política | `accion_real()` replica a SuperSuit; una prueba compara ambas |
+| **Verde máximo** | `sumo-rl` guarda `max_green` y no lo aplica | `SubsetSumoEnvironment._apply_actions` fuerza la fase siguiente en la última decisión que respeta los 60 s |
+| **Variedad de episodios** | Una sola demanda y semilla fija: la misma hora repetida | 10 demandas de entrenamiento rotan por episodio, cada una con su semilla de SUMO |
+| **Réplicas de evaluación** | Mismos viajes en todas las semillas; solo cambiaba la semilla de SUMO | 10 demandas propias (`demand/eval/`). La réplica k usa la semilla k en todos los controladores: sigue pareada y ningún viaje de evaluación se vio al entrenar |
+| **Velocidad** | TraCI, con métricas por vehículo en cada decisión | libsumo y sin esas métricas (la evaluación usa `tripinfo`). Una simulación por proceso |
+| **Corrida larga** | Solo se guardaba el modelo final | Checkpoints cada 250 000 muestras, curva en `progress.csv`, `--resume` y metadatos escritos al partir |
+
+**Observación por fase (`--obs fase`).** La de `sumo-rl` trae una columna por pista. En el eje hay cruces de 4 a 23
+pistas y 2 a 4 fases, así que al rellenar con ceros la misma columna es densidad en un cruce y cola en otro; con
+parámetros compartidos eso impide generalizar. `PhaseObservation` tiene 22 columnas fijas: fase actual, fases
+existentes, si puede cambiar, tiempo de verde y, por cada fase, densidad y cola de las pistas que atiende y densidad de
+las pistas a las que descarga. Cada salida de la red queda ligada a las columnas de su fase. **No se adopta por
+supuesto:** la primera tanda compara `fase` y `estandar`, y la elección se decide con la demora medida.
+
+**Corrida inicial.** Perfil punta tarde, Adam, recompensa `wait`, 2 000 000 de muestras (unas 43 horas simuladas).
+Corridas: `fase` semillas 0 y 1, `estandar` semilla 0. Se lanzan con `scripts/lanzar_entrenamiento.ps1`.
+
+**Resultado (10 demandas de evaluación).** `fase` da 87,09 ± 1,18 s y 86,24 ± 1,02 s de demora incluyendo no
+terminados; `estandar` da 216,64 ± 38,00 s, con réplicas bloqueadas. **Se adopta `fase`** como observación del agente.
+La tabla completa está en `ESTADO_DEL_PROYECTO.md` §6.6. El agente de `fase` cambia de fase cada 19 a 24 s por semáforo:
+la conmutación excesiva que se temía en la prueba del 24-oct no persistió.
+
+**Comparabilidad con los controladores clásicos.** Los adaptativos (`greedy`, `maxpressure`) ahora avanzan con reloj de
+1 s para que el ámbar dure 3 s, deciden cada 5 s como el agente y controlan los mismos 64 semáforos.
+`scripts/verificar_paridad.py` corre la misma regla en ambos arneses: 109,4 s frente a 110,3 s (+0,8 %, 3 réplicas).
+
+**Generalización.** Entrenado solo con punta tarde, el agente queda +3 % respecto del mejor baseline en valle y entre
+−18 % y −32 % en punta mañana, punta tarde y sobresaturado, con baselines ajustados (`ESTADO_DEL_PROYECTO.md` §6.6). Por
+ahora no hace falta entrenar por perfil.
+
+**Límite conocido.** Las demandas siguen siendo sintéticas. Lo aprendido aquí sirve para comprobar que el agente aprende
+y aplicar la regla de corte del 22-nov; el resultado de tesis exige reentrenar con la demanda validada contra terreno.
+
 ## Trazabilidad
 
 Cada modelo se guarda con un `.json` al lado: optimizador y sus parámetros, tasa de aprendizaje, recompensa,

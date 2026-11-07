@@ -57,6 +57,23 @@ Webster cae a su ciclo mínimo. Por la misma razón la onda verde no cambia nada
 El plan definitivo se genera por perfil cuando existan los perfiles de demanda del eje, y se ancla en la medición de
 terreno.
 
+## Ajuste de Webster (5-nov-2026)
+
+Reemplaza lo anterior en dos puntos, medidos solo con demandas de entrenamiento de punta tarde
+(`scripts/ajustar_baselines.py`, 3 réplicas por configuración).
+
+- **Flujos.** Una corrida de calibración con tiempo fijo en red congestionada mide lo que el semáforo deja pasar, no lo
+  que llega. Con esos flujos, ninguna de las 24 configuraciones bajó de unos 330 s de demora. Medidos con el controlador
+  voraz (`--flujos voraz`), la mejor configuración bajó a 178,6 s.
+- **Coordinación.** La mejor configuración fue ciclo máximo de 120 s, sin ciclo común por avenida (178,6 s). Con ciclo
+  común y onda verde queda en 190,0 s. El ciclo común por cuantil menor a 1 no sirvió: ~330 s. Se adopta la
+  mejor, y la coordinación queda como variante documentada (`--coordinate avenida`).
+- **Sentido de la onda verde.** Corregido: sigue el flujo dominante del perfil. Antes iba contra él en punta tarde.
+
+Los planes `webster_plan_<perfil>.json` se calibran con la primera demanda de entrenamiento de cada perfil, nunca con las
+de evaluación. Siguen siendo provisionales hasta anclarlos en la medición de terreno. Calibrar con el voraz supone
+conocer la demanda que llega, algo que en terreno se aproxima con conteos.
+
 ## Limitaciones que se declaran en la tesis
 
 - Los cruces no medidos usan tiempos estimados, no la programación oficial.

@@ -5,7 +5,7 @@
 **Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/decisiones/07-decision-escenario.md`.  
 **Autor:** Gabriel Ignacio Cárdenas Valdés  
 **Programa:** Ingeniería en Informática, DUOC UC  
-**Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre)  
+**Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre); §6.6 y las filas de entrenamiento actualizadas el 5 de noviembre  
 **Entorno de ejecución:** Windows 11 nativo (Python 3.13 / SUMO 1.27.1 / libsumo / PyTorch 2.8.0 / PyG 2.8.0)  
 
 > **Nota de revisión (22-oct-2026).** Esta versión corrige afirmaciones del informe del 14-oct que el código y los
@@ -24,14 +24,14 @@ entorno de aprendizaje.
 
 La infraestructura está sólida: **13/13 pruebas automatizadas pasan** (verificado el 22-oct), la red real del eje
 **Alameda-Providencia** (520 arcos, 36 semáforos) está depurada y los tres controladores clásicos funcionan con un arnés
-de medición único. La brecha principal está en el aprendizaje: **todavía no existe ninguna política entrenada sobre la
-red real**; el único modelo guardado es `models/grid4x4/ppo_wait.zip` (8 000 pasos, grilla sintética, 23-ago).
+de medición único. La brecha principal pasó del aprendizaje a la demanda: **desde el 5-nov hay una política entrenada en
+el eje**, pero sobre demanda sintética sin validar (§6.6). 34/34 pruebas pasan (5-nov).
 
 ### Semáforo de Estado del Proyecto
 * 🟢 **Pipeline de simulación, métricas y controladores clásicos:** completado y verificado (13/13 pytest).
 * 🟢 **Red vial real (`scenarios/alameda_providencia`):** depurada; `diagnose_net.py` la declara APTA (sin semáforos de fase única ni arcos críticos).
 * 🟡 **Demanda:** 4 perfiles **sintéticos direccionados** generados (valle, punta mañana, punta tarde, sobresaturado). **No calibrados** contra datos observados.
-* 🟡 **Infraestructura RL (PettingZoo / SB3 / IPPO):** funcional y probada en grilla 4×4; sin entrenamiento en la red real.
+* 🟡 **Infraestructura RL (PettingZoo / SB3 / IPPO):** primer IPPO entrenado en la red del eje (5-nov, punta tarde, demanda sintética; ver §6.6). Falta repetirlo con demanda validada y en los demás perfiles.
 * ⚪ **MAPPO (Ray RLlib / CTDE) y pruebas de robustez:** no iniciados.
 
 ### Trabajo exploratorio fuera del alcance del anteproyecto
@@ -57,9 +57,9 @@ viaje por tramo. No se compran programaciones a la UOCT por ahora.
 | **OE1** | Construir y calibrar escenario microscópico de Santiago ($\ge 8$ intersecciones) en SUMO con datos públicos. | Red `.net.xml`, matriz de demanda y rutas `.rou.xml` versionadas con reporte de calibración. | 🟡 En progreso | 60 % | Red `scenarios/alameda_providencia` (36 semáforos) depurada y APTA. Perfiles de demanda generados con `randomTrips.py` y pesos heurísticos; **falta calibrar o validar contra datos observados** y emitir el reporte de calibración. |
 | **OE2** | Implementar tres controladores de referencia: Tiempo Fijo, Webster y Max-Pressure. | Módulos ejecutables con pruebas unitarias sobre conmutación de fases. | 🟢 Completado | 100 % | `FixedTimeController`, `WebsterController` (plan para los 36 semáforos de Alameda-Providencia), `MaxPressureController` y `GreedyController` en `src/tsc/controllers/`, con pruebas. |
 | **OE3** | Formular control como Dec-POMDP (observación, acción, recompensa por intersección). | Especificación formal documentada e implementada en PettingZoo. | 🟢 Casi completo | 85 % | Implementado en `src/tsc/rl_env.py` (sumo-rl + SuperSuit, parameter sharing, recompensas `wait`, `queue`, `pressure`, `speed`). Falta la especificación formal escrita para el informe. |
-| **OE4** | Entrenar y ajustar al menos dos configuraciones de agentes MARL (independiente y CTDE). | Políticas entrenadas, curvas de aprendizaje y registro de hiperparámetros. | 🔴 Inicial | 10 % | Solo existe una prueba de IPPO en grilla 4×4 (8 000 pasos). Sin entrenamiento en red real; MAPPO no iniciado. |
-| **OE5** | Evaluar comparativamente todos los controladores con réplicas independientes y test estadístico. | Protocolo experimental, tablas de resultados con IC 95 % y Wilcoxon pareado. | 🟡 En progreso | 35 % | Arnés listo con soporte `--profile`. En Alameda-Providencia solo hay una prueba de humo (perfil valle, 2 semillas, ~10 min medidos). Falta la batería: 4 perfiles × 5 controladores × 10–30 semillas × 1 h. |
-| **OE6** | Analizar la robustez de la política aprendida ante perturbaciones no vistas en entrenamiento. | Batería de escenarios de perturbación y análisis de degradación. | 🔴 Inicial | 5 % | Requiere una política aprendida, que aún no existe. El perfil `sobresaturado` existe pero hoy no estresa la red (ver §6.5). |
+| **OE4** | Entrenar y ajustar al menos dos configuraciones de agentes MARL (independiente y CTDE). | Políticas entrenadas, curvas de aprendizaje y registro de hiperparámetros. | 🟡 En progreso | 45 % | IPPO entrenado en el eje (64 semáforos, punta tarde, 2 millones de muestras, 2 semillas con observación por fase; §6.6). Falta demanda validada, los demás perfiles y las variantes de recompensa; MAPPO no iniciado. |
+| **OE5** | Evaluar comparativamente todos los controladores con réplicas independientes y test estadístico. | Protocolo experimental, tablas de resultados con IC 95 % y Wilcoxon pareado. | 🟡 En progreso | 55 % | Batería de 4 perfiles × 10 réplicas en el eje con baselines ajustados e IPPO (§6.6), sobre demanda sintética. Falta repetirla con demanda validada y, si alcanza, con más réplicas. |
+| **OE6** | Analizar la robustez de la política aprendida ante perturbaciones no vistas en entrenamiento. | Batería de escenarios de perturbación y análisis de degradación. | 🔴 Inicial | 5 % | Ya hay política aprendida (§6.6); falta correr las perturbaciones. El perfil `sobresaturado` existe pero hoy no estresa la red (ver §6.5). |
 | **OE7** | Documentar hallazgos, limitaciones y condiciones de ventaja del enfoque aprendido. | Informe final de tesis, repositorio reproducible y presentación de defensa. | 🟡 En progreso | 25 % | Anteproyecto entregado (DOCX y PDF), guías técnicas `docs/00` a `06`. Informe final no iniciado. |
 
 *Los porcentajes son una estimación de juicio a partir de lo que existe en el repositorio, no una medición.*
@@ -72,9 +72,11 @@ Ninguna hipótesis está contrastada todavía. Todas se formulan sobre el corred
 proviene de la grilla sintética.
 
 * **H1:** *«Un controlador MARL reduce la demora media en $\ge 10\,\%$ respecto de tiempo fijo optimizado con Webster en hora punta ($p < 0.05$).»*  
-  * **Estado: sin contrastar; señal preliminar favorable.** En la grilla 4×4 (demanda sintética baja, 8 semillas), PPO entrenado 8 000 pasos obtuvo 31,58 s frente a 36,57 s de Webster (−13,6 %). Falta repetirlo en el corredor real, en hora punta y con una política entrenada en serio.
+  * **Actualización del 5-nov: señal favorable en el eje, aún sin contrastar.** Con demanda sintética de punta tarde, IPPO queda en 86–87 s de demora frente a 186,6 s de Webster ajustado, −54 % (§6.6). No contrasta H1 porque la demanda no está validada.
+  * **Estado anterior (grilla):** En la grilla 4×4 (demanda sintética baja, 8 semillas), PPO entrenado 8 000 pasos obtuvo 31,58 s frente a 36,57 s de Webster (−13,6 %). Falta repetirlo en el corredor real, en hora punta y con una política entrenada en serio.
 * **H2:** *«La ventaja de MARL sobre Max-Pressure es menor que sobre tiempo fijo y se concentra cerca de la saturación.»*  
-  * **Estado: sin contrastar.** En la grilla, la ventaja de PPO sobre Max-Pressure (−4,4 %) fue menor que sobre tiempo fijo (−33,6 %), lo que es coherente con la primera mitad de H2. La segunda mitad (concentración cerca de la saturación) no se ha medido: solo se probó demanda baja.
+  * **Actualización del 5-nov: señal favorable en el eje, aún sin contrastar.** Frente a Max-Pressure ajustado, IPPO pasa de +3 % en valle a entre −55 % y −58 % en sobresaturado, y su ventaja es menor que sobre tiempo fijo (§6.6). Falta demanda validada.
+  * **Estado anterior (grilla):** En la grilla, la ventaja de PPO sobre Max-Pressure (−4,4 %) fue menor que sobre tiempo fijo (−33,6 %), lo que es coherente con la primera mitad de H2. La segunda mitad (concentración cerca de la saturación) no se ha medido: solo se probó demanda baja.
 * **H3:** *«Esquemas CTDE (MAPPO) superan al aprendizaje independiente (IPPO) a costa de mayor costo computacional.»*  
   * **Estado: no evaluada.** Requiere MAPPO.
 
@@ -254,6 +256,49 @@ estrés.
 
 ---
 
+## 6.6 Primer entrenamiento en el eje comunal (5-nov-2026)
+
+Red `eje_comunal`, 64 semáforos controlados, 2 000 000 de muestras (~43 h simuladas), Adam, recompensa `wait`.
+**El agente se entrenó solo con punta tarde.** Evaluación: 10 demandas por perfil no vistas al entrenar, pareadas entre
+controladores, 1 h simulada. Max-Pressure y Webster se ajustaron antes solo con demandas de entrenamiento. Datos en
+`results/eje_comunal_<perfil>_baselines.json`; condiciones en `docs/decisiones/11-decision-agente.md`.
+**La demanda es sintética: estas cifras muestran que el agente aprende, no son resultados de tesis.**
+
+Demora media incluyendo no terminados (s), con los IC 95 % en el texto de los resultados:
+
+| Perfil | `fixed` | `webster` | `maxpressure` | `greedy` | IPPO semilla 0 | IPPO semilla 1 | IPPO vs. mejor baseline |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Valle** | 199,4 | 100,5 | **74,4** | 92,2 | 76,7 | 76,9 | +3,1 % y +3,4 % |
+| **Punta mañana** | 775,2 | 438,6 | 226,4 | 217,6 | 178,2 | **166,0** | −18,1 % y −23,7 % |
+| **Punta tarde** | 400,4 | 186,6 | 122,0 | 110,2 | 87,1 | **86,2** | −21,0 % y −21,8 % |
+| **Sobresaturado** | 550,0 | 324,4 | 240,8 | 150,2 | **101,9** | 109,3 | −32,1 % y −27,3 % |
+
+El p = 0,0020 de las comparaciones con el mejor baseline es el mínimo posible con 10 pares y no distingue tamaños de
+efecto; por eso se reportan los porcentajes. Punta tarde en detalle (IC 95 %): `fixed` 400,4 ± 6,4; `webster` 186,6 ±
+6,4; `maxpressure` 122,0 ± 14,2; `greedy` 110,2 ± 1,8; IPPO 87,1 ± 1,2 y 86,2 ± 1,0.
+
+**Lectura:**
+* **Generalización:** el agente rinde bien en perfiles que no vio. Solo en valle queda levemente detrás del mejor
+  baseline; con la red descargada, Max-Pressure hace casi lo mismo sin aprender nada.
+* **La ventaja crece con la congestión:** frente a Max-Pressure va de +3 % en valle a entre −55 % y −58 % en sobresaturado. Es coherente
+  con H2, pero hay que repetirlo con demanda validada.
+* **Observación por fase:** en punta tarde, las dos semillas convergen a lo mismo (86–87 s). La estándar, con una
+  semilla, da 216,6 ± 38,0 s e inestable (119–303 s entre réplicas), con bloqueos en parte de ellas.
+* **Ajuste de baselines:** Max-Pressure bajó de 219 a 111 s en demandas de entrenamiento al usar conteo de vehículos sin
+  histéresis, y Webster de 330 a 179 s al medir los flujos con el voraz en vez de tiempo fijo. Los barridos están en
+  `results/ajuste_eje_comunal_punta_tarde*.json` y se ejecutaron con `scripts/ajustar_baselines.py`.
+* **Max-Pressure es el más variable** (IC 95 % de ±14 s en punta tarde, frente a ±2 s del voraz). Se ajustó solo en punta
+  tarde y en 3 demandas, y el voraz, pensado como control de sanidad, sigue por delante en tres perfiles.
+* **Punta mañana** da más demora que punta tarde con menos demanda. La cola se concentra en Av. Providencia y Av. Nueva
+  Providencia (141 vehículos en cola frente a 64, con el voraz y una demanda): el perfil carga ese par de vías. Debe
+  revisarse al validar la demanda.
+* **Verificación del arnés:** la misma regla voraz en `tsc.runner` y en sumo-rl da 109,4 s y 110,3 s (+0,8 %, 3
+  réplicas; `scripts/verificar_paridad.py`). Las diferencias entre controladores no vienen del arnés.
+* **Comparabilidad:** los adaptativos tenían ámbar efectivo de 5 s y controlaban los 86 semáforos. Ahora tienen ámbar de 3
+  s y controlan los mismos 64 que el agente. Las tablas §6.1–§6.4 son anteriores a este cambio.
+
+---
+
 ## 7. Deuda Técnica
 
 ### 7.1 Corregida en la sesión del 14-oct-2026
@@ -297,8 +342,10 @@ si alcanza), MAPPO solo en el tramo de Providencia, dos variantes de recompensa 
 5. ✅ **Medir la cola de inserción** (24-oct): nueva métrica primaria `delay_all_mean`, que incluye a los vehículos que siguen en la red o esperan entrar al cierre; también `vehicles_running_end` y `vehicles_pending_end`. Pendiente verificar que los cuatro perfiles quedan ordenados de valle a sobresaturado.
 6. ✅ **Fijar el alcance de control** (24-oct): el agente controla los 64 semáforos del eje (`tls_eje.json`); las transversales quedan en tiempo fijo. Optimizador configurable: Adam por defecto, RMSprop como alternativa; tasa de aprendizaje lineal decreciente (`docs/decisiones/11-decision-agente.md`).
 6b. ✅ **Plan Webster para la red del eje** (27-oct): ciclo común por avenida, onda verde según el perfil y ciclo real ajustado al objetivo (`docs/decisiones/08`). Provisional: con la demanda sintética los ciclos quedan en el mínimo (40–49 s); se regenera por perfil (`build_webster.py --profile`).
-7. **Baselines completos:** 4 perfiles × 4 controladores × 10 semillas × 1 h. Listo cuando `compare.py` entrega IC 95 % y tamaño de efecto.
-8. **Primer IPPO en red real** (perfil punta tarde). Listo cuando la curva se estabiliza y la política iguala a tiempo fijo.
+7. ✅ **Baselines completos** (5-nov): 4 perfiles × 4 controladores × 10 réplicas × 1 h, más IPPO, sobre demanda sintética (§6.6). Se repite cuando la demanda esté validada.
+8. ✅ **Primer IPPO en red real** (5-nov, perfil punta tarde): supera a tiempo fijo, de modo que la regla de corte del 22-nov queda cumplida de forma provisional, sujeta a repetirlo con demanda validada (§6.6).
+8b. ✅ **Ajustar los baselines** (5-nov): Max-Pressure y Webster, solo con demandas de entrenamiento (`scripts/ajustar_baselines.py`).
+8c. ✅ **Visualización e informe de la comparativa** (7-nov): diagramas espacio-tiempo de colas (`scripts/medir_colas_eje.py`), videos cuadro a cuadro de la simulación (`scripts/video_comparativo.py`, en `tsc-thesis/results/video/`) e informe Word `docs/informe/informe-comparativa-controladores-2026-11-07.docx`, que se regenera con `docs/informe/generador/`.
 9. **Validación de demanda** con tiempos típicos por franja y, si llegan, datos de UOCT o DTPM.
 10. **Completar `requirements.txt`** y crear un entorno virtual.
 
