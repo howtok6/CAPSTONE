@@ -1,0 +1,672 @@
+{
+ "lambda_m": 445.4,
+ "lambda_cruce_m": 2000.0,
+ "crecimiento": 1.49,
+ "objetivo_veh_h": 4600.0,
+ "escala_final": 1.0,
+ "verde_tope": 0.4,
+ "saturacion_lateral": 0.5,
+ "beta_lateral": 0.05,
+ "capacidad_lateral_veh_h": 154800,
+ "factor_hora_punta": {
+  "eod_valle": 1.0,
+  "eod_punta_manana": 1.297,
+  "eod_punta_tarde": 1.128
+ },
+ "eje_km": 13.83,
+ "perfiles": {
+  "eod_valle": {
+   "registros_eod": 980,
+   "veh_h_esperados": {
+    "eje": 6058,
+    "local": 1466,
+    "cruce": 242
+   },
+   "flujo_eje_por_zona": {
+    "S0 Matucana–Ruta 5": {
+     "hacia_oriente": 107,
+     "hacia_poniente": 161
+    },
+    "S1 Ruta 5–Santa Rosa": {
+     "hacia_oriente": 113,
+     "hacia_poniente": 262
+    },
+    "S2 Santa Rosa–Baquedano": {
+     "hacia_oriente": 664,
+     "hacia_poniente": 504
+    },
+    "P1 Baquedano–M. Montt": {
+     "hacia_oriente": 969,
+     "hacia_poniente": 1337
+    },
+    "P2 M. Montt–P. de Valdivia": {
+     "hacia_oriente": 1144,
+     "hacia_poniente": 1131
+    },
+    "P3 P. de Valdivia–Tobalaba": {
+     "hacia_oriente": 354,
+     "hacia_poniente": 666
+    },
+    "L1 Tobalaba–Alcántara": {
+     "hacia_oriente": 701,
+     "hacia_poniente": 417
+    },
+    "L2 Alcántara–Manquehue": {
+     "hacia_oriente": 431,
+     "hacia_poniente": 641
+    },
+    "L3 Manquehue–Los Dominicos": {
+     "hacia_oriente": 187,
+     "hacia_poniente": 105
+    }
+   },
+   "realizaciones": [
+    {
+     "archivo": "routes_eod_valle.rou.xml",
+     "pedidos": 7394,
+     "ruteados": 7394,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t00.rou.xml",
+     "pedidos": 7195,
+     "ruteados": 7195,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t01.rou.xml",
+     "pedidos": 7271,
+     "ruteados": 7271,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t02.rou.xml",
+     "pedidos": 7353,
+     "ruteados": 7353,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t03.rou.xml",
+     "pedidos": 7401,
+     "ruteados": 7401,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t04.rou.xml",
+     "pedidos": 7208,
+     "ruteados": 7208,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t05.rou.xml",
+     "pedidos": 7334,
+     "ruteados": 7334,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t06.rou.xml",
+     "pedidos": 7278,
+     "ruteados": 7278,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t07.rou.xml",
+     "pedidos": 7255,
+     "ruteados": 7255,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t08.rou.xml",
+     "pedidos": 7349,
+     "ruteados": 7349,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_t09.rou.xml",
+     "pedidos": 7278,
+     "ruteados": 7278,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s00.rou.xml",
+     "pedidos": 7258,
+     "ruteados": 7258,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s01.rou.xml",
+     "pedidos": 7455,
+     "ruteados": 7455,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s02.rou.xml",
+     "pedidos": 7329,
+     "ruteados": 7329,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s03.rou.xml",
+     "pedidos": 7345,
+     "ruteados": 7345,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s04.rou.xml",
+     "pedidos": 7303,
+     "ruteados": 7303,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s05.rou.xml",
+     "pedidos": 7231,
+     "ruteados": 7231,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s06.rou.xml",
+     "pedidos": 7359,
+     "ruteados": 7359,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s07.rou.xml",
+     "pedidos": 7088,
+     "ruteados": 7088,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s08.rou.xml",
+     "pedidos": 7394,
+     "ruteados": 7394,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_valle_s09.rou.xml",
+     "pedidos": 7165,
+     "ruteados": 7165,
+     "recortados_por_tope": 0
+    }
+   ]
+  },
+  "eod_punta_manana": {
+   "registros_eod": 2406,
+   "veh_h_esperados": {
+    "eje": 12944,
+    "local": 3357,
+    "cruce": 707
+   },
+   "flujo_eje_por_zona": {
+    "S0 Matucana–Ruta 5": {
+     "hacia_oriente": 108,
+     "hacia_poniente": 51
+    },
+    "S1 Ruta 5–Santa Rosa": {
+     "hacia_oriente": 1337,
+     "hacia_poniente": 1267
+    },
+    "S2 Santa Rosa–Baquedano": {
+     "hacia_oriente": 1561,
+     "hacia_poniente": 1478
+    },
+    "P1 Baquedano–M. Montt": {
+     "hacia_oriente": 2545,
+     "hacia_poniente": 2096
+    },
+    "P2 M. Montt–P. de Valdivia": {
+     "hacia_oriente": 1979,
+     "hacia_poniente": 1898
+    },
+    "P3 P. de Valdivia–Tobalaba": {
+     "hacia_oriente": 1581,
+     "hacia_poniente": 1409
+    },
+    "L1 Tobalaba–Alcántara": {
+     "hacia_oriente": 1712,
+     "hacia_poniente": 2063
+    },
+    "L2 Alcántara–Manquehue": {
+     "hacia_oriente": 1529,
+     "hacia_poniente": 2410
+    },
+    "L3 Manquehue–Los Dominicos": {
+     "hacia_oriente": 1181,
+     "hacia_poniente": 1002
+    }
+   },
+   "realizaciones": [
+    {
+     "archivo": "routes_eod_punta_manana.rou.xml",
+     "pedidos": 15668,
+     "ruteados": 15668,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t00.rou.xml",
+     "pedidos": 15853,
+     "ruteados": 15853,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t01.rou.xml",
+     "pedidos": 15944,
+     "ruteados": 15944,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t02.rou.xml",
+     "pedidos": 15964,
+     "ruteados": 15964,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t03.rou.xml",
+     "pedidos": 15952,
+     "ruteados": 15952,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t04.rou.xml",
+     "pedidos": 15728,
+     "ruteados": 15728,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t05.rou.xml",
+     "pedidos": 15851,
+     "ruteados": 15851,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t06.rou.xml",
+     "pedidos": 15747,
+     "ruteados": 15747,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t07.rou.xml",
+     "pedidos": 15792,
+     "ruteados": 15792,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t08.rou.xml",
+     "pedidos": 15686,
+     "ruteados": 15686,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_t09.rou.xml",
+     "pedidos": 15904,
+     "ruteados": 15904,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s00.rou.xml",
+     "pedidos": 15805,
+     "ruteados": 15805,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s01.rou.xml",
+     "pedidos": 15772,
+     "ruteados": 15772,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s02.rou.xml",
+     "pedidos": 15675,
+     "ruteados": 15675,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s03.rou.xml",
+     "pedidos": 15689,
+     "ruteados": 15689,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s04.rou.xml",
+     "pedidos": 15855,
+     "ruteados": 15855,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s05.rou.xml",
+     "pedidos": 15985,
+     "ruteados": 15985,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s06.rou.xml",
+     "pedidos": 15757,
+     "ruteados": 15757,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s07.rou.xml",
+     "pedidos": 15831,
+     "ruteados": 15831,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s08.rou.xml",
+     "pedidos": 15811,
+     "ruteados": 15811,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_manana_s09.rou.xml",
+     "pedidos": 15792,
+     "ruteados": 15792,
+     "recortados_por_tope": 0
+    }
+   ]
+  },
+  "eod_punta_tarde": {
+   "registros_eod": 1799,
+   "veh_h_esperados": {
+    "eje": 9840,
+    "local": 2841,
+    "cruce": 487
+   },
+   "flujo_eje_por_zona": {
+    "S0 Matucana–Ruta 5": {
+     "hacia_oriente": 8,
+     "hacia_poniente": 208
+    },
+    "S1 Ruta 5–Santa Rosa": {
+     "hacia_oriente": 876,
+     "hacia_poniente": 2485
+    },
+    "S2 Santa Rosa–Baquedano": {
+     "hacia_oriente": 699,
+     "hacia_poniente": 1476
+    },
+    "P1 Baquedano–M. Montt": {
+     "hacia_oriente": 1296,
+     "hacia_poniente": 1231
+    },
+    "P2 M. Montt–P. de Valdivia": {
+     "hacia_oriente": 1346,
+     "hacia_poniente": 1106
+    },
+    "P3 P. de Valdivia–Tobalaba": {
+     "hacia_oriente": 1568,
+     "hacia_poniente": 1255
+    },
+    "L1 Tobalaba–Alcántara": {
+     "hacia_oriente": 1799,
+     "hacia_poniente": 1076
+    },
+    "L2 Alcántara–Manquehue": {
+     "hacia_oriente": 1866,
+     "hacia_poniente": 542
+    },
+    "L3 Manquehue–Los Dominicos": {
+     "hacia_oriente": 879,
+     "hacia_poniente": 488
+    }
+   },
+   "realizaciones": [
+    {
+     "archivo": "routes_eod_punta_tarde.rou.xml",
+     "pedidos": 11646,
+     "ruteados": 11646,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t00.rou.xml",
+     "pedidos": 11678,
+     "ruteados": 11678,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t01.rou.xml",
+     "pedidos": 11554,
+     "ruteados": 11554,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t02.rou.xml",
+     "pedidos": 11679,
+     "ruteados": 11679,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t03.rou.xml",
+     "pedidos": 11513,
+     "ruteados": 11513,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t04.rou.xml",
+     "pedidos": 11551,
+     "ruteados": 11551,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t05.rou.xml",
+     "pedidos": 11793,
+     "ruteados": 11793,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t06.rou.xml",
+     "pedidos": 11664,
+     "ruteados": 11664,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t07.rou.xml",
+     "pedidos": 11723,
+     "ruteados": 11723,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t08.rou.xml",
+     "pedidos": 11675,
+     "ruteados": 11675,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_t09.rou.xml",
+     "pedidos": 11626,
+     "ruteados": 11626,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s00.rou.xml",
+     "pedidos": 11715,
+     "ruteados": 11715,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s01.rou.xml",
+     "pedidos": 11668,
+     "ruteados": 11668,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s02.rou.xml",
+     "pedidos": 11650,
+     "ruteados": 11650,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s03.rou.xml",
+     "pedidos": 11430,
+     "ruteados": 11430,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s04.rou.xml",
+     "pedidos": 11848,
+     "ruteados": 11848,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s05.rou.xml",
+     "pedidos": 11733,
+     "ruteados": 11733,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s06.rou.xml",
+     "pedidos": 11656,
+     "ruteados": 11656,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s07.rou.xml",
+     "pedidos": 11629,
+     "ruteados": 11629,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s08.rou.xml",
+     "pedidos": 11395,
+     "ruteados": 11395,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s09.rou.xml",
+     "pedidos": 11824,
+     "ruteados": 11824,
+     "recortados_por_tope": 0
+    }
+   ]
+  },
+  "eod_sobresaturado": {
+   "realizaciones": [
+    {
+     "archivo": "routes_eod_sobresaturado.rou.xml",
+     "pedidos": 20403,
+     "ruteados": 20403,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t00.rou.xml",
+     "pedidos": 20491,
+     "ruteados": 20491,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t01.rou.xml",
+     "pedidos": 20630,
+     "ruteados": 20630,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t02.rou.xml",
+     "pedidos": 20683,
+     "ruteados": 20683,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t03.rou.xml",
+     "pedidos": 20604,
+     "ruteados": 20604,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t04.rou.xml",
+     "pedidos": 20610,
+     "ruteados": 20610,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t05.rou.xml",
+     "pedidos": 20358,
+     "ruteados": 20358,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t06.rou.xml",
+     "pedidos": 20494,
+     "ruteados": 20494,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t07.rou.xml",
+     "pedidos": 20428,
+     "ruteados": 20428,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t08.rou.xml",
+     "pedidos": 20528,
+     "ruteados": 20528,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_t09.rou.xml",
+     "pedidos": 20511,
+     "ruteados": 20511,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s00.rou.xml",
+     "pedidos": 20479,
+     "ruteados": 20479,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s01.rou.xml",
+     "pedidos": 20412,
+     "ruteados": 20412,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s02.rou.xml",
+     "pedidos": 20481,
+     "ruteados": 20481,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s03.rou.xml",
+     "pedidos": 20755,
+     "ruteados": 20755,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s04.rou.xml",
+     "pedidos": 20366,
+     "ruteados": 20366,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s05.rou.xml",
+     "pedidos": 20455,
+     "ruteados": 20455,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s06.rou.xml",
+     "pedidos": 20598,
+     "ruteados": 20598,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s07.rou.xml",
+     "pedidos": 20626,
+     "ruteados": 20626,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s08.rou.xml",
+     "pedidos": 20438,
+     "ruteados": 20438,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_sobresaturado_s09.rou.xml",
+     "pedidos": 20596,
+     "ruteados": 20596,
+     "recortados_por_tope": 0
+    }
+   ]
+  }
+ },
+ "sobresaturado_base": "eod_punta_manana"
+}
