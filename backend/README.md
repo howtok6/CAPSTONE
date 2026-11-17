@@ -35,6 +35,7 @@ y rutas siguen funcionando (las rutas sin semáforos) y `/v1/salud` informa `deg
 | `VIA_AGENTE` | `via-capstone-backend/0.1 (...)` | User-Agent ante OSM |
 | `VIA_TIEMPO_ESPERA` | `10s` | Límite por llamada a otro servicio |
 | `VIA_VIAJE_INACTIVO` | `2h` | Se olvida un viaje sin actividad tras este plazo |
+| `VIA_TIEMPOS_EJE` | `datos/tiempos_eje.json` | Tabla de tiempos por calle y franja; sin ella las rutas no se estiman según la hora |
 
 Los servidores públicos de OSRM y Nominatim sirven para desarrollo. Nominatim exige como máximo una consulta por
 segundo: el backend la respeta y guarda las respuestas 24 h en caché. Para producción conviene un servidor propio.
@@ -93,6 +94,45 @@ Entre 2 y 5 paradas. Respuesta: lista de rutas, la más rápida primero.
 ```
 
 `pasos[].tipo` sigue a OSRM (`depart`, `turn`, `arrive`, `roundabout`, …); las llegadas intermedias se marcan `parada`.
+
+#### Recomendación según la hora
+
+Con `"hora"` en la solicitud (`"HH:MM"` o RFC 3339; por defecto, ahora) cada ruta trae además `estimacion`, y la
+lista viene ordenada por `estimacion.duracion_min` con la primera marcada `recomendada` y un `motivo`:
+
+```json
+"recomendada": true,
+"motivo": "La más rápida en punta tarde: 20 min, 3 min menos que la siguiente.",
+"estimacion": {"franja": "punta_tarde", "franja_nombre": "Punta tarde", "duracion_min": 19.5,
+               "duracion_adaptativo_min": 18.8, "ahorro_adaptativo_min": 0.7, "cobertura": 0.21, "fuente": "simulacion"}
+```
+
+Cómo se calcula (`internal/proveedores/historico` y `internal/servicios/rutas.go`):
+
+1. La hora se lleva a una franja: punta mañana (07:00–09:00), punta tarde (17:30–20:00) o valle, en días hábiles;
+   valle de 09:00 a 21:00 el fin de semana. De noche no hay datos y no se estima.
+2. El trazado se recorre en pasos de 15 m. Cada paso se asocia a la calle de la tabla que está a menos de 20 m y va
+   en el mismo sentido (±35°); su tiempo es largo / velocidad simulada de esa calle en la franja.
+3. Lo que no calza con ninguna calle (`1 - cobertura`) usa la duración de OSRM por el índice de congestión de la
+   franja: la mediana de velocidad libre / velocidad simulada de las calles de la tabla.
+4. `duracion_adaptativo_min` repite el cálculo con las velocidades del agente; fuera de la tabla no cambia nada.
+
+La tabla `datos/tiempos_eje.json` se genera desde la tesis:
+
+```bash
+cd tsc-thesis
+python scripts/exportar_tiempos_app.py --armar --replicas 3   # ~35 min; escribe ../backend/datos/tiempos_eje.json
+```
+
+Corre la simulación del eje comunal con la demanda EOD (valle, punta mañana y punta tarde), con el plan de Webster
+(«actual») y con el agente IPPO mixto («adaptativo»), tres réplicas de una hora cada una, y guarda la velocidad
+media de cada calle. Límites que la app debe tener presentes:
+
+- **Es simulación, no tráfico en vivo.** No ve accidentes, lluvia ni el día en particular.
+- **Solo cubre el eje** Alameda–Providencia–Apoquindo y 150 m a cada lado. Una ruta con `cobertura` baja se estima
+  casi entera con el supuesto del punto 3.
+- **La punta mañana está sobrestimada** en los tramos que la simulación satura, y la punta tarde hacia el oriente
+  sale más fluida que la única muestra de Waze del proyecto. Ver `docs/datos/12-demanda-eod.md`.
 
 ### Viajes
 

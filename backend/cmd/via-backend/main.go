@@ -13,10 +13,12 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata" // zona horaria de Santiago aunque el sistema no la traiga
 
 	"via/backend/internal/almacen"
 	"via/backend/internal/api"
 	"via/backend/internal/config"
+	"via/backend/internal/proveedores/historico"
 	"via/backend/internal/proveedores/nominatim"
 	"via/backend/internal/proveedores/osrm"
 	"via/backend/internal/proveedores/simulacion"
@@ -36,9 +38,17 @@ func main() {
 	viajesGuardados := almacen.NuevaMemoria[*servicios.ViajeInterno](cfg.ViajeInactivo)
 
 	nav := servicios.NuevaNavegacion(sim)
+	rutas := servicios.NuevasRutas(enrutador, nav)
+	if tabla, err := historico.Cargar(cfg.TiemposEje); err != nil {
+		slog.Warn("sin tabla de tiempos: las rutas no se estiman según la hora",
+			"archivo", cfg.TiemposEje, "error", err)
+	} else {
+		rutas.ConEstimador(tabla)
+		slog.Info("tabla de tiempos cargada", "archivo", cfg.TiemposEje, "generado", tabla.Generado)
+	}
 	manejador := api.Nuevo(api.Dependencias{
 		Geocodificador: geocodificador,
-		Rutas:          servicios.NuevasRutas(enrutador, nav),
+		Rutas:          rutas,
 		Navegacion:     nav,
 		Viajes:         servicios.NuevosViajes(nav, enrutador, sim, viajesGuardados),
 		Salud: map[string]func(context.Context) (any, error){

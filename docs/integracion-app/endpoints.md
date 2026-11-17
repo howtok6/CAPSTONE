@@ -43,7 +43,7 @@ futuras vistas (por ejemplo, una capa de tráfico en el mapa).
 | 1 | GET | `/v1/salud` | — (diagnóstico) | 200 `estado: ok` o `degradado` | |
 | 2 | GET | `/v1/lugares?q=` | Proponer ruta → buscar | 200, hasta 5 lugares | |
 | 3 | GET | `/v1/lugares/inverso?lat=&lon=` | Proponer ruta → tocar el mapa | 200, nombre del lugar | |
-| 4 | POST | `/v1/rutas` | Proponer ruta → alternativas | 200, rutas con trazado, pasos y semáforos | |
+| 4 | POST | `/v1/rutas` | Proponer ruta → alternativas y recomendada | 200, rutas con trazado, pasos, semáforos y estimación según la hora | |
 | 5 | GET | `/v1/semaforos?bbox=` | — | 200, semáforos con el estado de cada acceso | |
 | 6 | GET | `/v1/semaforos/{id}` | — | 200, un semáforo | |
 | 7 | GET | `/v1/semaforos/proximo?lat=&lon=&rumbo=` | — | 200, próximo semáforo sin viaje | |
@@ -99,24 +99,51 @@ curl "http://127.0.0.1:8080/v1/lugares/inverso?lat=-33.4372&lon=-70.6275"
 {"nombre": "Terranova", "detalle": "Terranova, Barrio Vaticano Chico, Providencia, …", "lat": -33.4372, "lon": -70.6275}
 ```
 
-## 4. Calcular rutas
+## 4. Calcular rutas y recomendar la más rápida
 
 ```bash
 curl -X POST http://127.0.0.1:8080/v1/rutas -H "Content-Type: application/json" \
-  -d '{"paradas": [{"lat": -33.4378, "lon": -70.6504}, {"lat": -33.4372, "lon": -70.6275}], "alternativas": true}'
+  -d '{"paradas": [{"lat": -33.4182, "lon": -70.6015}, {"lat": -33.4510, "lon": -70.6790}], "alternativas": true, "hora": "18:15"}'
 ```
 
 ```json
-[{"distancia_km": 4.19, "duracion_min": 7.7,
-  "trazado": [[-33.437252, -70.650493], [-33.437338, -70.65122], "…"],
-  "pasos": [{"tipo": "depart", "modificador": "left", "calle": "Plaza de Armas", "distancia_m": 74.8}, "…"],
-  "semaforos": [{"id": "GS_253251270", "nombre": "Av. Andrés Bello × Av. Cardenal José María Caro × Av. Vicuña Mackenna",
-                 "lat": -33.436377, "lon": -70.635417, "distancia_desde_inicio_m": 2369}, "…"]},
- {"distancia_km": 3.98, "duracion_min": 8.07, "…": "…"}]
+[{"distancia_km": 11.8, "duracion_min": 16.4, "recomendada": true,
+  "motivo": "La más rápida en punta tarde: 20 min, 3 min menos que la siguiente.",
+  "estimacion": {"franja": "punta_tarde", "franja_nombre": "Punta tarde", "duracion_min": 19.5,
+                 "duracion_adaptativo_min": 18.8, "ahorro_adaptativo_min": 0.7, "cobertura": 0.21, "fuente": "simulacion"},
+  "trazado": ["…"], "pasos": ["…"], "semaforos": ["…"]},
+ {"distancia_km": 9.4, "duracion_min": 15.6,
+  "estimacion": {"franja": "punta_tarde", "franja_nombre": "Punta tarde", "duracion_min": 22.6,
+                 "duracion_adaptativo_min": 14.6, "ahorro_adaptativo_min": 8.0, "cobertura": 0.9, "fuente": "simulacion"},
+  "trazado": ["…"], "pasos": ["…"], "semaforos": ["…"]}]
 ```
 
 Entre 2 y 5 paradas; con más de dos no hay alternativas. La app dibuja `trazado` y `semaforos` en el mapa y manda
 el `trazado` elegido al crear el viaje GPS (10).
+
+**Recomendación según la hora.** `hora` es opcional: `"HH:MM"` (hoy, hora de Santiago) o una fecha RFC 3339; sin
+ella se usa la hora actual. La app envía siempre la hora de salida. Si hay datos para esa hora, las rutas vienen
+ordenadas por `estimacion.duracion_min`, la primera trae `recomendada: true` y un `motivo` para mostrar.
+
+| Campo | Qué es |
+|---|---|
+| `duracion_min` | Duración del enrutador (OSRM), a flujo libre. No cambia con la hora |
+| `estimacion.duracion_min` | Minutos estimados a esa hora con el control de semáforos actual (Webster) |
+| `estimacion.duracion_adaptativo_min` | Lo mismo con el control adaptativo de la tesis (agente IPPO) |
+| `estimacion.ahorro_adaptativo_min` | Diferencia entre ambos; puede ser negativa en una ruta puntual |
+| `estimacion.cobertura` | Fracción de la distancia (0 a 1) que pasa por calles con datos de la simulación |
+| `estimacion.franja` | `valle`, `punta_manana` o `punta_tarde` |
+
+Franjas: días hábiles, punta mañana 07:00–09:00, punta tarde 17:30–20:00 y valle el resto entre 06:00 y 22:00;
+fines de semana, valle de 09:00 a 21:00. De noche no hay datos: las rutas vienen sin `estimacion`, sin
+`recomendada` y en el orden del enrutador.
+
+Los datos salen de `backend/datos/tiempos_eje.json` (simulación del eje Alameda–Providencia–Apoquindo con demanda
+EOD; ver `backend/README.md`). Fuera de esa franja de calles no hay datos y la duración del enrutador se multiplica
+por el índice de congestión de la franja. Son estimaciones de simulación, no tráfico en vivo.
+
+Para probar las tres franjas y la noche: repetir el ejemplo con `"hora"` igual a `"08:00"`, `"12:00"`, `"18:15"` y
+`"03:00"`. Una hora mal escrita (`"ayer"`) responde 400 `solicitud_invalida`.
 
 ## 5 y 6. Semáforos
 

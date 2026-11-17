@@ -15,6 +15,7 @@ type Config struct {
 	AgenteUsuario string        // VIA_AGENTE: User-Agent para servicios de OSM
 	TiempoEspera  time.Duration // VIA_TIEMPO_ESPERA: límite por llamada a un servicio
 	ViajeInactivo time.Duration // VIA_VIAJE_INACTIVO: se olvida un viaje sin actividad tras este plazo
+	TiemposEje    string        // VIA_TIEMPOS_EJE: tabla de tiempos por calle y franja (recomendación de rutas)
 }
 
 // Desde lee la configuración con valores por defecto para desarrollo local.
@@ -42,5 +43,6 @@ func Desde(getenv func(string) string) Config {
 		AgenteUsuario: valor("VIA_AGENTE", "via-capstone-backend/0.1 (proyecto academico DUOC UC)"),
 		TiempoEspera:  duracion("VIA_TIEMPO_ESPERA", 10*time.Second),
 		ViajeInactivo: duracion("VIA_VIAJE_INACTIVO", 2*time.Hour),
+		TiemposEje:    valor("VIA_TIEMPOS_EJE", "datos/tiempos_eje.json"),
 	}
 }

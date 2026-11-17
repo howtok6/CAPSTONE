@@ -5,6 +5,7 @@ package servicios
 
 import (
 	"context"
+	"time"
 
 	"via/backend/internal/dominio"
 	"via/backend/internal/geo"
@@ -30,6 +31,12 @@ type SimuladorViajes interface {
 // Enrutador calcula rutas en auto (OSRM).
 type Enrutador interface {
 	Rutas(ctx context.Context, paradas []geo.Punto, alternativas bool) ([]dominio.Ruta, error)
+}
+
+// EstimadorRutas dice cuánto demora un trazado a una hora dada (tabla de tiempos
+// de la simulación). ok es falso cuando no hay datos para esa hora.
+type EstimadorRutas interface {
+	Estimar(trazado []geo.Punto, momento time.Time) (tramo dominio.TramoEstimado, ok bool)
 }
 
 // Geocodificador busca lugares y nombra puntos (Nominatim).

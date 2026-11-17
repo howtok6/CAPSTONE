@@ -10,6 +10,9 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}"
 # distroless/static incluye los certificados raíz para hablar HTTPS con OSRM y Nominatim.
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=compilacion /via-backend /via-backend
+# Tabla de tiempos de la simulación, para recomendar rutas según la hora.
+COPY --from=compilacion /src/datos /datos
+ENV VIA_TIEMPOS_EJE=/datos/tiempos_eje.json
 ENV VIA_DIRECCION=:8080
 EXPOSE 8080
 USER nonroot

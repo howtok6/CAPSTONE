@@ -49,6 +49,35 @@ type Ruta struct {
 	Trazado     [][2]float64     `json:"trazado"` // [lat, lon]
 	Pasos       []Paso           `json:"pasos"`
 	Semaforos   []SemaforoEnRuta `json:"semaforos"`
+	// Solo cuando hay tabla de tiempos y datos para la hora pedida.
+	Estimacion  *EstimacionRuta `json:"estimacion,omitempty"`
+	Recomendada bool            `json:"recomendada,omitempty"`
+	Motivo      string          `json:"motivo,omitempty"`
+}
+
+// EstimacionRuta: cuánto demora una ruta en una franja horaria según la simulación
+// del eje. DuracionMin es con el control de semáforos actual; DuracionAdaptativoMin,
+// con el control adaptativo de la tesis. Cobertura es la fracción de la distancia que
+// pasa por calles con datos; el resto se estima con la duración del enrutador.
+type EstimacionRuta struct {
+	Franja                string  `json:"franja"` // valle | punta_manana | punta_tarde
+	FranjaNombre          string  `json:"franja_nombre"`
+	DuracionMin           float64 `json:"duracion_min"`
+	DuracionAdaptativoMin float64 `json:"duracion_adaptativo_min"`
+	AhorroAdaptativoMin   float64 `json:"ahorro_adaptativo_min"`
+	Cobertura             float64 `json:"cobertura"`
+	Fuente                string  `json:"fuente"` // simulacion
+}
+
+// TramoEstimado: lo que la tabla de tiempos sabe de un trazado en una franja horaria.
+type TramoEstimado struct {
+	Franja           string
+	FranjaNombre     string
+	TotalM           float64 // largo del trazado
+	CubiertoM        float64 // parte que pasa por calles con datos
+	SegActual        float64 // segundos en la parte cubierta, control actual
+	SegAdaptativo    float64 // segundos en la parte cubierta, control adaptativo
+	IndiceCongestion float64 // velocidad libre / velocidad simulada de una calle típica de la franja
 }
 
 // Acceso de un semáforo: una calle que llega a él y su sentido de llegada.

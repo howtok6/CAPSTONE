@@ -94,6 +94,28 @@ func (m *manejador) nombrarLugar(w http.ResponseWriter, r *http.Request) {
 type solicitudRutas struct {
 	Paradas      []geo.Punto `json:"paradas"`
 	Alternativas *bool       `json:"alternativas"`
+	// Hora de salida: "HH:MM" (hoy, hora de Santiago) o una fecha RFC 3339. Vacía = ahora.
+	Hora string `json:"hora"`
+}
+
+// momentoDeSalida interpreta la hora de la solicitud.
+func momentoDeSalida(hora string, ahora time.Time) (time.Time, error) {
+	hora = strings.TrimSpace(hora)
+	if hora == "" {
+		return ahora, nil
+	}
+	if m, err := time.Parse(time.RFC3339, hora); err == nil {
+		return m, nil
+	}
+	zona, err := time.LoadLocation("America/Santiago")
+	if err != nil {
+		zona = time.FixedZone("CLT", -3*3600)
+	}
+	if m, err := time.ParseInLocation("15:04", hora, zona); err == nil {
+		hoy := ahora.In(zona)
+		return time.Date(hoy.Year(), hoy.Month(), hoy.Day(), m.Hour(), m.Minute(), 0, 0, zona), nil
+	}
+	return time.Time{}, fmt.Errorf("%w: hora debe ser HH:MM o una fecha RFC 3339", dominio.ErrInvalido)
 }
 
 func (m *manejador) calcularRutas(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +125,12 @@ func (m *manejador) calcularRutas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	alternativas := s.Alternativas == nil || *s.Alternativas
-	rutas, err := m.Rutas.Calcular(r.Context(), s.Paradas, alternativas)
+	momento, err := momentoDeSalida(s.Hora, time.Now())
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	rutas, err := m.Rutas.CalcularEn(r.Context(), s.Paradas, alternativas, momento)
 	if err != nil {
 		fallar(w, r, err)
 		return
