@@ -434,12 +434,31 @@ class _ProponerRutaPageState extends State<ProponerRutaPage> {
                         color: elegida == i ? const Color(0xFF161A21) : null,
                       ),
                       label: Text(
-                        '${i == 0 ? 'Más rápida' : 'Alternativa $i'} · '
+                        '${alternativas[i].recomendada
+                            ? 'Recomendada'
+                            : i == 0
+                            ? 'Más rápida'
+                            : 'Alternativa $i'} · '
                         '${km(alternativas[i].distanciaKm)} km · '
-                        '${alternativas[i].duracionMin.round()} min',
+                        '${alternativas[i].minutos.round()} min',
                       ),
                     ),
                 ],
+              ),
+            ),
+          // Por qué se recomienda y qué cambiaría con semáforos adaptativos,
+          // según la simulación del eje para la hora de salida.
+          if (alternativas.isNotEmpty && alternativas[elegida].estimacion != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                [
+                  if (alternativas[elegida].motivo.isNotEmpty)
+                    alternativas[elegida].motivo,
+                  alternativas[elegida].estimacion!.resumen,
+                ].join('\n'),
+                key: const Key('route-estimate'),
+                style: TextStyle(fontSize: 11, color: subdued),
               ),
             ),
           Row(

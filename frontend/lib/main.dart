@@ -1374,7 +1374,7 @@ class _MobilityPageState extends State<MobilityPage> {
                       ? 'Recorrido en curso · GPS en vivo'
                       : 'Recorrido en curso · Simulación en vivo')
                 : propuesta != null
-                ? 'Desde ${propuesta!.paradas.first.nombre} · ${propuesta!.duracionMin.round()} min'
+                ? 'Desde ${propuesta!.paradas.first.nombre} · ${propuesta!.minutos.round()} min'
                 : 'Desde Plaza de Armas · ${(distance * 2.5).round()} min',
             style: const TextStyle(fontSize: 10, color: subdued),
           ),

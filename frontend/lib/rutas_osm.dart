@@ -121,6 +121,54 @@ List<LatLng> trazadoDesdeJson(Object? datos) => [
     LatLng((c[0] as num).toDouble(), (c[1] as num).toDouble()),
 ];
 
+/// Cuánto demora una ruta a la hora de salida, según la simulación del eje
+/// Alameda–Providencia–Apoquindo (`estimacion` en `POST /v1/rutas`).
+class EstimacionRuta {
+  const EstimacionRuta({
+    required this.franja,
+    required this.franjaNombre,
+    required this.duracionMin,
+    required this.duracionAdaptativoMin,
+    required this.ahorroAdaptativoMin,
+    required this.cobertura,
+  });
+
+  final String franja; // valle | punta_manana | punta_tarde
+  final String franjaNombre;
+
+  /// Minutos con el control de semáforos actual y con el adaptativo de la tesis.
+  final double duracionMin;
+  final double duracionAdaptativoMin;
+  final double ahorroAdaptativoMin;
+
+  /// Fracción de la ruta (0 a 1) que pasa por calles con datos de la simulación.
+  final double cobertura;
+
+  factory EstimacionRuta.fromJson(Map<String, dynamic> j) => EstimacionRuta(
+    franja: j['franja'] as String? ?? '',
+    franjaNombre: j['franja_nombre'] as String? ?? '',
+    duracionMin: (j['duracion_min'] as num).toDouble(),
+    duracionAdaptativoMin: (j['duracion_adaptativo_min'] as num).toDouble(),
+    ahorroAdaptativoMin: (j['ahorro_adaptativo_min'] as num? ?? 0).toDouble(),
+    cobertura: (j['cobertura'] as num? ?? 0).toDouble(),
+  );
+
+  /// Texto para el selector de rutas: qué cambiaría con semáforos adaptativos
+  /// y cuánta de la ruta tiene datos.
+  String get resumen {
+    final datos = '${(cobertura * 100).round()} % de la ruta con datos del eje';
+    if (cobertura < 0.05) return '$franjaNombre · $datos';
+    // El control adaptativo baja la demora de la red completa; en una ruta
+    // puntual puede salir igual o incluso algo más lento, y se dice tal cual.
+    final diferencia = ahorroAdaptativoMin.abs().round();
+    final adaptativo = ahorroAdaptativoMin.abs() < 0.5
+        ? 'con semáforos adaptativos demoraría lo mismo'
+        : 'con semáforos adaptativos: ${duracionAdaptativoMin.round()} min '
+              '($diferencia min ${ahorroAdaptativoMin > 0 ? 'menos' : 'más'})';
+    return '$franjaNombre · $adaptativo · $datos';
+  }
+}
+
 /// Ruta calculada por el backend, lista para mostrarse en el mapa y en el selector.
 class RutaPropuesta {
   const RutaPropuesta({
@@ -131,6 +179,9 @@ class RutaPropuesta {
     required this.trazado,
     required this.pasos,
     this.semaforos = const [],
+    this.estimacion,
+    this.recomendada = false,
+    this.motivo = '',
   });
   final String nombre;
   final List<Lugar> paradas; // origen, paradas intermedias y destino
@@ -139,6 +190,17 @@ class RutaPropuesta {
   final List<LatLng> trazado;
   final List<Paso> pasos;
   final List<SemaforoEnRuta> semaforos;
+
+  /// Estimación según la hora de salida; null si el backend no tiene datos
+  /// para esa hora. Con ella el backend ordena las rutas y marca la
+  /// [recomendada], con su [motivo] en una frase.
+  final EstimacionRuta? estimacion;
+  final bool recomendada;
+  final String motivo;
+
+  /// Minutos que se muestran al usuario: los estimados para la hora de salida
+  /// o, sin estimación, los del enrutador a flujo libre.
+  double get minutos => estimacion?.duracionMin ?? duracionMin;
 
   /// Lee una ruta de `POST /v1/rutas`. El backend ya unió los tramos y marcó
   /// como «parada» las llegadas intermedias; el trazado viene como [lat, lon].
@@ -162,6 +224,11 @@ class RutaPropuesta {
         for (final s in j['semaforos'] as List? ?? const [])
           SemaforoEnRuta.fromJson(s as Map<String, dynamic>),
       ],
+      estimacion: j['estimacion'] == null
+          ? null
+          : EstimacionRuta.fromJson(j['estimacion'] as Map<String, dynamic>),
+      recomendada: j['recomendada'] as bool? ?? false,
+      motivo: j['motivo'] as String? ?? '',
     );
   }
 
@@ -221,16 +288,23 @@ class BuscadorLugares {
 
 /// Calcula rutas en auto con sus semáforos (`POST /v1/rutas`).
 class Enrutador {
-  Enrutador({String? baseUrl, http.Client? client})
+  Enrutador({String? baseUrl, http.Client? client, DateTime Function()? ahora})
     : base = Uri.parse(baseUrl ?? apiUrl),
-      _http = client ?? http.Client();
+      _http = client ?? http.Client(),
+      _ahora = ahora ?? DateTime.now;
 
   final Uri base;
   final http.Client _http;
+  final DateTime Function() _ahora;
 
-  /// Rutas en auto entre las paradas, la más rápida primero. Solo hay
-  /// alternativas cuando hay dos paradas (origen y destino).
-  Future<List<RutaPropuesta>> calcular(List<Lugar> paradas) async {
+  /// Rutas en auto entre las paradas para salir a las [salida] (por defecto,
+  /// ahora). El backend las ordena por lo que demoran a esa hora y marca la
+  /// recomendada; sin datos para esa hora, viene primero la más rápida a flujo
+  /// libre. Solo hay alternativas cuando hay dos paradas (origen y destino).
+  Future<List<RutaPropuesta>> calcular(
+    List<Lugar> paradas, {
+    DateTime? salida,
+  }) async {
     if (paradas.length < 2) {
       throw const ServicioMapaException('Faltan el origen o el destino');
     }
@@ -241,6 +315,7 @@ class Enrutador {
           body: jsonEncode({
             'paradas': [for (final p in paradas) p.toJson()],
             'alternativas': true,
+            'hora': (salida ?? _ahora()).toUtc().toIso8601String(),
           }),
         )
         .timeout(const Duration(seconds: 20));
