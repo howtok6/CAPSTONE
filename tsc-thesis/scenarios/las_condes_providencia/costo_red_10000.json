@@ -1,0 +1,17 @@
+{
+ "veh_h": 10000,
+ "horas_simuladas": 1.0,
+ "semaforos": 603,
+ "pistas_controladas": 3772,
+ "s_sumo_solo": 152.6,
+ "s_libsumo_con_observacion": 157.4,
+ "lecturas_libsumo": 5431680,
+ "estadisticas_sumo": {
+  "insertados": 9991.0,
+  "en_red_al_final": 3173.0,
+  "teletransportes": 215.0,
+  "time_loss_s": 353.83,
+  "espera_s": 248.28,
+  "duracion_viaje_s": 770.95
+ }
+}

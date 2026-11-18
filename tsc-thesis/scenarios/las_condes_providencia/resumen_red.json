@@ -1,0 +1,28 @@
+{
+ "arcos": 12415,
+ "nodos": 5725,
+ "km_pista": 1954,
+ "tipos_de_via": {
+  "highway.residential": 6824,
+  "highway.tertiary": 2281,
+  "highway.secondary": 1532,
+  "highway.primary": 1353,
+  "highway.motorway": 128,
+  "highway.motorway_link": 121,
+  "highway.primary_link": 89,
+  "highway.tertiary_link": 29,
+  "highway.unclassified": 29,
+  "highway.secondary_link": 29
+ },
+ "semaforos_red": 603,
+ "semaforos_con_uoct": 508,
+ "semaforos_no_controlables": 36,
+ "arcos_menos_25m_entre_semaforos": 40,
+ "uoct": {
+  "tls_vehicular": 544,
+  "tls_peatonal": 17,
+  "sin_nodo_peatonal": 16,
+  "sin_nodo_vehicular": 21,
+  "nodo_sin_tls_peatonal": 5
+ }
+}

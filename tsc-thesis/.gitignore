@@ -7,3 +7,10 @@ models/
 scenarios/*/map.osm
 scenarios/*/trips.trips.xml
 *.zip
+
+# Escenarios por comuna: descargas y archivos intermedios que se regeneran
+scenarios/*/osm_tiles/
+scenarios/*/net_base.net.xml
+scenarios/*/uoct_previo/
+scenarios/*/prueba_*.xml
+data/uoct/*.pdf
