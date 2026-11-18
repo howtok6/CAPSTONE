@@ -1,0 +1,103 @@
+{
+ "crecimiento": 1.49,
+ "escala": 0.25,
+ "verde_tope": 0.5,
+ "paso_min_m": 1000.0,
+ "perfiles": {
+  "eod_valle": {
+   "registros_eod": 560,
+   "factor_hora_punta": 1.0,
+   "veh_h_esperados": {
+    "interno": 45865,
+    "sale": 26755,
+    "entra": 28420,
+    "paso": 10575
+   },
+   "prueba": {
+    "pedidos": 27815,
+    "ruteados": 27813,
+    "recortados_por_tope": 0,
+    "por_clase": {
+     "interno": 11307,
+     "entra": 7146,
+     "sale": 6665,
+     "paso": 2697
+    },
+    "flujo_asignado_secciones": {
+     "Providencia / M. Montt": {
+      "oriente": 613
+     },
+     "Providencia / P. de Valdivia": {
+      "oriente": 1054,
+      "poniente": 824
+     },
+     "Apoquindo / Alcántara": {
+      "oriente": 362,
+      "poniente": 846
+     },
+     "Apoquindo / Manquehue": {
+      "oriente": 256,
+      "poniente": 315
+     },
+     "Kennedy / Alonso de Córdova": {},
+     "Costanera Norte / Lyon": {
+      "oriente": 791,
+      "poniente": 742
+     }
+    },
+    "tiempo_fijo": {
+     "insertados": 27270.0,
+     "cargados": 27813.0,
+     "en_red_al_final": 8964.0,
+     "sin_entrar_al_final": 536.0,
+     "teletransportes": 1198.0,
+     "viaje_s": 546.58,
+     "demora_s": 303.98,
+     "flujo_simulado_secciones": {
+      "Providencia / M. Montt": {
+       "oriente": 471
+      },
+      "Providencia / P. de Valdivia": {
+       "oriente": 733,
+       "poniente": 531
+      },
+      "Apoquindo / Alcántara": {
+       "oriente": 250,
+       "poniente": 572
+      },
+      "Apoquindo / Manquehue": {
+       "oriente": 193,
+       "poniente": 259
+      },
+      "Kennedy / Alonso de Córdova": {},
+      "Costanera Norte / Lyon": {
+       "oriente": 525,
+       "poniente": 616
+      }
+     }
+    }
+   }
+  },
+  "eod_punta_manana": {
+   "registros_eod": 1215,
+   "factor_hora_punta": 1.297,
+   "veh_h_esperados": {
+    "interno": 72446,
+    "sale": 54054,
+    "entra": 106863,
+    "paso": 33566
+   }
+  },
+  "eod_punta_tarde": {
+   "registros_eod": 948,
+   "factor_hora_punta": 1.128,
+   "veh_h_esperados": {
+    "interno": 55413,
+    "sale": 71931,
+    "entra": 42642,
+    "paso": 25616
+   }
+  }
+ },
+ "sobresaturado_base": "eod_punta_manana"
+}
