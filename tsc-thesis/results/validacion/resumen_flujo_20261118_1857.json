@@ -1,0 +1,706 @@
+[
+ {
+  "corrida": "eod_punta_tarde_s00",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": null,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 31.05,
+   "sesgo": 6.99,
+   "mae": 18.17,
+   "rmse": 21.63,
+   "pearson": 0.312,
+   "spearman": 0.333
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.57,
+   "sesgo": -0.15,
+   "mae": 0.31,
+   "rmse": 0.39,
+   "pearson": 0.232,
+   "spearman": 0.233
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 23.2,
+    "sesgo": -2.33,
+    "mae": 17.05,
+    "rmse": 19.51,
+    "pearson": 0.467,
+    "spearman": 0.467
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 37.36,
+    "sesgo": 14.24,
+    "mae": 20.77,
+    "rmse": 25.2,
+    "pearson": 0.138,
+    "spearman": 0.024
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 34.65,
+    "sesgo": 11.58,
+    "mae": 16.2,
+    "rmse": 19.14,
+    "pearson": 0.499,
+    "spearman": 0.49
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 56.67,
+   "sesgo": 22.5,
+   "mae": 23.87,
+   "rmse": 29.03,
+   "pearson": 0.143,
+   "spearman": 0.062
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 26.3,
+  "segundos_computo": 872,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e012",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e012\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": null,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.1,
+   "media_sim": 36.03,
+   "sesgo": 11.92,
+   "mae": 16.38,
+   "rmse": 18.96,
+   "pearson": 0.395,
+   "spearman": 0.323
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.71,
+   "sesgo": -0.01,
+   "mae": 0.24,
+   "rmse": 0.3,
+   "pearson": 0.186,
+   "spearman": 0.192
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 33.15,
+    "sesgo": 7.62,
+    "mae": 15.63,
+    "rmse": 18.59,
+    "pearson": 0.517,
+    "spearman": 0.431
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 37.28,
+    "sesgo": 14.16,
+    "mae": 16.92,
+    "rmse": 19.71,
+    "pearson": 0.091,
+    "spearman": 0.072
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.21,
+    "media_sim": 38.87,
+    "sesgo": 15.67,
+    "mae": 16.8,
+    "rmse": 18.44,
+    "pearson": 0.455,
+    "spearman": 0.427
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 51.0,
+   "sesgo": 16.83,
+   "mae": 18.2,
+   "rmse": 19.12,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 7.6,
+  "segundos_computo": 273,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e012_sf07",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e012\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": 0.7,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.1,
+   "media_sim": 25.59,
+   "sesgo": 1.49,
+   "mae": 8.28,
+   "rmse": 11.17,
+   "pearson": 0.391,
+   "spearman": 0.313
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.72,
+   "sesgo": 0.0,
+   "mae": 0.22,
+   "rmse": 0.27,
+   "pearson": 0.183,
+   "spearman": 0.213
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 24.09,
+    "sesgo": -1.45,
+    "mae": 9.89,
+    "rmse": 13.42,
+    "pearson": 0.489,
+    "spearman": 0.32
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 25.77,
+    "sesgo": 2.65,
+    "mae": 7.84,
+    "rmse": 10.18,
+    "pearson": 0.178,
+    "spearman": 0.193
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.21,
+    "media_sim": 27.77,
+    "sesgo": 4.56,
+    "mae": 6.32,
+    "rmse": 8.12,
+    "pearson": 0.402,
+    "spearman": 0.314
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 35.7,
+   "sesgo": 1.53,
+   "mae": 6.23,
+   "rmse": 9.93,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 6.8,
+  "segundos_computo": 253,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e018",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e018\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": null,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 34.42,
+   "sesgo": 10.35,
+   "mae": 16.23,
+   "rmse": 18.9,
+   "pearson": 0.404,
+   "spearman": 0.385
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.67,
+   "sesgo": -0.04,
+   "mae": 0.26,
+   "rmse": 0.32,
+   "pearson": 0.241,
+   "spearman": 0.246
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 31.58,
+    "sesgo": 6.04,
+    "mae": 15.28,
+    "rmse": 18.43,
+    "pearson": 0.522,
+    "spearman": 0.466
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 34.23,
+    "sesgo": 11.11,
+    "mae": 16.88,
+    "rmse": 19.46,
+    "pearson": 0.183,
+    "spearman": 0.228
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 39.29,
+    "sesgo": 16.22,
+    "mae": 16.82,
+    "rmse": 18.83,
+    "pearson": 0.479,
+    "spearman": 0.398
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 51.0,
+   "sesgo": 16.83,
+   "mae": 18.2,
+   "rmse": 19.12,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 11.9,
+  "segundos_computo": 447,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e018_sf07",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e018\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": 0.7,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 24.63,
+   "sesgo": 0.56,
+   "mae": 8.71,
+   "rmse": 11.51,
+   "pearson": 0.412,
+   "spearman": 0.439
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.69,
+   "sesgo": -0.02,
+   "mae": 0.23,
+   "rmse": 0.29,
+   "pearson": 0.277,
+   "spearman": 0.298
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 22.45,
+    "sesgo": -3.08,
+    "mae": 10.46,
+    "rmse": 13.92,
+    "pearson": 0.513,
+    "spearman": 0.464
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 24.53,
+    "sesgo": 1.41,
+    "mae": 8.23,
+    "rmse": 10.51,
+    "pearson": 0.252,
+    "spearman": 0.4
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 28.3,
+    "sesgo": 5.23,
+    "mae": 6.54,
+    "rmse": 8.08,
+    "pearson": 0.437,
+    "spearman": 0.413
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 35.7,
+   "sesgo": 1.53,
+   "mae": 6.23,
+   "rmse": 9.93,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 11.0,
+  "segundos_computo": 506,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e018_sf07_rr",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e018\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": 0.7,
+  "sumo_extra": "--device.rerouting.probability 1 --device.rerouting.period 120 --device.rerouting.adaptation-steps 18",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 24.53,
+   "sesgo": 0.47,
+   "mae": 8.22,
+   "rmse": 10.84,
+   "pearson": 0.429,
+   "spearman": 0.407
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.69,
+   "sesgo": -0.03,
+   "mae": 0.21,
+   "rmse": 0.26,
+   "pearson": 0.289,
+   "spearman": 0.291
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 22.51,
+    "sesgo": -3.02,
+    "mae": 10.01,
+    "rmse": 13.2,
+    "pearson": 0.535,
+    "spearman": 0.453
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 25.4,
+    "sesgo": 2.28,
+    "mae": 7.69,
+    "rmse": 9.8,
+    "pearson": 0.211,
+    "spearman": 0.316
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 26.56,
+    "sesgo": 3.49,
+    "mae": 6.11,
+    "rmse": 7.52,
+    "pearson": 0.446,
+    "spearman": 0.454
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 35.7,
+   "sesgo": 1.53,
+   "mae": 6.23,
+   "rmse": 9.93,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 6.8,
+  "segundos_computo": 1219,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e025",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e025\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": null,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 30.37,
+   "sesgo": 6.31,
+   "mae": 15.51,
+   "rmse": 18.22,
+   "pearson": 0.36,
+   "spearman": 0.397
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.6,
+   "sesgo": -0.12,
+   "mae": 0.29,
+   "rmse": 0.36,
+   "pearson": 0.248,
+   "spearman": 0.274
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 26.79,
+    "sesgo": 1.26,
+    "mae": 15.83,
+    "rmse": 18.66,
+    "pearson": 0.435,
+    "spearman": 0.391
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 32.91,
+    "sesgo": 9.79,
+    "mae": 16.24,
+    "rmse": 19.14,
+    "pearson": 0.196,
+    "spearman": 0.157
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 32.51,
+    "sesgo": 9.44,
+    "mae": 13.95,
+    "rmse": 16.02,
+    "pearson": 0.595,
+    "spearman": 0.617
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 51.0,
+   "sesgo": 16.83,
+   "mae": 18.2,
+   "rmse": 19.12,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 20.3,
+  "segundos_computo": 603,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e025_sf07",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e025\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": 0.7,
+  "sumo_extra": "",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 21.88,
+   "sesgo": -2.19,
+   "mae": 9.66,
+   "rmse": 12.62,
+   "pearson": 0.383,
+   "spearman": 0.408
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.61,
+   "sesgo": -0.1,
+   "mae": 0.26,
+   "rmse": 0.32,
+   "pearson": 0.354,
+   "spearman": 0.352
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 19.37,
+    "sesgo": -6.16,
+    "mae": 12.56,
+    "rmse": 16.03,
+    "pearson": 0.428,
+    "spearman": 0.38
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 22.2,
+    "sesgo": -0.92,
+    "mae": 8.67,
+    "rmse": 10.9,
+    "pearson": 0.344,
+    "spearman": 0.304
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 25.5,
+    "sesgo": 2.43,
+    "mae": 6.39,
+    "rmse": 7.72,
+    "pearson": 0.559,
+    "spearman": 0.544
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 35.7,
+   "sesgo": 1.53,
+   "mae": 6.23,
+   "rmse": 9.93,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 20.3,
+  "segundos_computo": 717,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
+ }
+]

@@ -49,6 +49,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 |---|---|---|
 | `09-protocolo-terreno.md` | Cruces a medir, calendario, procedimiento con video, formato de los CSV. | ★★★ |
 | `13-escenario-las-condes-providencia.md` | Escenario principal desde el 17-nov: inventario UOCT, red de las dos comunas, demanda EOD por área y tanda del 18-nov con resultados. | ★★★ |
+| `14-depuracion-y-validacion-tomtom.md` | Depuración de la red del área (semáforos, velocidades) y validación contra velocidades reales de TomTom; configuración propuesta de demanda. | ★★★ |
 | `12-demanda-eod.md` | Demanda del eje desde la EOD 2012 y tanda de entrenamiento del 11-nov (estudio piloto). | ★★ |
 | `06-fuentes-de-datos.md` | Fuentes de flujos, tiempos de viaje y programación semafórica; solicitud de transparencia lista. | ★★ |
 

@@ -207,12 +207,17 @@ def realizar(c: pd.DataFrame, escala: float, red: Red, rng, fin: int):
     return v, recortados
 
 
-def rutear(viajes: pd.DataFrame, net_file: str, salida: str, semilla: int) -> int:
+def rutear(viajes: pd.DataFrame, net_file: str, salida: str, semilla: int, speed_factor: float | None = None) -> int:
     trips = salida.replace(".rou.xml", ".trips.xml")
     with open(trips, "w", encoding="utf-8") as f:
         f.write("<routes>\n")
+        tipo = ""
+        if speed_factor:
+            # velocidad deseada media = speed_factor × límite (validación TomTom 18-nov: 0,7)
+            f.write(f'    <vType id="auto" speedFactor="normc({speed_factor},0.1,0.2,2)"/>\n')
+            tipo = ' type="auto"'
         for k, (t, a, b) in enumerate(zip(viajes.salida, viajes.desde, viajes.hasta)):
-            f.write(f'    <trip id="{k}" depart="{t:.2f}" from="{a}" to="{b}" departLane="best" departSpeed="max"/>\n')
+            f.write(f'    <trip id="{k}"{tipo} depart="{t:.2f}" from="{a}" to="{b}" departLane="best" departSpeed="max"/>\n')
         f.write("</routes>\n")
     subprocess.run([sumolib.checkBinary("duarouter"), "-n", net_file, "--route-files", trips, "-o", salida,
                     "--ignore-errors", "true", "--no-warnings", "true", "--no-step-log", "true",
@@ -300,6 +305,10 @@ def main() -> None:
     ap.add_argument("--solo-calibrar", action="store_true")
     ap.add_argument("--probar", action="store_true", help="simula una hora con planes fijos por perfil")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--speed-factor", type=float, default=None,
+                    help="speedFactor medio de los autos (validación TomTom 18-nov: 0,7); sin él, el de SUMO (1,0)")
+    ap.add_argument("--carpeta", default=None,
+                    help="carpeta de salida (por defecto <escenario>/demand); p. ej. demand/calib_e018 para calibrar")
     args = ap.parse_args()
 
     net_file = os.path.join(args.scenario, "net.net.xml")
@@ -308,7 +317,8 @@ def main() -> None:
           f"extremo interno · {len(red.ent_ids)} entradas · {len(red.sal_ids)} salidas", flush=True)
     v = leer_eod(args.eod, red.net)
 
-    datos, fhp, resumen = {}, {}, {"crecimiento": args.crecimiento, "escala": args.escala, "verde_tope": args.verde,
+    datos, fhp, resumen = {}, {}, {"crecimiento": args.crecimiento, "escala": args.escala, "speed_factor": args.speed_factor,
+                                   "verde_tope": args.verde,
                                    "paso_min_m": args.paso_min, "perfiles": {}}
     for perfil, (h0, h1, punta) in VENTANAS.items():
         en = v[(v.hora >= h0) & (v.hora < h1)].copy()
@@ -323,7 +333,7 @@ def main() -> None:
               + " · ".join(f"{k} {x:,.0f}" for k, x in por_clase.items()) + f" = {por_clase.sum():,.0f} veh/h",
               flush=True)
 
-    carpeta = os.path.join(args.scenario, "demand")
+    carpeta = args.carpeta or os.path.join(args.scenario, "demand")
     for sub in ("train", "eval"):
         os.makedirs(os.path.join(carpeta, sub), exist_ok=True)
     perfiles = list(VENTANAS) + ["eod_sobresaturado"]
@@ -334,7 +344,7 @@ def main() -> None:
         base, factor = (punta, args.sobresaturado) if perfil == "eod_sobresaturado" else (perfil, 1.0)
         rng = np.random.default_rng([semilla, perfiles.index(perfil)])
         viajes, rec = realizar(datos[base], args.escala * factor, red, rng, args.end)
-        return viajes, rec, rutear(viajes, net_file, salida, semilla)
+        return viajes, rec, rutear(viajes, net_file, salida, semilla, args.speed_factor)
 
     pedidos = [p for p in perfiles if not args.profiles or p in args.profiles.split(",")]
     if args.solo_calibrar:

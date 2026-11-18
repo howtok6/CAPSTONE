@@ -14,9 +14,9 @@
   "highway.unclassified": 29,
   "highway.secondary_link": 29
  },
- "semaforos_red": 603,
- "semaforos_con_uoct": 508,
- "semaforos_no_controlables": 36,
+ "semaforos_red": 594,
+ "semaforos_con_uoct": 501,
+ "semaforos_no_controlables": 18,
  "arcos_menos_25m_entre_semaforos": 40,
  "uoct": {
   "tls_vehicular": 544,

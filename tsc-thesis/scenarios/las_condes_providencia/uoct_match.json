@@ -3734,7 +3734,7 @@
   "comuna_geo": "PROVIDENCIA",
   "d_tls": 3.1,
   "match": "tls",
-  "tls": "GS_cluster_254034166_254034167_915940981_915941043"
+  "tls": "joinedS_334408400_cluster_254034166_254034167_915940981_915941043"
  },
  {
   "codigo": "J005432",
@@ -3753,7 +3753,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 5.7,
   "match": "tls",
-  "tls": "334408400"
+  "tls": "joinedS_334408400_cluster_254034166_254034167_915940981_915941043"
  },
  {
   "codigo": "J005441",
@@ -3810,7 +3810,7 @@
   "comuna_geo": "PROVIDENCIA",
   "d_tls": 14.6,
   "match": "tls",
-  "tls": "1954889891"
+  "tls": "joinedS_1954889891_cluster_13882124_1991384336"
  },
  {
   "codigo": "J005471",
@@ -3829,7 +3829,7 @@
   "comuna_geo": "PROVIDENCIA",
   "d_tls": 1.6,
   "match": "tls",
-  "tls": "GS_cluster_13882124_1991384336"
+  "tls": "joinedS_1954889891_cluster_13882124_1991384336"
  },
  {
   "codigo": "J005481",
@@ -4496,7 +4496,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 1.7,
   "match": "tls",
-  "tls": "GS_cluster_13354048625_314140464"
+  "tls": "joinedS_253273001_cluster_13354048625_314140464"
  },
  {
   "codigo": "J051162",
@@ -4515,7 +4515,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 2.9,
   "match": "tls",
-  "tls": "GS_253273001"
+  "tls": "joinedS_253273001_cluster_13354048625_314140464"
  },
  {
   "codigo": "J051171",
@@ -4534,7 +4534,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 18.1,
   "match": "tls",
-  "tls": "cluster_301706570_7858008990_8636977025"
+  "tls": "joinedS_4444064451_cluster_301706570_7858008990_8636977025"
  },
  {
   "codigo": "J051211",
@@ -7264,7 +7264,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 15.8,
   "match": "tls",
-  "tls": "GS_240289270"
+  "tls": "joinedS_240289270_240289279"
  },
  {
   "codigo": "J064142",
@@ -7283,7 +7283,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 2.6,
   "match": "tls",
-  "tls": "GS_240289279"
+  "tls": "joinedS_240289270_240289279"
  },
  {
   "codigo": "J064151",
@@ -7435,7 +7435,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 11.8,
   "match": "tls",
-  "tls": "cluster_11988930001_13880337_148849888_2576101133_#1more"
+  "tls": "joinedS_cluster_11988930001_13880337_148849888_2576101133_#1more_cluster_13879482_148849887"
  },
  {
   "codigo": "J064252",
@@ -7454,7 +7454,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 0.6,
   "match": "tls",
-  "tls": "GS_cluster_13879482_148849887"
+  "tls": "joinedS_cluster_11988930001_13880337_148849888_2576101133_#1more_cluster_13879482_148849887"
  },
  {
   "codigo": "J064341",
@@ -8977,7 +8977,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 3.2,
   "match": "tls",
-  "tls": "GS_cluster_2847151878_618165367"
+  "tls": "joinedS_13879255_cluster_2847151878_618165367"
  },
  {
   "codigo": "J103232",
@@ -9016,7 +9016,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 12.0,
   "match": "tls",
-  "tls": "13879255"
+  "tls": "joinedS_13879255_cluster_2847151878_618165367"
  },
  {
   "codigo": "J103242",
@@ -9054,7 +9054,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 12.0,
   "match": "tls",
-  "tls": "13879255"
+  "tls": "joinedS_13879255_cluster_2847151878_618165367"
  },
  {
   "codigo": "J103261",
@@ -10388,7 +10388,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 0.4,
   "match": "tls",
-  "tls": "GS_264431622"
+  "tls": "joinedS_264431622_264431989"
  },
  {
   "codigo": "J155282",
@@ -10407,7 +10407,7 @@
   "comuna_geo": "LAS CONDES",
   "d_tls": 2.8,
   "match": "tls",
-  "tls": "GS_264431989"
+  "tls": "joinedS_264431622_264431989"
  },
  {
   "codigo": "J155291",

@@ -1,0 +1,73 @@
+{
+ "antes": {
+  "semaforos": 603,
+  "una_fase_verde": 36,
+  "arcos_cortos_entre_semaforos": 40,
+  "de_ellos_entre_semaforos_distintos": 11
+ },
+ "tras_unir": {
+  "semaforos": 594,
+  "una_fase_verde": 35,
+  "arcos_cortos_entre_semaforos": 40,
+  "de_ellos_entre_semaforos_distintos": 1
+ },
+ "velocidades": {
+  "arcos": 942,
+  "km_urbanas": 74.5,
+  "km_autopista": 0.1,
+  "limite_urbano_kmh": 50.0
+ },
+ "fases_corregidas": [
+  "2215652263",
+  "224544128",
+  "3779671158",
+  "GS_11989171182",
+  "GS_1818496541",
+  "GS_224543904",
+  "GS_271038045",
+  "GS_cluster_240435607_509536581",
+  "GS_cluster_256384985_256384993",
+  "cluster_10107215855_10107215857_11972549179_12437608102_#11more",
+  "cluster_10930785153_240452429_647257544",
+  "cluster_130813359_1692690834_5609859135",
+  "cluster_133350020_482819423_5741781400",
+  "cluster_13352001782_1906209891_252966015_252966016",
+  "cluster_133934595_2209546833_2946967226_7760185799",
+  "cluster_2356439539_240435488",
+  "cluster_332274501_442001151_514859661_668099292"
+ ],
+ "despues": {
+  "semaforos": 594,
+  "una_fase_verde": 18,
+  "arcos_cortos_entre_semaforos": 40,
+  "de_ellos_entre_semaforos_distintos": 1
+ },
+ "resumen_red": {
+  "arcos": 12415,
+  "nodos": 5725,
+  "km_pista": 1954,
+  "tipos_de_via": {
+   "highway.residential": 6824,
+   "highway.tertiary": 2281,
+   "highway.secondary": 1532,
+   "highway.primary": 1353,
+   "highway.motorway": 128,
+   "highway.motorway_link": 121,
+   "highway.primary_link": 89,
+   "highway.tertiary_link": 29,
+   "highway.unclassified": 29,
+   "highway.secondary_link": 29
+  },
+  "semaforos_red": 594,
+  "semaforos_con_uoct": 501,
+  "semaforos_no_controlables": 18,
+  "arcos_menos_25m_entre_semaforos": 40,
+  "uoct": {
+   "tls_vehicular": 544,
+   "tls_peatonal": 17,
+   "sin_nodo_peatonal": 16,
+   "sin_nodo_vehicular": 21,
+   "nodo_sin_tls_peatonal": 5
+  }
+ }
+}
