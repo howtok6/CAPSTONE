@@ -16,5 +16,7 @@ function Paso($nombre, $argumentos) {
 Paso "demanda_pt" @("-u", "scripts\build_demand_area.py", "--scenario", $s, "--escala", "0.18", "--speed-factor", "0.7",
                     "--profiles", "eod_punta_tarde", "--train-replicas", "3", "--eval-replicas", "10")
 Paso "webster_pt" @("-u", "scripts\build_webster.py", "--scenario", $s, "--profile", "eod_punta_tarde")
-Paso "baselines_pt" @("-u", "scripts\run_baselines.py", "--scenario", $s, "--profile", "eod_punta_tarde", "--seeds", "10")
+# Lineas base: un proceso por controlador (secuencial serian ~10 h)
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\baselines_paralelo.ps1" -Perfil eod_punta_tarde -Semillas 10
+if ($LASTEXITCODE -ne 0) { throw "fallaron las lineas base" }
 "{0:HH:mm:ss} TODO OK" -f (Get-Date) | Add-Content "$log\avance.txt"
