@@ -178,6 +178,29 @@ Lectura:
   insertados), pero ya no paralizada: la cola media bajó de ~5.000 a ~2.600–3.300.
 * Max-Pressure no se reajustó para la red nueva (pendiente del status check).
 
+### Líneas base de valle con la configuración nueva (19-nov, 10 réplicas)
+
+Demanda v2 de valle: ~20.000 vehículos por réplica. La cadena completa (demanda, Webster y
+líneas base en paralelo) tardó 42 min. Archivo:
+`results/las_condes_providencia_eod_valle_baselines.json`.
+
+| Controlador | delay_all (s) | timeLoss (s) | Cola media (veh) | Terminados | En red al final |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 332 ± 12 | 258 ± 3 | 1.035 ± 29 | 14.554 ± 157 | 5.338 ± 121 |
+| **Webster** | **201 ± 12** | 155 ± 3 | 513 ± 26 | **15.795 ± 202** | **4.162 ± 183** |
+| Voraz | 258 ± 17 | 141 ± 3 | 557 ± 40 | 14.967 ± 229 | 4.952 ± 193 |
+| Max-Pressure | 227 ± 12 | **128 ± 2** | **486 ± 30** | 15.269 ± 166 | 4.669 ± 172 |
+| *Tanda 18-nov (red original, n = 3)* | | | | | |
+| Tiempo fijo | 571 ± 69 | 268 ± 21 | 2.152 ± 442 | 16.590 ± 933 | 10.446 ± 1.167 |
+| Webster | 389 ± 33 | 196 ± 23 | 1.247 ± 95 | 19.418 ± 838 | 7.981 ± 590 |
+| Voraz | 413 ± 87 | 180 ± 8 | 1.279 ± 206 | 18.856 ± 1.204 | 8.485 ± 1.212 |
+| Max-Pressure | 377 ± 96 | 178 ± 28 | 1.140 ± 177 | 19.344 ± 1.075 | 8.127 ± 1.563 |
+
+Mismo patrón que en punta tarde: todos superan al tiempo fijo con intervalos separados
+(delay_all −74 a −131 s), Webster es el mejor en demora total y en vehículos que terminan, y
+Max-Pressure es el mejor en timeLoss y cola. Con la red original y n = 3, Webster, voraz y
+Max-Pressure no se distinguían entre sí.
+
 ## 8. Cruces UOCT vehiculares sin nodo en la red (21)
 
 Se documentan y no se corrigen: o no existen como calle en la red (OSM sin el acceso) o el
