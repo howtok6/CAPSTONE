@@ -105,7 +105,25 @@ Lectura:
    acercan el nivel, no qué arco está peor. Es esperable con demanda sintética de la EOD
    2012 y planes fijos genéricos (no los de la UOCT); se declara como limitación.
 
-## 6. Configuración propuesta (provisoria hasta las capturas del 19-nov)
+### Valle (captura del jueves 19-nov, 15:04)
+
+La captura de punta mañana del 19-nov no se hizo (el PC no estaba conectado entre 08:05 y
+09:00); queda pendiente para otro día hábil. Valle: 120/120 respuestas, confianza 0,99,
+v media 29,5 km/h, índice mediano 0,85 y **ningún arco atascado** (troncales 0,77,
+secundarias 0,85, terciarias 1,00).
+
+| Configuración (red depurada, speedFactor 0,7) | v TomTom / sim | Sesgo | MAE | r | Índice TomTom / sim | ρ índice | % atascado (TomTom 0 %) | Cómputo |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| **Escala 0,18** | 29,0 / 26,4 | −2,5 | 8,0 | 0,40 | 0,86 / 0,74 | 0,16 | 3,4 % | 160 s |
+| Escala 0,25 | 29,0 / 25,8 | −3,2 | 8,5 | 0,38 | 0,86 / 0,72 | 0,18 | 7,8 % | 225 s |
+
+Con la misma configuración que en punta tarde, valle queda algo más congestionado que la
+realidad (índice 0,74 vs 0,86, sesgo −2,5 km/h), pero con un error del mismo orden (MAE
+8 km/h). Se mantiene una sola escala, 0,18, para todos los perfiles: el sesgo va hacia el
+lado conservador (más congestión que la real) y evita calibrar por perfil con una sola
+captura de cada uno.
+
+## 6. Configuración adoptada
 
 * Red: depurada (pasos 1, 1b y 2).
 * Demanda: escala **0,18** con speedFactor **0,7**, sin reruteo dinámico. El speedFactor va en
@@ -113,8 +131,8 @@ Lectura:
   Es el mejor compromiso: sesgo de velocidad ≈ 0, índice 0,69 vs 0,71 y un nivel de atasco
   que sigue siendo exigente (11 %) sin la parálisis que tapaba las diferencias entre
   controladores. 0,12 calza mejor el índice, pero deja la demanda a la mitad del censo.
-* Pendiente: capturas de punta mañana y valle (jueves 19-nov, programadas) para fijar la
-  escala por perfil, y repetir punta tarde otro día para ver la variación diaria.
+* Validada en punta tarde (18-nov) y valle (19-nov). Pendiente: una captura de punta mañana
+  y repetir punta tarde otro día para ver la variación entre días.
 
 ## 7. Qué queda obsoleto
 
@@ -125,8 +143,9 @@ líneas base y volver a entrenar sobre la configuración final.
 Punta tarde ya se rehízo con la configuración propuesta (`scripts/tanda_v2_pt.ps1`, lanzado
 el 18-nov a las 22:43): demanda 0,18 + speedFactor 0,7 (3 réplicas de entrenamiento y 10 de
 evaluación), Webster y las cuatro líneas base con 10 réplicas. Registro en `logs/tanda_v2/`.
-La demanda anterior quedó en `demand/_red_original/` (ignorada por git). Valle y punta
-mañana esperan las capturas TomTom del 19-nov; sus planes de Webster siguen obsoletos.
+La demanda anterior quedó en `demand/_red_original/` (ignorada por git). Valle se lanzó el
+19-nov a las ~15:15 con la misma cadena (`scripts/tanda_v2_valle.ps1`); punta mañana espera
+su captura y su plan de Webster sigue obsoleto.
 
 ### Líneas base de punta tarde con la configuración nueva (19-nov, 10 réplicas)
 
