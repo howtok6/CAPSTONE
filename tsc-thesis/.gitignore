@@ -19,3 +19,4 @@ scenarios/*/net_osm.net.xml
 # calibración de demanda (rutas regenerables) y capturas crudas de TomTom (no se redistribuyen)
 scenarios/*/demand/calib_*/
 data/tomtom/*/
+scenarios/*/demand/_red_original/

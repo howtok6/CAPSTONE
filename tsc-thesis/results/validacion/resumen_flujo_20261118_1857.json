@@ -702,5 +702,93 @@
    "v_actual_media_kmh": 24.5,
    "indice_congestion_medio": 0.716
   }
+ },
+ {
+  "corrida": "eod_punta_tarde_s00_red2_e025_sf07_rr",
+  "rutas": "scenarios\\las_condes_providencia\\demand\\calib_e025\\eval\\routes_eod_punta_tarde_s00.rou.xml",
+  "speed_factor": 0.7,
+  "sumo_extra": "--device.rerouting.probability 1 --device.rerouting.period 120 --device.rerouting.adaptation-steps 18",
+  "ventana_s": [
+   900,
+   3600
+  ],
+  "arcos": 118,
+  "velocidad": {
+   "n": 118,
+   "media_tomtom": 24.07,
+   "media_sim": 23.02,
+   "sesgo": -1.04,
+   "mae": 8.23,
+   "rmse": 10.96,
+   "pearson": 0.456,
+   "spearman": 0.492
+  },
+  "indice": {
+   "n": 118,
+   "media_tomtom": 0.71,
+   "media_sim": 0.64,
+   "sesgo": -0.07,
+   "mae": 0.22,
+   "rmse": 0.27,
+   "pearson": 0.335,
+   "spearman": 0.373
+  },
+  "por_estrato": {
+   "troncal": {
+    "n": 47,
+    "media_tomtom": 25.53,
+    "media_sim": 19.97,
+    "sesgo": -5.56,
+    "mae": 10.03,
+    "rmse": 13.5,
+    "pearson": 0.588,
+    "spearman": 0.58
+   },
+   "secundaria": {
+    "n": 42,
+    "media_tomtom": 23.12,
+    "media_sim": 24.53,
+    "sesgo": 1.41,
+    "mae": 7.94,
+    "rmse": 9.95,
+    "pearson": 0.223,
+    "spearman": 0.342
+   },
+   "terciaria": {
+    "n": 29,
+    "media_tomtom": 23.07,
+    "media_sim": 25.79,
+    "sesgo": 2.72,
+    "mae": 5.74,
+    "rmse": 7.08,
+    "pearson": 0.515,
+    "spearman": 0.599
+   }
+  },
+  "libre_tomtom_vs_limite_red": {
+   "n": 120,
+   "media_tomtom": 34.17,
+   "media_sim": 35.7,
+   "sesgo": 1.53,
+   "mae": 6.23,
+   "rmse": 9.93,
+   "pearson": 0.731,
+   "spearman": 0.365
+  },
+  "atasco_tomtom_pct": 2.5,
+  "atasco_sim_pct": 11.9,
+  "segundos_computo": 2366,
+  "captura_meta": {
+   "escenario": "las_condes_providencia",
+   "hora_local": "2026-11-18T18:57",
+   "dia_semana": "Wednesday",
+   "franja": "punta_tarde",
+   "zoom": 15,
+   "consultas": 120,
+   "ok": 120,
+   "errores": {},
+   "v_actual_media_kmh": 24.5,
+   "indice_congestion_medio": 0.716
+  }
  }
 ]
