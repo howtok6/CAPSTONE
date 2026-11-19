@@ -128,6 +128,37 @@ evaluación), Webster y las cuatro líneas base con 10 réplicas. Registro en `l
 La demanda anterior quedó en `demand/_red_original/` (ignorada por git). Valle y punta
 mañana esperan las capturas TomTom del 19-nov; sus planes de Webster siguen obsoletos.
 
+### Líneas base de punta tarde con la configuración nueva (19-nov, 10 réplicas)
+
+Media ± IC95 (t de Student). Demanda v2: ~35.000 vehículos por réplica; tanda del 18-nov:
+~45.000 y n = 3. `delay_all` incluye a los que no alcanzaron a terminar. Archivo:
+`results/las_condes_providencia_eod_punta_tarde_baselines.json`.
+
+| Controlador | delay_all (s) | timeLoss (s) | Cola media (veh) | Terminados | En red al final |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 655 ± 22 | 288 ± 10 | 3.282 ± 97 | 18.039 ± 561 | 15.645 ± 435 |
+| **Webster** | **564 ± 18** | 221 ± 10 | 2.631 ± 116 | **19.421 ± 424** | **14.403 ± 339** |
+| Voraz | 597 ± 25 | **206 ± 10** | **2.587 ± 119** | 18.533 ± 482 | 15.217 ± 455 |
+| Max-Pressure | 620 ± 18 | 209 ± 10 | 2.740 ± 97 | 18.050 ± 432 | 15.682 ± 386 |
+| *Tanda 18-nov (red original, n = 3)* | | | | | |
+| Tiempo fijo | 962 ± 44 | 254 ± 26 | 5.525 ± 356 | 18.089 ± 1.509 | 25.059 ± 1.419 |
+| Webster | 894 ± 24 | 229 ± 42 | 4.926 ± 133 | 19.529 ± 878 | 23.972 ± 520 |
+| Voraz | 845 ± 68 | 196 ± 34 | 4.444 ± 420 | 20.689 ± 1.688 | 23.038 ± 1.344 |
+| Max-Pressure | 867 ± 56 | 211 ± 21 | 4.537 ± 224 | 20.003 ± 1.661 | 23.775 ± 1.150 |
+
+Lectura:
+
+* Con 10 réplicas los intervalos se angostaron a ±18–25 s y ahora **las diferencias son
+  claras**: todos los controladores le ganan al tiempo fijo (−35 a −91 s en delay_all,
+  −67 a −82 s en timeLoss), sin traslape de intervalos. Con n = 3 y la red trabada no se
+  distinguían.
+* Webster recalibrado es la mejor línea base en demora total y en vehículos que terminan.
+  Los adaptativos (voraz, Max-Pressure) bajan más el timeLoss de quienes terminan, pero
+  dejan más vehículos sin terminar. Esa es la vara que tiene que superar IPPO.
+* La red sigue cargada (~15.000 vehículos dentro al cumplirse la hora, con ~35.000
+  insertados), pero ya no paralizada: la cola media bajó de ~5.000 a ~2.600–3.300.
+* Max-Pressure no se reajustó para la red nueva (pendiente del status check).
+
 ## 8. Cruces UOCT vehiculares sin nodo en la red (21)
 
 Se documentan y no se corrigen: o no existen como calle en la red (OSM sin el acceso) o el

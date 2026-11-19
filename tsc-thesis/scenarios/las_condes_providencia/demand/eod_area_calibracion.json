@@ -1,6 +1,7 @@
 {
  "crecimiento": 1.49,
- "escala": 0.25,
+ "escala": 0.18,
+ "speed_factor": 0.7,
  "verde_tope": 0.5,
  "paso_min_m": 1000.0,
  "perfiles": {
@@ -12,51 +13,7 @@
     "sale": 26755,
     "entra": 28420,
     "paso": 10575
-   },
-   "realizaciones": [
-    {
-     "archivo": "routes_eod_valle.rou.xml",
-     "pedidos": 27815,
-     "ruteados": 27813,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_t00.rou.xml",
-     "pedidos": 27745,
-     "ruteados": 27742,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_t01.rou.xml",
-     "pedidos": 27866,
-     "ruteados": 27858,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_t02.rou.xml",
-     "pedidos": 27666,
-     "ruteados": 27664,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_s00.rou.xml",
-     "pedidos": 27768,
-     "ruteados": 27762,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_s01.rou.xml",
-     "pedidos": 28066,
-     "ruteados": 28062,
-     "recortados_por_tope": 0
-    },
-    {
-     "archivo": "routes_eod_valle_s02.rou.xml",
-     "pedidos": 27789,
-     "ruteados": 27786,
-     "recortados_por_tope": 0
-    }
-   ]
+   }
   },
   "eod_punta_manana": {
    "registros_eod": 1215,
@@ -80,44 +37,86 @@
    "realizaciones": [
     {
      "archivo": "routes_eod_punta_tarde.rou.xml",
-     "pedidos": 48505,
-     "ruteados": 48487,
+     "pedidos": 35098,
+     "ruteados": 35093,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_t00.rou.xml",
-     "pedidos": 49206,
-     "ruteados": 49195,
+     "pedidos": 35464,
+     "ruteados": 35458,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_t01.rou.xml",
-     "pedidos": 48644,
-     "ruteados": 48638,
+     "pedidos": 35422,
+     "ruteados": 35417,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_t02.rou.xml",
-     "pedidos": 48784,
-     "ruteados": 48780,
+     "pedidos": 35081,
+     "ruteados": 35070,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_s00.rou.xml",
-     "pedidos": 48875,
-     "ruteados": 48862,
+     "pedidos": 35227,
+     "ruteados": 35218,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_s01.rou.xml",
-     "pedidos": 48998,
-     "ruteados": 48989,
+     "pedidos": 35608,
+     "ruteados": 35601,
      "recortados_por_tope": 0
     },
     {
      "archivo": "routes_eod_punta_tarde_s02.rou.xml",
-     "pedidos": 48922,
-     "ruteados": 48914,
+     "pedidos": 34935,
+     "ruteados": 34924,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s03.rou.xml",
+     "pedidos": 34849,
+     "ruteados": 34842,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s04.rou.xml",
+     "pedidos": 35080,
+     "ruteados": 35071,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s05.rou.xml",
+     "pedidos": 35180,
+     "ruteados": 35177,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s06.rou.xml",
+     "pedidos": 35041,
+     "ruteados": 35036,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s07.rou.xml",
+     "pedidos": 35326,
+     "ruteados": 35317,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s08.rou.xml",
+     "pedidos": 35324,
+     "ruteados": 35316,
+     "recortados_por_tope": 0
+    },
+    {
+     "archivo": "routes_eod_punta_tarde_s09.rou.xml",
+     "pedidos": 35210,
+     "ruteados": 35199,
      "recortados_por_tope": 0
     }
    ]
