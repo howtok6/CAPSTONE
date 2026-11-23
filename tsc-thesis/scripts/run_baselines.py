@@ -34,10 +34,20 @@ from tsc.runner import run_episode
 
 
 def build_controllers(scenario: str, which: list, profile: str | None = None) -> list:
+    # Max-Pressure ajustado (ajustar_baselines.py): <escenario>/maxpressure_<perfil>.json o
+    # maxpressure.json con {"medida": ..., "switch_penalty": ...}; si no hay, los valores por defecto
+    mp_conf = {}
+    for nombre in ([f"maxpressure_{profile}.json"] if profile else []) + ["maxpressure.json"]:
+        ruta_mp = os.path.join(scenario, nombre)
+        if os.path.exists(ruta_mp):
+            with open(ruta_mp, encoding="utf-8") as f:
+                mp_conf = {k: v for k, v in json.load(f).items() if k in ("medida", "switch_penalty")}
+            print(f"  Max-Pressure: {ruta_mp} {mp_conf}")
+            break
     available = {
         "fixed": lambda: FixedTimeController(),
         "greedy": lambda: GreedyQueueController(),
-        "maxpressure": lambda: MaxPressureController(),
+        "maxpressure": lambda: MaxPressureController(**mp_conf),
     }
     # Plan de Webster del perfil (build_webster.py --profile); si no hay, el general
     plan = os.path.join(scenario, f"webster_plan_{profile}.json") if profile else ""

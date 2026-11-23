@@ -136,7 +136,13 @@ def controlled_tls(scenario: str, control: str = "auto") -> list | None:
     control = "todos" → None (todos los de la red, comportamiento de sumo-rl)
     control = "eje"   → la lista `eje` de <escenario>/tls_eje.json (scripts/list_axis_tls.py)
     control = "auto"  → "eje" si existe tls_eje.json, si no "todos"
+    control = otro    → la lista `eje` de <escenario>/tls_<control>.json (p. ej. "providencia",
+                        scripts/listar_tls_comuna.py)
     """
+    if control not in ("auto", "eje", "todos"):
+        ruta = os.path.join(scenario, f"tls_{control}.json")
+        with open(ruta, encoding="utf-8") as f:
+            return json.load(f)["eje"]
     path = os.path.join(scenario, "tls_eje.json")
     if control == "todos" or (control == "auto" and not os.path.exists(path)):
         return None
@@ -162,9 +168,16 @@ REWARDS = {
     "speed": "average-speed",
 }
 
+
+def _global_phase_observation():
+    from tsc.mappo import GlobalPhaseObservation
+    return GlobalPhaseObservation
+
+
 OBSERVACIONES = {
     "estandar": None,          # la de sumo-rl: una columna por pista
     "fase": PhaseObservation,  # una columna por fase, igual en todo cruce
+    "fase_global": "global",   # fase + bloque global para el crítico de MAPPO (tsc.mappo)
 }
 
 
@@ -228,7 +241,9 @@ def make_parallel_env(
         "add_per_agent_info": False,
     }
 
-    if OBSERVACIONES[obs] is not None:
+    if OBSERVACIONES[obs] == "global":
+        env_kwargs["observation_class"] = _global_phase_observation()
+    elif OBSERVACIONES[obs] is not None:
         env_kwargs["observation_class"] = OBSERVACIONES[obs]
     if use_waze_obs:
         env_kwargs["observation_class"] = WazeCongestionObservation

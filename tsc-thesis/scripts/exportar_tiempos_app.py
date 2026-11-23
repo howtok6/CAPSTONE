@@ -51,6 +51,13 @@ FRANJAS = [  # id, nombre, perfil de demanda
     ("punta_manana", "Punta mañana", "eod_punta_manana"),
     ("punta_tarde", "Punta tarde", "eod_punta_tarde"),
 ]
+FUENTES = {
+    "eje_comunal": "Simulación SUMO del eje Alameda-Providencia-Apoquindo con demanda EOD 2012 calibrada "
+                   "(docs/datos/12-demanda-eod.md).",
+    "las_condes_providencia": "Simulación SUMO de Las Condes + Providencia (594 semáforos, inventario UOCT) "
+                              "con demanda EOD 2012 escala 0,18 y velocidad deseada validadas con TomTom "
+                              "(docs/datos/14-depuracion-y-validacion-tomtom.md).",
+}
 CALENTAMIENTO = 300   # s: la red parte vacía
 CADA = 10             # s entre muestras
 MIN_MUESTRAS = 30     # vehículos-muestra para confiar en la velocidad de una calle
@@ -105,7 +112,10 @@ def armar(args) -> None:
     import tsc.sumo_env  # noqa: F401 (fija SUMO_HOME)
     import sumolib
 
-    carpeta = os.path.join("results", "tiempos_app")
+    # Una carpeta por escenario: los nombres de archivo no llevan el escenario y, sin --rehacer,
+    # se reutilizan las corridas que ya existen
+    esc_nombre = os.path.basename(os.path.normpath(args.scenario))
+    carpeta = os.path.join("results", "tiempos_app", esc_nombre)
     os.makedirs(carpeta, exist_ok=True)
     control = {"actual": ("webster", None), "adaptativo": ("ppo", args.model)}
     trabajos = []
@@ -166,8 +176,8 @@ def armar(args) -> None:
     tabla = {
         "generado": dt.datetime.now().isoformat(timespec="seconds"),
         "escenario": os.path.basename(args.scenario),
-        "fuente": "Simulación SUMO del eje Alameda-Providencia-Apoquindo con demanda EOD 2012 calibrada "
-                  "(docs/datos/12-demanda-eod.md). No son mediciones en la calle.",
+        "fuente": (FUENTES.get(esc_nombre) or f"Simulación SUMO del escenario {esc_nombre}")
+                  + " No son mediciones en la calle.",
         "replicas": args.replicas, "calentamiento_s": CALENTAMIENTO,
         "franjas": [{"id": f, "nombre": nombre, "perfil": perfil} for f, nombre, perfil in FRANJAS],
         "control": {"actual": "webster", "adaptativo": os.path.basename(args.model)},

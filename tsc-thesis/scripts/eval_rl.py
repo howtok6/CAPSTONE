@@ -76,7 +76,8 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
         min_green=min_green,
         max_green=max_green,
     )
-    env.unwrapped.env.additional_sumo_cmd = f"--tripinfo-output {tmp.name}"
+    # TSC_SUMO_EXTRA: mismas opciones extra que el arnés clásico (robustez.py)
+    env.unwrapped.env.additional_sumo_cmd = f"--tripinfo-output {tmp.name} {os.environ.get('TSC_SUMO_EXTRA', '')}".strip()
 
     obs, _ = env.reset()
     regla = model if callable(model) else None  # regla fija: ver verificar_paridad.py
@@ -147,12 +148,13 @@ def main() -> None:
     ap.add_argument("--stochastic", action="store_true",
                     help="muestrea la acción en vez de tomar la más probable")
     ap.add_argument("--use-waze-obs", action="store_true")
-    ap.add_argument("--control", default="auto", choices=["auto", "eje", "todos"],
-                    help="debe coincidir con el usado al entrenar")
+    ap.add_argument("--control", default=None,
+                    help="debe coincidir con el usado al entrenar (por defecto, el de los metadatos del modelo)")
     args = ap.parse_args()
-    tls_ids = controlled_tls(args.scenario, args.control)
 
     from stable_baselines3 import PPO
+
+    import tsc.mappo  # noqa: F401  (registra la política de MAPPO para PPO.load)
 
     net = os.path.join(args.scenario, "net.net.xml")
     if args.routes:
@@ -170,6 +172,7 @@ def main() -> None:
     model = PPO.load(args.model, device="cpu")
     # La evaluación repite la especificación del entrenamiento, no la supone
     meta = leer_metadatos(args.model)
+    tls_ids = controlled_tls(args.scenario, args.control or meta.get("control", "auto"))
     entorno = {"obs_kind": meta.get("obs", "estandar"), "delta_time": meta.get("delta_time", 5),
                "min_green": meta.get("min_green", 10), "max_green": meta.get("max_green", 60)}
     print(f"Entorno de evaluación: {entorno}")

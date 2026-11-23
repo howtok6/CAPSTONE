@@ -214,6 +214,29 @@ cada uno. Las fases no cambian, así que los planes de Webster (verdes por índi
 los modelos IPPO siguen siendo válidos. Las líneas base del 19-nov corrieron con la versión
 anterior; el efecto esperado es despreciable (2 enlaces de 594 semáforos).
 
+### Tanda v2, resto (lanzada el 23-nov ~16:40, encadenada en el PC)
+
+| Etapa | Script | Qué hace |
+|---|---|---|
+| 1 | `tanda_v2_resto.ps1` A | Evaluación IPPO que faltó: s0 en punta tarde, s1 y s2 en valle y punta tarde (10 réplicas, a `results/ippo_v2/`); demanda v2 y Webster de punta mañana |
+| 1 | `tanda_v2_resto.ps1` B, C | Junta IPPO en los JSON de líneas base; líneas base de punta mañana (10 réplicas); ajuste de Max-Pressure en valle y punta tarde (`ajustar_baselines.py --solo maxpressure`, réplicas de entrenamiento) |
+| 2 | `maxpressure_ajustado.ps1` | `elegir_maxpressure.py` deja la mejor configuración en `maxpressure_<perfil>.json` (que ahora lee `run_baselines.py`) y vuelve a correr Max-Pressure con 10 réplicas; las filas anteriores quedan como `maxpressure_defecto` |
+| 3 | `robustez.py` + `robustez.ps1` | OE6 en punta tarde, 5 réplicas pareadas: cierre de la pista derecha de Av. Providencia (sentido poniente) entre Los Leones y Pedro de Valdivia (9 tramos, 629 m) desde los 900 s, y alza súbita del 30 % de la demanda desde los 1.800 s (+5.300 vehículos por réplica). Las 4 líneas base y los 3 modelos IPPO, sin reajustarlos |
+| 4 | `tanda_mappo_prov.py` | H3 (opción A): IPPO y MAPPO controlando solo los 206 semáforos de Providencia (`tls_providencia.json`), 3 semillas cada uno, 3M pasos, evaluados en valle y punta tarde con 10 réplicas |
+
+Cambios de código que lo permiten:
+* `TSC_SUMO_EXTRA`: opciones extra de SUMO para todas las corridas de un proceso (la leen
+  `sumo_env.py` y `eval_rl.py`). Así se carga el cierre (`-a robustez_cierre.add.xml`, un
+  `rerouter` con `closingLaneReroute`) sin tocar la red, los semáforos ni los modelos.
+* MAPPO (`src/tsc/mappo.py`, doc `decisiones/15-especificacion-dec-pomdp.md`): observación
+  `fase_global` (22 columnas locales + 11 globales) y una política con actor enmascarado y crítico
+  centralizado; `train_rl.py --algo mappo --control providencia`. `eval_rl.py` toma el alcance
+  (`--control`) de los metadatos del modelo. Pruebas: `tests/test_mappo.py` (el actor no cambia
+  si cambia el bloque global; el crítico sí). Hay una prueba de humo de 105 mil muestras que
+  entrena, guarda, carga y evalúa.
+* `exportar_tiempos_app.py`: una carpeta de corridas por escenario y una fuente por escenario,
+  para exportar la tabla del área sin pisar la del eje.
+
 ## 8. Cruces UOCT vehiculares sin nodo en la red (21)
 
 Se documentan y no se corrigen: o no existen como calle en la red (OSM sin el acceso) o el

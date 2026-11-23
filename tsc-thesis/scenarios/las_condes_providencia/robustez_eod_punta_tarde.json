@@ -1,0 +1,97 @@
+{
+ "perfil_base": "eod_punta_tarde",
+ "replicas": 5,
+ "cierre": {
+  "adicional": "scenarios\\las_condes_providencia\\robustez_cierre.add.xml",
+  "desde_s": 900,
+  "tramos": [
+   {
+    "arco": "1035840465#0",
+    "pista": "1035840465#0_0",
+    "pistas": 4,
+    "largo_m": 84.5
+   },
+   {
+    "arco": "38132609#0",
+    "pista": "38132609#0_0",
+    "pistas": 4,
+    "largo_m": 71.0
+   },
+   {
+    "arco": "38132609#2",
+    "pista": "38132609#2_0",
+    "pistas": 4,
+    "largo_m": 27.2
+   },
+   {
+    "arco": "38132609#4",
+    "pista": "38132609#4_0",
+    "pistas": 4,
+    "largo_m": 90.9
+   },
+   {
+    "arco": "442446179#0",
+    "pista": "442446179#0_0",
+    "pistas": 4,
+    "largo_m": 37.2
+   },
+   {
+    "arco": "442446179#6",
+    "pista": "442446179#6_0",
+    "pistas": 4,
+    "largo_m": 107.9
+   },
+   {
+    "arco": "929792382#0",
+    "pista": "929792382#0_0",
+    "pistas": 4,
+    "largo_m": 96.1
+   },
+   {
+    "arco": "929792382#2",
+    "pista": "929792382#2_0",
+    "pistas": 4,
+    "largo_m": 73.9
+   },
+   {
+    "arco": "934510908#0",
+    "pista": "934510908#0_0",
+    "pistas": 4,
+    "largo_m": 39.9
+   }
+  ],
+  "largo_total_m": 629,
+  "variable": "TSC_SUMO_EXTRA=\"-a C:\\Users\\Gabriel\\Desktop\\TESIS\\tsc-thesis\\scenarios\\las_condes_providencia\\robustez_cierre.add.xml\""
+ },
+ "alza": {
+  "factor": 0.3,
+  "desde_s": 1800,
+  "replicas": [
+   {
+    "archivo": "routes_eod_punta_tarde_alza_s00.rou.xml",
+    "base": 35218,
+    "extra": 5342
+   },
+   {
+    "archivo": "routes_eod_punta_tarde_alza_s01.rou.xml",
+    "base": 35601,
+    "extra": 5224
+   },
+   {
+    "archivo": "routes_eod_punta_tarde_alza_s02.rou.xml",
+    "base": 34924,
+    "extra": 5345
+   },
+   {
+    "archivo": "routes_eod_punta_tarde_alza_s03.rou.xml",
+    "base": 34842,
+    "extra": 5367
+   },
+   {
+    "archivo": "routes_eod_punta_tarde_alza_s04.rou.xml",
+    "base": 35071,
+    "extra": 5346
+   }
+  ]
+ }
+}

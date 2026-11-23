@@ -39,6 +39,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 |---|---|---|
 | `07-decision-escenario.md` | Nivel comunal; MVP en el eje Alameda → Providencia → Apoquindo dentro de Santiago, Providencia y Las Condes. | ★★★ |
 | `08-decision-tiempos-semaforicos.md` | Semáforos desde OSM; tiempos con Webster + terreno + calibración por tiempo de viaje. Por qué Waze no sirve. | ★★★ |
+| `15-especificacion-dec-pomdp.md` | Especificación formal del problema como Dec-POMDP (agentes, estado, acciones, observación, recompensa) e IPPO vs MAPPO con crítico centralizado (OE3). | ★★★ |
 | `11-decision-agente.md` | PPO con parámetros compartidos, Adam (RMSprop alternativo), 64 semáforos controlados. | ★★★ |
 | `10-decision-base-de-datos.md` | GeoPackage + GeoParquet + DuckDB; cuándo pasar a PostGIS. | ★★ |
 | `02-windows-vs-wsl2.md` | Entorno: Windows nativo (corrige una recomendación anterior). | ★ |

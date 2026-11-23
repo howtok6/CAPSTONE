@@ -100,8 +100,11 @@ def main() -> None:
                     help="optimizador de la red (ver docstring)")
     ap.add_argument("--lr-schedule", default="linear", choices=["constant", "linear"],
                     help="linear: la tasa baja a 0 al final; afina sin desarmar lo aprendido")
-    ap.add_argument("--control", default="auto", choices=["auto", "eje", "todos"],
-                    help="semáforos que controla el agente (auto: los de tls_eje.json si existe)")
+    ap.add_argument("--control", default="auto",
+                    help="semáforos que controla el agente: auto (tls_eje.json si existe), eje, todos, "
+                         "o un nombre X para <escenario>/tls_X.json (p. ej. providencia)")
+    ap.add_argument("--algo", default="ippo", choices=["ippo", "mappo"],
+                    help="mappo: crítico centralizado (obs fase_global, actor solo con lo local; tsc.mappo)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="cpu",
                     help="cpu|cuda. Una MLP pequeña no gana con GPU: cada minilote paga la copia a la tarjeta")
@@ -109,6 +112,8 @@ def main() -> None:
     ap.add_argument("--use-waze-obs", action="store_true", help="Añade datos simulados de Waze a la observación de la red")
     args = ap.parse_args()
 
+    if args.algo == "mappo":
+        args.obs = "fase_global"  # el crítico necesita el bloque global
     if not args.traci and args.n_envs > args.n_cpus:
         sys.exit("libsumo admite una simulación por proceso: usa --n-cpus >= --n-envs o --traci")
 
@@ -138,7 +143,9 @@ def main() -> None:
         sys.exit(f"Error: No se encontró el archivo de rutas {rou}")
 
     tag_profile = f"_{args.profile}" if args.profile else ""
-    tag = f"ppo_{args.obs}_{args.reward}_{args.optimizer}{tag_profile}_s{args.seed}"
+    tag_control = "" if args.control in ("auto", "eje", "todos") else f"_{args.control}"
+    tag = (f"{'mappo' if args.algo == 'mappo' else 'ppo'}_{args.obs}_{args.reward}_{args.optimizer}"
+           f"{tag_profile}{tag_control}_s{args.seed}")
     out = args.out or os.path.join("models", os.path.basename(args.scenario), tag)
     os.makedirs(os.path.dirname(out), exist_ok=True)
 
@@ -170,12 +177,16 @@ def main() -> None:
 
     opt_name, opt_kwargs = OPTIMIZADORES[args.optimizer]
     lr = args.lr if args.lr_schedule == "constant" else (lambda progreso: args.lr * progreso)
+    politica = "MlpPolicy"
+    policy_kwargs = {"optimizer_class": getattr(th.optim, opt_name), "optimizer_kwargs": opt_kwargs}
+    if args.algo == "mappo":
+        from tsc.mappo import MaskedActorCriticPolicy
+        politica = MaskedActorCriticPolicy
     model = PPO(
-        "MlpPolicy",
+        politica,
         env,
         learning_rate=lr,
-        policy_kwargs={"optimizer_class": getattr(th.optim, opt_name),
-                       "optimizer_kwargs": opt_kwargs},
+        policy_kwargs=policy_kwargs,
         max_grad_norm=0.5,  # recorta gradientes: un episodio malo no desarma la red
         n_steps=256,
         batch_size=256,

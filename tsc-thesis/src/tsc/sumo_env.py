@@ -154,7 +154,9 @@ class SumoSimulation:
         self.gui = gui
         self.tripinfo = tripinfo
         self.verbose = verbose
-        self.extra_args = extra_args or []
+        # TSC_SUMO_EXTRA: opciones de SUMO para todas las corridas del proceso, p. ej. el
+        # adicional de un cierre de pista en las pruebas de robustez (scripts/robustez.py)
+        self.extra_args = (extra_args or []) + os.environ.get("TSC_SUMO_EXTRA", "").split()
         self.conn = None
         self.tls: dict = {}
 
