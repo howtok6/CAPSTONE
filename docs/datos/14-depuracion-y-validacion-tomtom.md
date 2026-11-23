@@ -201,6 +201,60 @@ Mismo patrón que en punta tarde: todos superan al tiempo fijo con intervalos se
 Max-Pressure es el mejor en timeLoss y cola. Con la red original y n = 3, Webster, voraz y
 Max-Pressure no se distinguían entre sí.
 
+### IPPO v2 frente a las líneas base (23-nov, 10 réplicas)
+
+Media ± IC95; p = Wilcoxon pareado por réplica contra Webster en `delay_all` (con n = 10 el mínimo
+posible es 0,002). Modelos: conjunto mixto valle + punta tarde, 3M muestras, semillas 0, 1 y 2.
+
+**Valle**
+
+| Controlador | delay_all (s) | Δ vs Webster | p | timeLoss (s) | Cola media |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 332 ± 12 | +64,9 % | 0,002 | 258 ± 3 | 1.035 ± 29 |
+| **Webster** | **201 ± 12** | — | — | 155 ± 3 | 513 ± 26 |
+| Voraz | 258 ± 17 | +28,4 % | 0,002 | 141 ± 3 | 557 ± 40 |
+| Max-Pressure (por defecto) | 227 ± 12 | +12,7 % | 0,002 | **128 ± 2** | 486 ± 30 |
+| IPPO s0 | 243 ± 13 | +20,6 % | 0,002 | 149 ± 4 | 377 ± 36 |
+| IPPO s1 | 268 ± 19 | +33,4 % | 0,002 | 147 ± 4 | 436 ± 49 |
+| IPPO s2 | 249 ± 14 | +23,6 % | 0,002 | 139 ± 3 | **359 ± 31** |
+
+**Punta tarde**
+
+| Controlador | delay_all (s) | Δ vs Webster | p | timeLoss (s) | Cola media |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 655 ± 22 | +16,1 % | 0,002 | 288 ± 10 | 3.282 ± 97 |
+| Webster | 564 ± 18 | — | — | 221 ± 10 | 2.631 ± 116 |
+| Voraz | 597 ± 25 | +5,8 % | 0,065 | 206 ± 10 | 2.587 ± 119 |
+| Max-Pressure (por defecto) | 620 ± 18 | +9,9 % | 0,002 | 209 ± 10 | 2.740 ± 97 |
+| IPPO s0 | 572 ± 25 | +1,3 % | 0,625 | 190 ± 8 | 2.036 ± 123 |
+| IPPO s1 | 574 ± 16 | +1,7 % | 0,193 | **187 ± 7** | 2.012 ± 53 |
+| **IPPO s2** | **553 ± 18** | **−2,0 %** | 0,846 | 189 ± 7 | **1.902 ± 100** |
+
+**Punta mañana** (líneas base; IPPO no se entrenó con este perfil)
+
+| Controlador | delay_all (s) | Δ vs Webster | p | timeLoss (s) | En red al final |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 902 ± 23 | +12,0 % | 0,002 | 342 ± 12 | 25.286 ± 518 |
+| Webster | 806 ± 19 | — | — | 288 ± 10 | 23.684 ± 496 |
+| **Voraz** | **788 ± 14** | −2,2 % | 0,049 | 273 ± 7 | 24.008 ± 366 |
+| Max-Pressure (por defecto) | 847 ± 15 | +5,2 % | 0,027 | **248 ± 10** | 25.185 ± 251 |
+
+Lectura:
+
+* **H1 (IPPO ≥ 10 % mejor que la mejor línea base, p < 0,05): no se cumple.** En punta tarde las
+  tres semillas empatan con Webster en demora total (−2,0 % a +1,7 %, p de 0,19 a 0,85); en valle
+  Webster es claramente mejor (IPPO entre +21 y +33 %).
+* **IPPO sí gana en cola y en demora de los que terminan:** en punta tarde, la cola media baja un
+  23–28 % respecto de Webster y el timeLoss un 14–15 %; en valle tiene la menor cola de todos
+  (359–436 contra 513). Despacha mejor lo que ya está en la red, pero deja entrar o terminar a
+  menos vehículos que Webster.
+* Ahora las tres semillas se comportan parecido (en la tanda del 18-nov una semilla salía mal):
+  con la red y la demanda validadas el entrenamiento es estable.
+* Punta mañana sigue sobresaturada incluso con la escala 0,18 (~24.000 vehículos en la red al
+  final de la hora). No tiene captura TomTom todavía.
+* Max-Pressure aparece aquí con sus valores por defecto; el ajuste (en curso) mostró en valle
+  una configuración bastante mejor (`vehiculos`, penalización 0: 192 s en las réplicas de ajuste).
+
 ### Corrección de verdes inseguros (23-nov)
 
 Al cargar la red, SUMO avisaba «Unsafe green phase 2 … Lane … is targeted by 2 'G'-links» en

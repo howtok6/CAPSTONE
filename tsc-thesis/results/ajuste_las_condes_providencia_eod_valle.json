@@ -1,0 +1,218 @@
+[
+ {
+  "config": "densidad|0.05",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 207.00805506726735,
+  "waiting_time_p95": 162.0,
+  "vehicles_finished": 15397,
+  "pendientes": 35
+ },
+ {
+  "config": "densidad|0.05",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 206.55880285866564,
+  "waiting_time_p95": 189.0,
+  "vehicles_finished": 15630,
+  "pendientes": 35
+ },
+ {
+  "config": "densidad|0.5",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 260.57342282626655,
+  "waiting_time_p95": 286.0,
+  "vehicles_finished": 15048,
+  "pendientes": 57
+ },
+ {
+  "config": "densidad|0.5",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 264.94104452455053,
+  "waiting_time_p95": 294.0,
+  "vehicles_finished": 15233,
+  "pendientes": 55
+ },
+ {
+  "config": "densidad|1.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 277.0919801816322,
+  "waiting_time_p95": 380.0,
+  "vehicles_finished": 15066,
+  "pendientes": 41
+ },
+ {
+  "config": "densidad|1.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 282.56751417396737,
+  "waiting_time_p95": 382.0,
+  "vehicles_finished": 15074,
+  "pendientes": 32
+ },
+ {
+  "config": "densidad|2.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 313.29974223114084,
+  "waiting_time_p95": 463.0,
+  "vehicles_finished": 14807,
+  "pendientes": 28
+ },
+ {
+  "config": "densidad|2.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 309.6735988507677,
+  "waiting_time_p95": 462.0,
+  "vehicles_finished": 15087,
+  "pendientes": 36
+ },
+ {
+  "config": "vehiculos|0.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 178.6686375520835,
+  "waiting_time_p95": 149.0,
+  "vehicles_finished": 15787,
+  "pendientes": 22
+ },
+ {
+  "config": "vehiculos|0.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 204.7959528419322,
+  "waiting_time_p95": 153.0,
+  "vehicles_finished": 15539,
+  "pendientes": 43
+ },
+ {
+  "config": "vehiculos|2.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 222.51512639086542,
+  "waiting_time_p95": 177.0,
+  "vehicles_finished": 15192,
+  "pendientes": 56
+ },
+ {
+  "config": "vehiculos|2.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 228.03490376996592,
+  "waiting_time_p95": 194.0,
+  "vehicles_finished": 15401,
+  "pendientes": 54
+ },
+ {
+  "config": "vehiculos|5.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 252.19387304686586,
+  "waiting_time_p95": 249.0,
+  "vehicles_finished": 15054,
+  "pendientes": 44
+ },
+ {
+  "config": "vehiculos|5.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 232.13699174144614,
+  "waiting_time_p95": 260.0,
+  "vehicles_finished": 15536,
+  "pendientes": 40
+ },
+ {
+  "config": "vehiculos|10.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 287.6358445989619,
+  "waiting_time_p95": 369.0,
+  "vehicles_finished": 14897,
+  "pendientes": 16
+ },
+ {
+  "config": "vehiculos|10.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 294.3136043658996,
+  "waiting_time_p95": 359.0,
+  "vehicles_finished": 14868,
+  "pendientes": 35
+ },
+ {
+  "config": "cola|0.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 231.81320377523613,
+  "waiting_time_p95": 208.0,
+  "vehicles_finished": 15256,
+  "pendientes": 58
+ },
+ {
+  "config": "cola|0.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 262.16243698365037,
+  "waiting_time_p95": 195.0,
+  "vehicles_finished": 14999,
+  "pendientes": 55
+ },
+ {
+  "config": "cola|2.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 236.35662411558178,
+  "waiting_time_p95": 196.0,
+  "vehicles_finished": 15109,
+  "pendientes": 48
+ },
+ {
+  "config": "cola|2.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 250.78221148031233,
+  "waiting_time_p95": 216.0,
+  "vehicles_finished": 15244,
+  "pendientes": 64
+ },
+ {
+  "config": "cola|5.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 261.48181491032085,
+  "waiting_time_p95": 290.0,
+  "vehicles_finished": 15089,
+  "pendientes": 40
+ },
+ {
+  "config": "cola|5.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 261.07226903451726,
+  "waiting_time_p95": 299.0,
+  "vehicles_finished": 15324,
+  "pendientes": 33
+ },
+ {
+  "config": "cola|10.0",
+  "tipo": "maxpressure",
+  "semilla": 100,
+  "delay_all_mean": 307.0243976214201,
+  "waiting_time_p95": 415.0,
+  "vehicles_finished": 14830,
+  "pendientes": 30
+ },
+ {
+  "config": "cola|10.0",
+  "tipo": "maxpressure",
+  "semilla": 101,
+  "delay_all_mean": 308.3801351324998,
+  "waiting_time_p95": 414.0,
+  "vehicles_finished": 14954,
+  "pendientes": 36
+ }
+]

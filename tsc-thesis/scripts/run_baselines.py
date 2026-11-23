@@ -71,6 +71,8 @@ def main() -> None:
     ap.add_argument("--profile", default=None, help="Nombre del perfil de demanda (valle, punta_manana, punta_tarde, sobresaturado)")
     ap.add_argument("--routes", default=None, help="Ruta directa al archivo de rutas .rou.xml")
     ap.add_argument("--seeds", type=int, default=10)
+    ap.add_argument("--semilla-inicial", type=int, default=0,
+                    help="primera réplica: con --seeds n corre las réplicas inicial..inicial+n-1 (para repartir en procesos)")
     ap.add_argument("--end", type=int, default=3600)
     ap.add_argument("--warmup", type=int, default=300)
     ap.add_argument(
@@ -105,7 +107,7 @@ def main() -> None:
 
     rows = []
     for factory in factories:
-        for seed in range(args.seeds):
+        for seed in range(args.semilla_inicial, args.semilla_inicial + args.seeds):
             ctrl = factory()
             if eje and isinstance(ctrl, PhaseSwitchingController):
                 ctrl.tls_ids = eje  # mismo alcance que el agente
