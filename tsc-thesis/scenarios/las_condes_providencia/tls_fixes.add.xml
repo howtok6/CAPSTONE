@@ -57,13 +57,13 @@
   <tlLogic id="cluster_10107215855_10107215857_11972549179_12437608102_#11more" type="static" programID="0" offset="0">
     <phase duration="45" state="GGGrGGrGG" />
     <phase duration="3" state="yyyryyryy" />
-    <phase duration="15" state="rrrGrrGrr" />
+    <phase duration="15" state="rrrgrrGrr" />
     <phase duration="3" state="rrryrryrr" />
   </tlLogic>
   <tlLogic id="cluster_10930785153_240452429_647257544" type="static" programID="0" offset="0">
     <phase duration="45" state="rGGGrGGrGG" />
     <phase duration="3" state="ryyyryyryy" />
-    <phase duration="15" state="GrrrGrrGrr" />
+    <phase duration="15" state="GrrrgrrGrr" />
     <phase duration="3" state="yrrryrryrr" />
   </tlLogic>
   <tlLogic id="cluster_130813359_1692690834_5609859135" type="static" programID="0" offset="0">

@@ -201,6 +201,19 @@ Mismo patrón que en punta tarde: todos superan al tiempo fijo con intervalos se
 Max-Pressure es el mejor en timeLoss y cola. Con la red original y n = 3, Webster, voraz y
 Max-Pressure no se distinguían entre sí.
 
+### Corrección de verdes inseguros (23-nov)
+
+Al cargar la red, SUMO avisaba «Unsafe green phase 2 … Lane … is targeted by 2 'G'-links» en
+2 semáforos (`cluster_10107215855_…_#11more` y `cluster_10930785153_240452429_647257544`).
+Venía del paso 2 de la depuración: el viraje protegido pone en `G` todos los virajes que eran
+permisivos, y en esos dos cruces dos de ellos desembocan en la misma pista. `fix_tls.py`
+(`sin_verdes_dobles`) ahora deja `G` solo al enlace de mayor prioridad (pasante, derecha,
+izquierda) y pasa los demás a `g` (ceden el paso). Se volvió a correr `depurar_red_area.py`:
+0 avisos, mismos 594 semáforos y mismos arcos, y solo cambian esos 2 programas, un enlace
+cada uno. Las fases no cambian, así que los planes de Webster (verdes por índice de fase) y
+los modelos IPPO siguen siendo válidos. Las líneas base del 19-nov corrieron con la versión
+anterior; el efecto esperado es despreciable (2 enlaces de 594 semáforos).
+
 ## 8. Cruces UOCT vehiculares sin nodo en la red (21)
 
 Se documentan y no se corrigen: o no existen como calle en la red (OSM sin el acceso) o el

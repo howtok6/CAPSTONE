@@ -24,9 +24,9 @@
  "use_waze_obs": false,
  "modelo": "models\\las_condes_providencia\\ppo_fase_wait_adam_eod_mixto_s1.zip",
  "rutas": "scenarios/las_condes_providencia\\demand\\train\\routes_eod_mixto_t00.rou.xml",
- "commit_git": "bb19237+cambios",
- "inicio": "2026-11-18T00:34:30",
- "semaforos_controlados": 480,
+ "commit_git": "bd3ea29+cambios",
+ "inicio": "2026-11-19T18:30:25",
+ "semaforos_controlados": 487,
  "demandas_entrenamiento": [
   "scenarios/las_condes_providencia\\demand\\train\\routes_eod_mixto_t00.rou.xml",
   "scenarios/las_condes_providencia\\demand\\train\\routes_eod_mixto_t01.rou.xml",
@@ -38,6 +38,6 @@
  "optimizador_kwargs": {
   "eps": 1e-05
  },
- "duracion_s": 10792.4,
- "muestras": 3072000
+ "duracion_s": 9890.8,
+ "muestras": 3116800
 }

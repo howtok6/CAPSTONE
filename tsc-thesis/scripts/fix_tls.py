@@ -37,16 +37,52 @@ def amarillo_entre(desde: str, hacia: str) -> str:
     return "".join("y" if a in "Gg" and b == "r" else a for a, b in zip(desde, hacia))
 
 
+PRIORIDAD_DIR = {"s": 0, "r": 1, "R": 1, "l": 2, "L": 2, "t": 3}
+
+
+def enlaces(root: ET.Element) -> dict[str, dict[int, tuple[str, str]]]:
+    """tl -> {linkIndex: (pista de destino, dirección)} según las conexiones de la red."""
+    out: dict[str, dict[int, tuple[str, str]]] = {}
+    for c in root.iter("connection"):
+        if c.get("tl") is not None and c.get("linkIndex") is not None:
+            out.setdefault(c.get("tl"), {})[int(c.get("linkIndex"))] = (
+                f"{c.get('to')}_{c.get('toLane')}", c.get("dir", "s"))
+    return out
+
+
+def sin_verdes_dobles(state: str, links: dict[int, tuple[str, str]]) -> str:
+    """Si dos o más enlaces con `G` llegan a la misma pista, deja `G` solo al de mayor prioridad
+    (pasante, luego derecha, luego izquierda) y los demás en `g`, que ceden el paso.
+
+    El viraje protegido pone en `G` todos los antiguos permisivos; cuando dos de ellos
+    desembocan en la misma pista SUMO avisa «Unsafe green phase … targeted by 2 'G'-links»
+    (pasaba en 2 semáforos de Las Condes + Providencia).
+    """
+    s = list(state)
+    por_destino: dict[str, list[int]] = {}
+    for i, c in enumerate(s):
+        if c == "G" and i in links:
+            por_destino.setdefault(links[i][0], []).append(i)
+    for idx in por_destino.values():
+        if len(idx) > 1:
+            idx.sort(key=lambda i: (PRIORIDAD_DIR.get(links[i][1], 9), i))
+            for i in idx[1:]:
+                s[i] = "g"
+    return "".join(s)
+
+
 def programas_corregidos(net_file: str) -> list[ET.Element]:
     root = ET.parse(net_file).getroot()
+    por_tl = enlaces(root)
     nuevos = []
     for logic in root.iter("tlLogic"):
         verdes = [p.get("state") for p in logic.iter("phase") if es_verde(p.get("state"))]
         if len(verdes) != 1 or "g" not in verdes[0]:
             continue
         base = verdes[0]
-        pasante = "".join("r" if c == "g" else c for c in base)
-        viraje = "".join("G" if c == "g" else "r" for c in base)
+        links = por_tl.get(logic.get("id"), {})
+        pasante = sin_verdes_dobles("".join("r" if c == "g" else c for c in base), links)
+        viraje = sin_verdes_dobles("".join("G" if c == "g" else "r" for c in base), links)
         fases = [(PASANTE, pasante), (AMARILLO, amarillo_entre(pasante, viraje)),
                  (VIRAJE, viraje), (AMARILLO, amarillo_entre(viraje, pasante))]
         el = ET.Element("tlLogic", id=logic.get("id"), type="static",
