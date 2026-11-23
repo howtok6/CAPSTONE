@@ -67,6 +67,7 @@ def evaluate(model, net, rou, seed, seconds, warmup, deterministic=True, use_waz
     env = make_parallel_env(
         net_file=net,
         route_file=rou,
+        reward="nula",  # la evaluación no usa la recompensa: no se calcula (las acciones no cambian)
         num_seconds=seconds,
         seed=seed,
         use_waze_obs=use_waze_obs,

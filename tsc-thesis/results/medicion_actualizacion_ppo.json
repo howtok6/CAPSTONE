@@ -1,0 +1,50 @@
+[
+ {
+  "agentes": 206,
+  "algo": "ippo",
+  "device": "cpu",
+  "segundos": 8.0
+ },
+ {
+  "agentes": 206,
+  "algo": "ippo",
+  "device": "cuda",
+  "segundos": 13.6
+ },
+ {
+  "agentes": 206,
+  "algo": "mappo",
+  "device": "cpu",
+  "segundos": 8.2
+ },
+ {
+  "agentes": 206,
+  "algo": "mappo",
+  "device": "cuda",
+  "segundos": 14.4
+ },
+ {
+  "agentes": 487,
+  "algo": "ippo",
+  "device": "cpu",
+  "segundos": 19.4
+ },
+ {
+  "agentes": 487,
+  "algo": "ippo",
+  "device": "cuda",
+  "segundos": 36.3
+ },
+ {
+  "agentes": 487,
+  "algo": "mappo",
+  "device": "cpu",
+  "segundos": 20.9
+ },
+ {
+  "agentes": 487,
+  "algo": "mappo",
+  "device": "cuda",
+  "segundos": 36.5
+ }
+]

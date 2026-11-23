@@ -30,6 +30,7 @@ import json  # noqa: E402
 import random  # noqa: E402
 
 from gymnasium.utils import EzPickle  # noqa: E402
+from pettingzoo import ParallelEnv  # noqa: E402
 from pettingzoo.utils import agent_selector, wrappers  # noqa: E402
 from pettingzoo.utils.conversions import parallel_wrapper_fn  # noqa: E402
 from sumo_rl.environment.env import SumoEnvironment, SumoEnvironmentPZ  # noqa: E402
@@ -130,6 +131,79 @@ def _subset_aec_env(**kwargs):
 subset_parallel_env = parallel_wrapper_fn(_subset_aec_env)
 
 
+class SubsetSumoParallelEnv(ParallelEnv, EzPickle):
+    """Entorno PettingZoo paralelo nativo sobre `SubsetSumoEnvironment`.
+
+    sumo-rl solo trae la versión AEC (un agente a la vez) y `parallel_wrapper_fn` la convierte a
+    paralela. Con cientos de agentes esa conversión domina el tiempo: cada paso recorre todos los
+    agentes y cada acceso pasa por varias capas de `__getattr__` (perfil del 23-nov con 487
+    semáforos: 132 de 224 s en esos accesos, 35 s en SUMO). Esta clase hace lo mismo que la
+    cadena AEC → paralela, sin la cadena:
+
+    * aplica todas las acciones (la AEC las aplica una a una con el mismo `_apply_actions`),
+    * avanza `delta_time` y calcula observaciones y recompensas una vez,
+    * entrega las recompensas del paso, todo truncado al llegar a `num_seconds`, y vacía
+      `agents` al terminar, como el envoltorio.
+
+    `TSC_ENV_AEC=1` vuelve a la cadena original (para comparar: ver verificar_entorno_paralelo.py).
+    """
+
+    metadata = {"render_modes": [], "name": "subset_sumo_parallel_v0"}
+
+    def __init__(self, controlled_ts=None, route_pool=None, **kwargs):
+        # SuperSuit copia el entorno con cloudpickle; como en SumoEnvironmentPZ, se serializan
+        # los argumentos del constructor y no la conexión con SUMO
+        EzPickle.__init__(self, controlled_ts=controlled_ts, route_pool=route_pool, **kwargs)
+        self.env = SubsetSumoEnvironment(controlled_ts=controlled_ts, route_pool=route_pool, **kwargs)
+        self.render_mode = None
+        self.possible_agents = list(self.env.ts_ids)
+        self.agents = []
+        self._obs_spaces = {a: self.env.observation_spaces(a) for a in self.possible_agents}
+        self._act_spaces = {a: self.env.action_spaces(a) for a in self.possible_agents}
+
+    def observation_space(self, agent):
+        return self._obs_spaces[agent]
+
+    def action_space(self, agent):
+        return self._act_spaces[agent]
+
+    def _infos(self) -> dict:
+        info = self.env._compute_info()
+        return {a: dict(info) for a in self.agents}
+
+    def reset(self, seed=None, options=None):
+        self.env.reset(seed=seed, options=options)
+        self.agents = self.possible_agents[:]
+        obs = {a: self.env.observations[a].copy() for a in self.agents}
+        return obs, self._infos()
+
+    def step(self, actions):
+        env = self.env
+        if env.fixed_ts:
+            for _ in range(env.delta_time):
+                env._sumo_step()
+        else:
+            env._apply_actions({a: actions[a] for a in self.agents if a in actions})
+            env._run_steps()
+        env._compute_observations()
+        recompensas = env._compute_rewards()
+        fin = env._compute_dones()["__all__"]
+        obs = {a: env.observations[a].copy() for a in self.agents}
+        rewards = {a: recompensas[a] for a in self.agents}
+        terminations = {a: False for a in self.agents}
+        truncations = {a: fin for a in self.agents}
+        infos = self._infos()
+        if fin:
+            self.agents = []
+        return obs, rewards, terminations, truncations, infos
+
+    def render(self):
+        return None
+
+    def close(self):
+        self.env.close()
+
+
 def controlled_tls(scenario: str, control: str = "auto") -> list | None:
     """Lista de semáforos que controla el agente.
 
@@ -161,11 +235,17 @@ def queue_reward(ts) -> float:
     return -float(sum(ts.get_lanes_queue()))
 
 
+def null_reward(ts) -> float:
+    """Para evaluar: la política no usa la recompensa y calcularla (espera por vehículo) cuesta."""
+    return 0.0
+
+
 REWARDS = {
     "wait": "diff-waiting-time",   # por defecto en sumo-rl
     "queue": queue_reward,
     "pressure": pressure_reward,
     "speed": "average-speed",
+    "nula": null_reward,
 }
 
 
@@ -248,8 +328,11 @@ def make_parallel_env(
     if use_waze_obs:
         env_kwargs["observation_class"] = WazeCongestionObservation
 
-    return subset_parallel_env(controlled_ts=list(tls_ids) if tls_ids else None,
-                               route_pool=route_pool, **env_kwargs)
+    if os.environ.get("TSC_ENV_AEC") == "1":  # cadena AEC original de sumo-rl, solo para comparar
+        return subset_parallel_env(controlled_ts=list(tls_ids) if tls_ids else None,
+                                   route_pool=route_pool, **env_kwargs)
+    return SubsetSumoParallelEnv(controlled_ts=list(tls_ids) if tls_ids else None,
+                                 route_pool=route_pool, **env_kwargs)
 
 
 def make_sb3_vec_env(num_vec_envs: int = 1, num_cpus: int = 1, **kwargs):

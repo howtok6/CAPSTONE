@@ -237,6 +237,47 @@ Cambios de código que lo permiten:
 * `exportar_tiempos_app.py`: una carpeta de corridas por escenario y una fuente por escenario,
   para exportar la tabla del área sin pisar la del eje.
 
+### Optimización del cómputo y uso de la GPU (23-nov)
+
+PC: Intel i3-12100F (4 núcleos, 8 hilos), 32 GB, GeForce GTX 1650 de 4 GB.
+
+**GPU: no conviene.** `scripts/medir_actualizacion_ppo.py` cronometra una actualización de PPO
+(lote de 256 × agentes, minilotes de 256, 10 épocas, MLP 64-64), en un entorno virtual
+`tsc-thesis/.venv` con torch 2.8 + CUDA 12.6 (el del sistema es solo CPU y no se tocó):
+
+| Agentes | Algoritmo | CPU (1 hilo) | GPU GTX 1650 |
+|---:|---|---:|---:|
+| 206 | IPPO | 8,0 s | 13,6 s |
+| 206 | MAPPO | 8,2 s | 14,4 s |
+| 487 | IPPO | 19,4 s | 36,3 s |
+| 487 | MAPPO | 20,9 s | 36,5 s |
+
+Con minilotes de 256 y una red de ~12.000 parámetros (actor y crítico), copiar cada minilote a la tarjeta cuesta
+más que el cálculo. Además, la actualización es menos del 10 % de una iteración (~380 s con
+487 semáforos): el resto es la simulación, que SUMO corre en CPU. Para que la GPU ayudara habría
+que subir el minilote a miles de muestras, lo que cambia los hiperparámetros con los que se
+entrenaron los modelos v2. Se descarta.
+
+**Lo que sí rendía: el envoltorio de PettingZoo.** Un perfil de la evaluación (487 semáforos,
+900 s) mostró 132 de 224 s en accesos `__getattr__` de la cadena AEC → paralela de sumo-rl
+(cada paso recalcula diccionarios de todos los agentes por cada agente: costo cuadrático) y
+solo 35 s en SUMO. Cambios:
+
+* `SubsetSumoParallelEnv` (`rl_env.py`): entorno paralelo nativo con la misma semántica.
+  `scripts/verificar_entorno_paralelo.py` da **18 de 18 métricas idénticas**, y una iteración de
+  entrenamiento deja **los mismos parámetros** (diferencia máxima 0,0). `TSC_ENV_AEC=1` vuelve
+  a la cadena original.
+* La evaluación ya no calcula la recompensa (`reward="nula"`), que la política no usa.
+* Resultado en la evaluación: 128 s → 57 s de reloj para los mismos 900 s (×2,2). En el
+  entrenamiento con 206 semáforos la ganancia es menor (~10 %): el costo cuadrático crece con
+  el número de agentes.
+* Las líneas base clásicas ya pasan el 76 % en SUMO (perfil de Max-Pressure): no hay mucho
+  más que ganar sin tocar el simulador.
+
+Las etapas de la cadena que todavía no arrancan (robustez, MAPPO) usan el entorno nuevo; las
+evaluaciones de la etapa A ya iban por la mitad y siguieron con el anterior, que da los mismos
+resultados.
+
 ## 8. Cruces UOCT vehiculares sin nodo en la red (21)
 
 Se documentan y no se corrigen: o no existen como calle en la red (OSM sin el acceso) o el
