@@ -7,56 +7,74 @@
   "tramos": [
    {
     "arco": "1035840465#0",
-    "pista": "1035840465#0_0",
+    "pista": "1035840465#0_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 84.5
    },
    {
     "arco": "38132609#0",
-    "pista": "38132609#0_0",
+    "pista": "38132609#0_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 71.0
    },
    {
     "arco": "38132609#2",
-    "pista": "38132609#2_0",
+    "pista": "38132609#2_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 27.2
    },
    {
     "arco": "38132609#4",
-    "pista": "38132609#4_0",
+    "pista": "38132609#4_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 90.9
    },
    {
     "arco": "442446179#0",
-    "pista": "442446179#0_0",
+    "pista": "442446179#0_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 37.2
    },
    {
     "arco": "442446179#6",
-    "pista": "442446179#6_0",
+    "pista": "442446179#6_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 107.9
    },
    {
     "arco": "929792382#0",
-    "pista": "929792382#0_0",
+    "pista": "929792382#0_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 96.1
    },
    {
     "arco": "929792382#2",
-    "pista": "929792382#2_0",
+    "pista": "929792382#2_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 73.9
    },
    {
     "arco": "934510908#0",
-    "pista": "934510908#0_0",
+    "pista": "934510908#0_2",
+    "indice": 2,
     "pistas": 4,
+    "pistas_autos": 3,
     "largo_m": 39.9
    }
   ],

@@ -255,6 +255,54 @@ Lectura:
 * Max-Pressure aparece aquí con sus valores por defecto; el ajuste (en curso) mostró en valle
   una configuración bastante mejor (`vehiculos`, penalización 0: 192 s en las réplicas de ajuste).
 
+### Max-Pressure ajustado (24-nov, 10 réplicas)
+
+Ajuste con `ajustar_baselines.py --solo maxpressure` sobre réplicas de entrenamiento (2 por
+configuración, 12 configuraciones). Mejor configuración: valle `vehiculos` sin penalización de
+cambio; punta tarde `cola` con penalización 2.
+
+| Perfil | Webster | Max-Pressure por defecto | Max-Pressure ajustado | vs defecto | vs Webster |
+|---|---:|---:|---:|---:|---:|
+| Valle | 201 ± 12 | 227 ± 12 | 223 ± 12 | −1,6 % (p 0,77) | +11,0 % (p 0,006) |
+| Punta tarde | 564 ± 18 | 620 ± 18 | 599 ± 19 | −3,3 % (p 0,23) | +6,2 % (p 0,006) |
+
+El ajuste mejora poco y no cambia el orden: Webster sigue como la mejor línea base.
+
+### Robustez (24-nov, punta tarde, 5 réplicas pareadas)
+
+**Alza súbita del 30 % desde los 1.800 s** (+5.300 vehículos por réplica). `delay_all` casi no
+se mueve (+1 % a +3 %) porque los vehículos extra entran tarde y alcanzan a acumular poca demora;
+la medida que importa es la **demora total** (`delay_all` × vehículos considerados):
+
+| Controlador | Demora total base (veh·h) | Con alza | Δ | En la red al final (con alza) |
+|---|---:|---:|---:|---:|
+| Tiempo fijo | 6.051 ± 93 | 7.084 ± 63 | +17,1 % | 19.082 ± 205 |
+| **Webster** | 5.293 ± 165 | 6.249 ± 182 | +18,1 % | **17.714 ± 403** |
+| Voraz | 5.773 ± 484 | 6.807 ± 435 | +17,9 % | 19.261 ± 676 |
+| Max-Pressure ajustado | 5.960 ± 362 | 6.928 ± 342 | +16,3 % | 19.305 ± 571 |
+| IPPO s0 | 5.444 ± 432 | 6.359 ± 439 | +16,8 % | 18.274 ± 931 |
+| IPPO s1 | 5.564 ± 144 | 6.536 ± 63 | +17,5 % | 18.648 ± 203 |
+| **IPPO s2** | 5.276 ± 321 | **6.232 ± 370** | +18,1 % | 18.011 ± 581 |
+
+Todos absorben el alza de forma parecida (+16 a +18 %), sin reajustarse: el orden se mantiene y
+IPPO s2 y Webster siguen empatados. Los modelos IPPO, entrenados sin alzas, no se degradan más que
+los controladores clásicos.
+
+**Cierre de pista: hubo que repetirlo.** La primera corrida cerró la pista 0 de Av. Providencia,
+que en la red es Solo Bus (la demanda no tiene buses): no cambió nada, y Max-Pressure e IPPO dieron
+resultados idénticos a los de la red sin cierre. Al cerrar la pista 1 (la primera de autos), SUMO
+aborta porque esa pista lleva los virajes a la derecha y quedan rutas sin conexión. Se cierra la
+pista central de autos (índice 2) y se repite después de MAPPO. La corrida inválida quedó en
+`results/robustez_cierre_bus/` y sirve de **base de 5 réplicas en la red actual**
+(`*_eod_punta_tarde_base5_baselines.json`), que es contra la que se comparan las perturbaciones.
+
+**Efecto de la corrección de verdes inseguros.** Esa base deja ver algo que no esperaba: en las
+réplicas 0-4 de punta tarde, corregir 2 enlaces de 2 semáforos movió la demora de fijo −2,6 %,
+Webster −5,2 % y voraz +2,3 %. La red saturada amplifica cambios pequeños. Por eso se repiten, en
+la red actual, fijo, Webster y voraz en valle y punta tarde, e IPPO s0 en valle
+(`scripts/rehacer_base_red_corregida.py`, al final de la cadena), para que todas las comparaciones
+sean sobre la misma red.
+
 ### Corrección de verdes inseguros (23-nov)
 
 Al cargar la red, SUMO avisaba «Unsafe green phase 2 … Lane … is targeted by 2 'G'-links» en

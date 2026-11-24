@@ -1,7 +1,8 @@
 # Robustez (OE6): corre las cuatro lineas base y los tres modelos IPPO v2 en las dos perturbaciones
 # que prepara robustez.py (cierre de pista y alza subita del 30 %), 5 replicas pareadas con punta tarde.
 # Uso: powershell -ExecutionPolicy Bypass -File scripts\robustez.ps1 [-EsperarPid <pid>]
-param([int]$EsperarPid = 0, [string]$Perfil = "eod_punta_tarde", [int]$Semillas = 5)
+param([int]$EsperarPid = 0, [string]$Perfil = "eod_punta_tarde", [int]$Semillas = 5,
+      [string[]]$Casos = @("cierre", "alza"))
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 $s = "scenarios\las_condes_providencia"
@@ -15,7 +16,7 @@ if ($EsperarPid) {
     Wait-Process -Id $EsperarPid -ErrorAction SilentlyContinue
 }
 $cierre = (Resolve-Path "$s\robustez_cierre.add.xml").Path
-foreach ($caso in "cierre", "alza") {
+foreach ($caso in $Casos) {
     $p = "${Perfil}_$caso"
     $env:TSC_SUMO_EXTRA = if ($caso -eq "cierre") { "-a $cierre" } else { "" }
     $procs = @()

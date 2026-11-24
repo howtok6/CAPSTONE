@@ -1,0 +1,29 @@
+{
+ "medida": "vehiculos",
+ "switch_penalty": 0.0,
+ "delay_all_ajuste": 191.7,
+ "replicas_ajuste": 2,
+ "fuente": "results/ajuste_las_condes_providencia_eod_valle.json",
+ "ranking": [
+  {
+   "config": "vehiculos|0.0",
+   "delay_all": 191.7
+  },
+  {
+   "config": "densidad|0.05",
+   "delay_all": 206.8
+  },
+  {
+   "config": "vehiculos|2.0",
+   "delay_all": 225.3
+  },
+  {
+   "config": "vehiculos|5.0",
+   "delay_all": 242.2
+  },
+  {
+   "config": "cola|2.0",
+   "delay_all": 243.6
+  }
+ ]
+}

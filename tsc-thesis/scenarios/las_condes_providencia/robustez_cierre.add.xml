@@ -2,15 +2,15 @@
 <additional>
   <rerouter id="cierre_providencia" edges="1035840465#0 38132609#0 38132609#2 38132609#4 442446179#0 442446179#6 929792382#0 929792382#2 934510908#0">
     <interval begin="900" end="3600">
-      <closingLaneReroute id="1035840465#0_0" disallow="all" />
-      <closingLaneReroute id="38132609#0_0" disallow="all" />
-      <closingLaneReroute id="38132609#2_0" disallow="all" />
-      <closingLaneReroute id="38132609#4_0" disallow="all" />
-      <closingLaneReroute id="442446179#0_0" disallow="all" />
-      <closingLaneReroute id="442446179#6_0" disallow="all" />
-      <closingLaneReroute id="929792382#0_0" disallow="all" />
-      <closingLaneReroute id="929792382#2_0" disallow="all" />
-      <closingLaneReroute id="934510908#0_0" disallow="all" />
+      <closingLaneReroute id="1035840465#0_2" disallow="all" />
+      <closingLaneReroute id="38132609#0_2" disallow="all" />
+      <closingLaneReroute id="38132609#2_2" disallow="all" />
+      <closingLaneReroute id="38132609#4_2" disallow="all" />
+      <closingLaneReroute id="442446179#0_2" disallow="all" />
+      <closingLaneReroute id="442446179#6_2" disallow="all" />
+      <closingLaneReroute id="929792382#0_2" disallow="all" />
+      <closingLaneReroute id="929792382#2_2" disallow="all" />
+      <closingLaneReroute id="934510908#0_2" disallow="all" />
     </interval>
   </rerouter>
 </additional>

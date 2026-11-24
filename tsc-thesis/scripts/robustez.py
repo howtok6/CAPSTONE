@@ -47,14 +47,23 @@ def tramos_cierre(net_file: str) -> list[dict]:
     net = sumolib.net.readNet(net_file)
     out = []
     for e in net.getEdges():
-        if e.getName() != CIERRE["calle"] or e.getLaneNumber() < 2 or e.getFunction() == "internal":
+        if (e.getName() != CIERRE["calle"] or e.getFunction() == "internal"
+                or sum(l.allows("passenger") for l in e.getLanes()) < 2):
             continue
         (x0, y0), (x1, y1) = e.getFromNode().getCoord(), e.getToNode().getCoord()
         if x1 >= x0:  # Providencia es de un sentido, hacia el poniente
             continue
         lon, lat = net.convertXY2LonLat((x0 + x1) / 2, (y0 + y1) / 2)
         if CIERRE["lon_min"] <= lon <= CIERRE["lon_max"] and abs(lat - CIERRE["lat"]) <= CIERRE["tolerancia_lat"]:
-            out.append({"arco": e.getID(), "pista": f"{e.getID()}_0", "pistas": e.getLaneNumber(),
+            # La pista 0 de Providencia es Solo Bus (sin autos en la demanda): cerrarla no tuvo ningún
+            # efecto (corrida del 24-nov). Se cierra una pista de autos del medio: la de la derecha
+            # lleva los virajes a la derecha y la de la izquierda los de la izquierda, y cerrarlas
+            # deja rutas sin conexión (SUMO aborta: "no valid route").
+            autos = [l for l in e.getLanes() if l.allows("passenger")]
+            pista = autos[len(autos) // 2]
+            out.append({"arco": e.getID(), "pista": pista.getID(), "indice": pista.getIndex(),
+                        "pistas": e.getLaneNumber(),
+                        "pistas_autos": sum(l.allows("passenger") for l in e.getLanes()),
                         "largo_m": round(e.getLength(), 1)})
     return out
 
@@ -101,6 +110,7 @@ def main() -> None:
     ap.add_argument("--alza-desde", type=int, default=1800)
     ap.add_argument("--cierre-desde", type=int, default=900)
     ap.add_argument("--fin", type=int, default=3600)
+    ap.add_argument("--solo-cierre", action="store_true", help="rehace solo el adicional del cierre")
     a = ap.parse_args()
     if sys.platform == "win32":
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -121,6 +131,13 @@ def main() -> None:
                          "largo_total_m": round(sum(t["largo_m"] for t in tramos)),
                          "variable": f'TSC_SUMO_EXTRA="-a {add}"'}
     print(f"Cierre: {len(tramos)} tramos, {informe['cierre']['largo_total_m']} m -> {add}")
+    if a.solo_cierre:
+        ruta = os.path.join(a.scenario, f"robustez_{a.perfil}.json")
+        previo = json.load(open(ruta, encoding="utf-8")) if os.path.exists(ruta) else {}
+        previo["cierre"] = informe["cierre"]
+        json.dump(previo, open(ruta, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+        print("OK (solo cierre)")
+        return
 
     # Alza súbita
     tmp = tempfile.mkdtemp(prefix="alza_")

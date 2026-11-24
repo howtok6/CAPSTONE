@@ -1,0 +1,29 @@
+{
+ "medida": "cola",
+ "switch_penalty": 2.0,
+ "delay_all_ajuste": 566.2,
+ "replicas_ajuste": 2,
+ "fuente": "results/ajuste_las_condes_providencia_eod_punta_tarde.json",
+ "ranking": [
+  {
+   "config": "cola|2.0",
+   "delay_all": 566.2
+  },
+  {
+   "config": "densidad|0.5",
+   "delay_all": 582.8
+  },
+  {
+   "config": "densidad|1.0",
+   "delay_all": 584.0
+  },
+  {
+   "config": "cola|0.0",
+   "delay_all": 590.3
+  },
+  {
+   "config": "densidad|0.05",
+   "delay_all": 592.4
+  }
+ ]
+}
