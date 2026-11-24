@@ -86,6 +86,23 @@ class MuestreoArcos:
                 self.vn[i] += k * c.edge.getLastStepMeanSpeed(e)
 
 
+NOTA_MANANA = ("Sin validación propia: la punta mañana usa los resultados de la punta tarde, el perfil "
+               "validado con TomTom (docs/datos/14-depuracion-y-validacion-tomtom.md).")
+
+
+def franjas_efectivas(args) -> list:
+    """FRANJAS con el perfil de demanda que se simula para cada una.
+
+    Con --manana-como-tarde la punta mañana no se simula aparte: toma las corridas de la punta
+    tarde. Es la decisión del 24-nov-2026 para el escenario del área, cuya demanda de la mañana
+    no se pudo validar (no hubo captura de TomTom en esa franja).
+    """
+    if not args.manana_como_tarde:
+        return list(FRANJAS)
+    tarde = next(p for f, _, p in FRANJAS if f == "punta_tarde")
+    return [(f, n, tarde if f == "punta_manana" else p) for f, n, p in FRANJAS]
+
+
 def una_corrida(args) -> None:
     import medir_colas_eje as base
     from tsc.demand import ruta_evaluacion
@@ -118,8 +135,9 @@ def armar(args) -> None:
     carpeta = os.path.join("results", "tiempos_app", esc_nombre)
     os.makedirs(carpeta, exist_ok=True)
     control = {"actual": ("webster", None), "adaptativo": ("ppo", args.model)}
+    franjas = franjas_efectivas(args)
     trabajos = []
-    for _, _, perfil in FRANJAS:
+    for perfil in dict.fromkeys(p for _, _, p in franjas):
         for esc, (ctrl, modelo) in control.items():
             for k in range(args.replicas):
                 out = os.path.join(carpeta, f"{perfil}_{esc}_s{k:02d}.json")
@@ -146,7 +164,7 @@ def armar(args) -> None:
     net = sumolib.net.readNet(os.path.join(args.scenario, "net.net.xml"))
     vel = {}  # arco -> franja -> escenario -> km/h
     cobertura = {}
-    for franja, _, perfil in FRANJAS:
+    for franja, _, perfil in franjas:
         for esc in control:
             n, vn = {}, {}
             for k in range(args.replicas):
@@ -179,7 +197,9 @@ def armar(args) -> None:
         "fuente": (FUENTES.get(esc_nombre) or f"Simulación SUMO del escenario {esc_nombre}")
                   + " No son mediciones en la calle.",
         "replicas": args.replicas, "calentamiento_s": CALENTAMIENTO,
-        "franjas": [{"id": f, "nombre": nombre, "perfil": perfil} for f, nombre, perfil in FRANJAS],
+        "franjas": [dict({"id": f, "nombre": nombre, "perfil": perfil},
+                         **({"nota": NOTA_MANANA} if args.manana_como_tarde and f == "punta_manana" else {}))
+                    for f, nombre, perfil in franjas],
         "control": {"actual": "webster", "adaptativo": os.path.basename(args.model)},
         "calles_con_dato": cobertura,
         "calles": calles,
@@ -199,6 +219,8 @@ def main() -> None:
     ap.add_argument("--rehacer", action="store_true", help="repite corridas que ya tienen resultado")
     ap.add_argument("--model", default="models/eje_comunal/ppo_fase_wait_adam_eod_mixto_s0.zip")
     ap.add_argument("--salida", default=os.path.join("..", "backend", "datos", "tiempos_eje.json"))
+    ap.add_argument("--manana-como-tarde", action="store_true",
+                    help="la punta mañana reutiliza las corridas de la punta tarde (no se simula aparte)")
     ap.add_argument("--profile")
     ap.add_argument("--controller", default="webster")
     ap.add_argument("--seed", type=int, default=0)

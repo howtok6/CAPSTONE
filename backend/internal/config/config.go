@@ -43,6 +43,6 @@ func Desde(getenv func(string) string) Config {
 		AgenteUsuario: valor("VIA_AGENTE", "via-capstone-backend/0.1 (proyecto academico DUOC UC)"),
 		TiempoEspera:  duracion("VIA_TIEMPO_ESPERA", 10*time.Second),
 		ViajeInactivo: duracion("VIA_VIAJE_INACTIVO", 2*time.Hour),
-		TiemposEje:    valor("VIA_TIEMPOS_EJE", "datos/tiempos_eje.json"),
+		TiemposEje:    valor("VIA_TIEMPOS_EJE", "datos/tiempos_area.json"),
 	}
 }

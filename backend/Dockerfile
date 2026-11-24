@@ -12,7 +12,7 @@ FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=compilacion /via-backend /via-backend
 # Tabla de tiempos de la simulación, para recomendar rutas según la hora.
 COPY --from=compilacion /src/datos /datos
-ENV VIA_TIEMPOS_EJE=/datos/tiempos_eje.json
+ENV VIA_TIEMPOS_EJE=/datos/tiempos_area.json
 ENV VIA_DIRECCION=:8080
 EXPOSE 8080
 USER nonroot

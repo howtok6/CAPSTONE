@@ -35,7 +35,7 @@ y rutas siguen funcionando (las rutas sin semáforos) y `/v1/salud` informa `deg
 | `VIA_AGENTE` | `via-capstone-backend/0.1 (...)` | User-Agent ante OSM |
 | `VIA_TIEMPO_ESPERA` | `10s` | Límite por llamada a otro servicio |
 | `VIA_VIAJE_INACTIVO` | `2h` | Se olvida un viaje sin actividad tras este plazo |
-| `VIA_TIEMPOS_EJE` | `datos/tiempos_eje.json` | Tabla de tiempos por calle y franja; sin ella las rutas no se estiman según la hora |
+| `VIA_TIEMPOS_EJE` | `datos/tiempos_area.json` | Tabla de tiempos por calle y franja (Las Condes + Providencia); sin ella las rutas no se estiman según la hora |
 
 Los servidores públicos de OSRM y Nominatim sirven para desarrollo. Nominatim exige como máximo una consulta por
 segundo: el backend la respeta y guarda las respuestas 24 h en caché. Para producción conviene un servidor propio.
@@ -117,22 +117,28 @@ Cómo se calcula (`internal/proveedores/historico` y `internal/servicios/rutas.g
    franja: la mediana de velocidad libre / velocidad simulada de las calles de la tabla.
 4. `duracion_adaptativo_min` repite el cálculo con las velocidades del agente; fuera de la tabla no cambia nada.
 
-La tabla `datos/tiempos_eje.json` se genera desde la tesis:
+La tabla por defecto, `datos/tiempos_area.json`, cubre **Las Condes y Providencia** completas y se genera desde la
+tesis:
 
 ```bash
 cd tsc-thesis
-python scripts/exportar_tiempos_app.py --armar --replicas 3   # ~35 min; escribe ../backend/datos/tiempos_eje.json
+python scripts/exportar_tiempos_app.py --armar --manana-como-tarde --replicas 3 --trabajadores 6 \
+  --scenario scenarios/las_condes_providencia \
+  --model models/las_condes_providencia/ppo_fase_wait_adam_eod_mixto_s2.zip \
+  --salida ../backend/datos/tiempos_area.json
 ```
 
-Corre la simulación del eje comunal con la demanda EOD (valle, punta mañana y punta tarde), con el plan de Webster
-(«actual») y con el agente IPPO mixto («adaptativo»), tres réplicas de una hora cada una, y guarda la velocidad
-media de cada calle. Límites que la app debe tener presentes:
+Corre la simulación del área (12.415 calles, 594 semáforos) con la demanda EOD validada con TomTom, con el plan de
+Webster («actual») y con el agente IPPO semilla 2 («adaptativo»), tres réplicas de una hora, y guarda la velocidad
+media de cada calle. `datos/tiempos_eje.json` es la tabla anterior, solo del eje (`VIA_TIEMPOS_EJE` la elige).
+Límites que la app debe tener presentes:
 
 - **Es simulación, no tráfico en vivo.** No ve accidentes, lluvia ni el día en particular.
-- **Solo cubre el eje** Alameda–Providencia–Apoquindo y 150 m a cada lado. Una ruta con `cobertura` baja se estima
-  casi entera con el supuesto del punto 3.
-- **La punta mañana está sobrestimada** en los tramos que la simulación satura, y la punta tarde hacia el oriente
-  sale más fluida que la única muestra de Waze del proyecto. Ver `docs/datos/12-demanda-eod.md`.
+- **Solo cubre las dos comunas.** Una ruta que sale del área tiene `cobertura` baja y se estima casi entera con el
+  supuesto del punto 3.
+- **La punta mañana repite la punta tarde.** No hubo captura de TomTom en la mañana y la demanda EOD de esa franja
+  salía sobresaturada, así que la franja usa los resultados de la tarde (decisión del 24-nov-2026; ver
+  `docs/datos/14-depuracion-y-validacion-tomtom.md`).
 
 ### Viajes
 

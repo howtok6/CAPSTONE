@@ -131,8 +131,9 @@ captura de cada uno.
   Es el mejor compromiso: sesgo de velocidad ≈ 0, índice 0,69 vs 0,71 y un nivel de atasco
   que sigue siendo exigente (11 %) sin la parálisis que tapaba las diferencias entre
   controladores. 0,12 calza mejor el índice, pero deja la demanda a la mitad del censo.
-* Validada en punta tarde (18-nov) y valle (19-nov). Pendiente: una captura de punta mañana
-  y repetir punta tarde otro día para ver la variación entre días.
+* Validada en punta tarde (18-nov) y valle (19-nov). Punta mañana no se capturó: usa los
+  resultados de punta tarde (sección 9). Queda como trabajo futuro repetir punta tarde otro día
+  para ver la variación entre días.
 
 ## 7. Qué queda obsoleto
 
@@ -296,7 +297,9 @@ posible es 0,002). Modelos: conjunto mixto valle + punta tarde, 3M muestras, sem
 | IPPO s1 | 574 ± 16 | +1,7 % | 0,193 | **187 ± 7** | 2.012 ± 53 |
 | **IPPO s2** | **553 ± 18** | **−2,0 %** | 0,846 | 189 ± 7 | **1.902 ± 100** |
 
-**Punta mañana** (líneas base; IPPO no se entrenó con este perfil)
+**Punta mañana** (líneas base; IPPO no se entrenó con este perfil). *Corrida exploratoria, fuera
+de las conclusiones: la demanda de la mañana no se pudo validar y la franja usa los resultados
+de punta tarde (sección 9).*
 
 | Controlador | delay_all (s) | Δ vs Webster | p | timeLoss (s) | En red al final |
 |---|---:|---:|---:|---:|---:|
@@ -463,6 +466,89 @@ Son el 3,7 % de los 565 cruces vehiculares UOCT del área. El efecto en la simul
 que en esas cuadras falta un punto de detención; en los 4 de coordenada corrida el cruce sí
 tiene semáforo en la red, a 50–80 m del punto del PDF.
 
+## 9. Punta mañana: se usan los resultados de la punta tarde (decisión del 24-nov)
+
+No hubo captura TomTom de punta mañana antes de la entrega. La API de flujo que usa el
+proyecto (`flowSegmentData`) solo da el tráfico del momento; el histórico de TomTom (Traffic
+Stats, portal MOVE) pide otra clave, trabaja con consultas asíncronas y entrega tramos
+propios que habría que volver a emparejar con la red, así que quedó fuera de plazo.
+
+La única referencia disponible para la mañana es el **TomTom Traffic Index 2025 de
+Santiago** (área metropolitana completa, https://www.tomtom.com/traffic-index/santiago-traffic/):
+
+| Santiago 2025 | Punta mañana | Punta tarde |
+|---|---:|---:|
+| Tiempo para 10 km | 30 min 9 s | 34 min 53 s |
+| Congestión media | 91,5 % | 110,6 % |
+| Velocidad media | 19,9 km/h | 17,2 km/h |
+
+En la ciudad real la mañana es **más liviana** que la tarde (≈ 16 % más rápida). En la
+simulación pasa lo contrario: con la demanda EOD de 07:00–09:00 a escala 0,18, Webster da
+806 s de demora contra 550 s en punta tarde y quedan ~24.000 vehículos en la red al final de
+la hora. La demanda de la mañana no es creíble y no se puede validar.
+
+**Decisión:** la punta mañana usa los resultados de la punta tarde, el perfil validado.
+
+* **Tesis.** Las conclusiones de H1, H3 y robustez se sacan de valle y punta tarde. La tabla
+  de líneas base de punta mañana (sección 7) queda como corrida exploratoria, fuera de las
+  conclusiones.
+* **App.** En la tabla de tiempos del área (`backend/datos/tiempos_area.json`) la franja
+  `punta_manana` repite las velocidades de `punta_tarde` (`exportar_tiempos_app.py
+  --manana-como-tarde`); la franja lleva una `nota` que lo dice.
+* **Limitación.** Se reutiliza el *nivel* de congestión, no la *dirección*: en la mañana el
+  flujo entra a Providencia y Las Condes y en la tarde sale. Una ruta hacia el oriente en la
+  mañana se estima con las velocidades de la tarde, cuando ese sentido es el cargado; el
+  error va hacia el lado conservador (más demora que la real) en el sentido de salida y al
+  revés en el de entrada.
+
+## 10. Cobertura de Las Condes y Providencia (24-nov)
+
+Chequeo por comuna con `scripts/verificar_cobertura_comunas.py` (→ `results/cobertura_comunas.json`;
+cada elemento se asigna a la comuna donde cae su punto medio, con los polígonos de `comunas.geojson`):
+
+| Capa | Las Condes | Providencia |
+|---|---|---|
+| Calles para autos en la red | 769 km | 257 km |
+| Grilla de 200 m con una calle a < 100 m | 70,5 % en la zona urbana (38,9 % de todo el polígono) | 95,8 % |
+| Cruces vehiculares UOCT con semáforo en la red | 301 / 311 (97 %) | 222 / 233 (95 %) |
+| Semáforos de la red | 278 | 224 |
+| … con plan Webster (valle, punta tarde) | 278 | 224 |
+| … controlados por los agentes | 260 (94 %) | 202 (90 %) |
+| Viajes que salen / llegan (punta tarde) | 11.566 / 10.874 | 11.375 / 8.256 |
+| Viajes que salen / llegan (valle) | 6.895 / 6.709 | 5.881 / 5.915 |
+| Tabla de la app: red principal con velocidad (punta tarde) | 271 / 300 km (90 %) | 113 / 122 km (92 %) |
+| Tabla de la app: calles locales con velocidad | 180 / 469 km (38 %) | 94 / 135 km (69 %) |
+
+Lectura:
+
+* **Las dos comunas están completas en todas las capas.** La red tiene todas las calles para
+  autos de OSM (salvo las vías `service`, que la depuración quitó), todos los semáforos tienen
+  plan y demanda que pasa por ellos, y el servicio de
+  simulación y la tabla de tiempos de la app cubren el área entera.
+* **Las Condes llega a la precordillera** (hasta lon −70,43), donde OSM no tiene calles para
+  autos: la red termina en lon −70,49. Al poniente de ese límite la grilla queda cubierta en
+  un 70,5 %; los puntos sin calle son parques, clubes de golf, cerros y quebradas
+  (Parque Araucano, Cerro Apoquindo, Aguas de Ramón). En Providencia el hueco es el
+  Parque Metropolitano.
+* **21 cruces UOCT sin semáforo en la red** (10 en Las Condes, 11 en Providencia): son los de la
+  sección 8, accesos a recintos y semáforos a mitad de cuadra.
+* **40 semáforos de las comunas no los controla el agente** (18 en Las Condes, 22 en
+  Providencia). Funcionan con su plan Webster: no tienen código UOCT, tienen una sola fase verde
+  o más de 4 (criterio de `listar_tls_area.py`).
+* **La tabla de la app** tiene velocidad en el 90–92 % de la red principal de ambas comunas.
+  Las calles locales con poco tráfico (menos de 30 vehículos-muestra en tres horas simuladas)
+  quedan sin dato y el backend las estima con el índice de congestión de la franja.
+* **Servicio de simulación** (`simulacion/run.py`): el escenario por defecto pasa a ser el
+  área (594 semáforos, demanda y plan Webster de punta tarde; `--perfil eod_valle` para valle),
+  con 3 recorridos de demostración desde Av. Providencia con Manuel Montt hasta Apoquindo con
+  Tomás Moro (7,2 km, 34 semáforos), Padre Hurtado con Av. Las Condes (9,9 km, por Costanera
+  Norte) y Tobalaba con Bilbao (4,0 km, 18 semáforos).
+* **Prueba de punta a punta (24-nov, backend + simulación locales):** ruta Manuel Montt →
+  Apoquindo/Tomás Moro con 35 semáforos y cobertura 0,97 de la tabla; estimación de 13,3 min en
+  valle y 22,1 min en punta mañana y punta tarde (21,3 min con el agente); `/v1/semaforos`
+  devuelve los 594 semáforos y un viaje simulado entrega el próximo semáforo con su cuenta
+  regresiva.
+
 ## Archivos
 
 | Archivo | Qué es |
@@ -473,6 +559,8 @@ tiene semáforo en la red, a 50–80 m del punto del PDF.
 | `scripts/comparar_tomtom.py` | SUMO vs TomTom en los mismos arcos (métricas y figura) |
 | `scripts/build_demand_area.py --carpeta --speed-factor` | Demanda a otra carpeta (calibración) y con velocidad deseada |
 | `scripts/resumen_validacion.py` | Tabla agregada de las comparaciones (`results/validacion/`) |
+| `scripts/verificar_cobertura_comunas.py` | Cobertura por comuna: red, semáforos, demanda y tabla de la app (sección 10) |
+| `scripts/exportar_tiempos_app.py --manana-como-tarde` | Tabla de tiempos de la app; la punta mañana repite la tarde (sección 9) |
 | `scenarios/las_condes_providencia/depuracion.json` | Informe de la depuración |
 | `data/tomtom/puntos_las_condes_providencia.json` | Los 120 puntos de la muestra |
 | `results/validacion/` | Métricas agregadas y figuras de cada comparación |

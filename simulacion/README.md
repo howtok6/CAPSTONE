@@ -1,6 +1,7 @@
 # Servicio de simulación — entorno de pruebas del backend
 
-Mantiene una simulación SUMO de `tsc-thesis/scenarios/eje_comunal` corriendo a velocidad real, con los semáforos en
+Mantiene una simulación SUMO de **Las Condes + Providencia** (`tsc-thesis/scenarios/las_condes_providencia`, 594
+semáforos; antes, el eje comunal) corriendo a velocidad real, con los semáforos en
 el **plan Webster coordinado**, y la expone como **proveedor de tráfico** para el backend Go: semáforos y su estado
 por acceso, tráfico por calle y viajes simulados. **La app no lo consulta directamente**; en producción se
 reemplaza por una fuente real de datos con el mismo contrato.
@@ -21,7 +22,9 @@ instantáneas protegidas por un candado.
 Desde `simulacion/`:
 
 ```bash
-python run.py                 # tiempo real, 127.0.0.1:8000
+python run.py                 # Las Condes + Providencia, punta tarde, tiempo real, 127.0.0.1:8000
+python run.py --perfil eod_valle            # demanda y plan Webster de valle
+python run.py --escenario ../tsc-thesis/scenarios/eje_comunal   # el eje anterior
 python run.py --velocidad 5   # 5 veces más rápido, para pruebas
 python -m pytest tests        # pruebas
 ```

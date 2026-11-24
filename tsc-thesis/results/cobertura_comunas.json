@@ -1,0 +1,424 @@
+{
+ "escenario": "las_condes_providencia",
+ "red": {
+  "LAS CONDES": {
+   "km_calles_autos": 768.8,
+   "puntos_grilla": 2471,
+   "puntos_con_calle": 960,
+   "cobertura_pct": 38.9,
+   "lon_este_red": -70.489,
+   "puntos_zona_urbana": 1362,
+   "cobertura_zona_urbana_pct": 70.5,
+   "huecos_muestra": [
+    [
+     -33.48392,
+     -70.4476
+    ],
+    [
+     -33.4714,
+     -70.43878
+    ],
+    [
+     -33.46205,
+     -70.46661
+    ],
+    [
+     -33.45707,
+     -70.42994
+    ],
+    [
+     -33.4493,
+     -70.47715
+    ],
+    [
+     -33.44402,
+     -70.4663
+    ],
+    [
+     -33.43863,
+     -70.46406
+    ],
+    [
+     -33.43276,
+     -70.50268
+    ],
+    [
+     -33.42926,
+     -70.49402
+    ],
+    [
+     -33.42604,
+     -70.4617
+    ],
+    [
+     -33.42029,
+     -70.48956
+    ],
+    [
+     -33.41522,
+     -70.46152
+    ],
+    [
+     -33.40785,
+     -70.4743
+    ],
+    [
+     -33.40058,
+     -70.47847
+    ],
+    [
+     -33.39146,
+     -70.48692
+    ],
+    [
+     -33.36812,
+     -70.47793
+    ]
+   ]
+  },
+  "PROVIDENCIA": {
+   "km_calles_autos": 257.4,
+   "puntos_grilla": 356,
+   "puntos_con_calle": 341,
+   "cobertura_pct": 95.8,
+   "lon_este_red": -70.488,
+   "puntos_zona_urbana": 356,
+   "cobertura_zona_urbana_pct": 95.8,
+   "huecos_muestra": [
+    [
+     -33.4447,
+     -70.61072
+    ],
+    [
+     -33.43732,
+     -70.62349
+    ],
+    [
+     -33.4341,
+     -70.59331
+    ],
+    [
+     -33.42816,
+     -70.63407
+    ],
+    [
+     -33.42819,
+     -70.63192
+    ],
+    [
+     -33.42638,
+     -70.63189
+    ],
+    [
+     -33.42641,
+     -70.62974
+    ],
+    [
+     -33.42461,
+     -70.62971
+    ],
+    [
+     -33.42464,
+     -70.62756
+    ],
+    [
+     -33.42286,
+     -70.62537
+    ],
+    [
+     -33.421,
+     -70.62964
+    ],
+    [
+     -33.42109,
+     -70.62319
+    ],
+    [
+     -33.41928,
+     -70.62315
+    ],
+    [
+     -33.41221,
+     -70.61227
+    ],
+    [
+     -33.41044,
+     -70.61009
+    ]
+   ]
+  }
+ },
+ "semaforos": {
+  "PROVIDENCIA": {
+   "red": 224,
+   "controlados_agente": 202,
+   "plan_webster_eod_valle": 224,
+   "plan_webster_eod_punta_manana": 224,
+   "plan_webster_eod_punta_tarde": 224,
+   "uoct_vehicular": 233,
+   "uoct_emparejados": 222,
+   "uoct_sin_semaforo": [
+    {
+     "codigo": "J001391",
+     "cruce": "VITACURA / ACCESO HOSPITAL",
+     "lat": -33.41887,
+     "lon": -70.605617,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J001611",
+     "cruce": "SUECIA / CORONEL-LAS BELLOTAS",
+     "lat": -33.422834,
+     "lon": -70.607587,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J001832",
+     "cruce": "SANTA MARIA / PUENTE RAKAMALAC",
+     "lat": -33.433748,
+     "lon": -70.629435,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J001911",
+     "cruce": "SALVADOR / ALTURA HOSPITAL SALVAD",
+     "lat": -33.437152,
+     "lon": -70.625428,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J002332",
+     "cruce": "SANTA MARIA / PUENTE NUEVA TAJAMAR",
+     "lat": -33.42454,
+     "lon": -70.622896,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J003141",
+     "cruce": "TAJAMAR O / COSTANERA ANDRES BELLO",
+     "lat": -33.41704,
+     "lon": -70.607703,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J004241",
+     "cruce": "TOBALABA / CARMEN SYLVA",
+     "lat": -33.4232237,
+     "lon": -70.5972243,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J005191",
+     "cruce": "POCURO / ALTURA 1920",
+     "lat": -33.43657,
+     "lon": -70.609727,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J005193",
+     "cruce": "REGIMIENTO CAZADORES / BILBAO SUR",
+     "lat": -33.438491,
+     "lon": -70.610543,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J005871",
+     "cruce": "SUECIA / BUSTOS",
+     "lat": -33.4394905,
+     "lon": -70.6041318,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J998113",
+     "cruce": "LUIS THAYER OJEDA / PASEO PDTE. ERRAZURIZ",
+     "lat": -33.418269,
+     "lon": -70.602945,
+     "motivo": "sin_nodo"
+    }
+   ]
+  },
+  "LAS CONDES": {
+   "red": 278,
+   "controlados_agente": 260,
+   "plan_webster_eod_valle": 278,
+   "plan_webster_eod_punta_manana": 278,
+   "plan_webster_eod_punta_tarde": 278,
+   "uoct_vehicular": 311,
+   "uoct_emparejados": 301,
+   "uoct_sin_semaforo": [
+    {
+     "codigo": "J055191",
+     "cruce": "COLEGIO DUNALASTAIR / LAS CONDES",
+     "lat": -33.374389,
+     "lon": -70.521264,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J057241",
+     "cruce": "HOSPITAL FACH / LAS CONDES",
+     "lat": -33.395051,
+     "lon": -70.547744,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J057311",
+     "cruce": "LAS CONDES / ANGOSTURA INGLESA",
+     "lat": -33.3893547,
+     "lon": -70.542505,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J061561",
+     "cruce": "CAMINO EL ALBA / CAMINO EL ALGARROBO",
+     "lat": -33.40222,
+     "lon": -70.53371,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J066221",
+     "cruce": "ALEJANDRO FLEMING / CLINICA CORDILLERA",
+     "lat": -33.425013,
+     "lon": -70.550024,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J103232",
+     "cruce": "ISIDORA GOYENECHEA / EDIFICIO LAS INDUSTRIAS",
+     "lat": -33.41403,
+     "lon": -70.604161,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J151961",
+     "cruce": "F. BULNES CORREA / SAN FRANCISCO DE ASIS",
+     "lat": -33.382696,
+     "lon": -70.507482,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J160351",
+     "cruce": "TOMAS MORO (ALTURA # 272) / COLEGIO A.EDWARDS",
+     "lat": -33.410952,
+     "lon": -70.552284,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J998145",
+     "cruce": "LOS MILITARES / ESTOCOLMO",
+     "lat": -33.4038521,
+     "lon": -70.566668,
+     "motivo": "sin_nodo"
+    },
+    {
+     "codigo": "J998146",
+     "cruce": "SAN ANTONIO / CHARLES HAMILTON",
+     "lat": -33.3787502,
+     "lon": -70.5074796,
+     "motivo": "sin_nodo"
+    }
+   ]
+  },
+  "fuera (borde)": {
+   "red": 92,
+   "controlados_agente": 25,
+   "plan_webster_eod_valle": 92,
+   "plan_webster_eod_punta_manana": 92,
+   "plan_webster_eod_punta_tarde": 92,
+   "uoct_vehicular": 21,
+   "uoct_emparejados": 21,
+   "uoct_sin_semaforo": []
+  }
+ },
+ "demanda": {
+  "eod_valle": {
+   "viajes": 20090,
+   "salen": {
+    "fuera": 7314,
+    "LAS CONDES": 6895,
+    "PROVIDENCIA": 5881
+   },
+   "llegan": {
+    "fuera": 7466,
+    "LAS CONDES": 6709,
+    "PROVIDENCIA": 5915
+   }
+  },
+  "eod_punta_manana": {
+   "viajes": 48281,
+   "salen": {
+    "PROVIDENCIA": 11625,
+    "fuera": 22596,
+    "LAS CONDES": 14060
+   },
+   "llegan": {
+    "PROVIDENCIA": 15484,
+    "fuera": 16371,
+    "LAS CONDES": 16426
+   }
+  },
+  "eod_punta_tarde": {
+   "viajes": 35093,
+   "salen": {
+    "PROVIDENCIA": 11375,
+    "LAS CONDES": 11566,
+    "fuera": 12152
+   },
+   "llegan": {
+    "fuera": 15963,
+    "PROVIDENCIA": 8256,
+    "LAS CONDES": 10874
+   }
+  }
+ },
+ "app": {
+  "escenario": "las_condes_providencia",
+  "generado": "2026-11-24T16:59:31",
+  "franjas": [
+   {
+    "id": "valle",
+    "nombre": "Valle",
+    "perfil": "eod_valle"
+   },
+   {
+    "id": "punta_manana",
+    "nombre": "Punta mañana",
+    "perfil": "eod_punta_tarde",
+    "nota": "Sin validación propia: la punta mañana usa los resultados de la punta tarde, el perfil validado con TomTom (docs/datos/14-depuracion-y-validacion-tomtom.md)."
+   },
+   {
+    "id": "punta_tarde",
+    "nombre": "Punta tarde",
+    "perfil": "eod_punta_tarde"
+   }
+  ],
+  "por_comuna": {
+   "LAS CONDES": {
+    "calles": 7308,
+    "valle/actual": 2972,
+    "valle/adaptativo": 2965,
+    "punta_manana/actual": 3672,
+    "punta_manana/adaptativo": 3671,
+    "punta_tarde/actual": 3672,
+    "punta_tarde/adaptativo": 3671
+   },
+   "fuera (borde)": {
+    "calles": 2364,
+    "valle/actual": 1322,
+    "valle/adaptativo": 1309,
+    "punta_manana/actual": 1474,
+    "punta_manana/adaptativo": 1481,
+    "punta_tarde/actual": 1474,
+    "punta_tarde/adaptativo": 1481
+   },
+   "PROVIDENCIA": {
+    "calles": 2743,
+    "valle/actual": 1806,
+    "valle/adaptativo": 1788,
+    "punta_manana/actual": 2002,
+    "punta_manana/adaptativo": 1996,
+    "punta_tarde/actual": 2002,
+    "punta_tarde/adaptativo": 1996
+   }
+  }
+ }
+}

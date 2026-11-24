@@ -152,3 +152,22 @@ def test_api_de_punta_a_punta(monkeypatch):
         trafico = cliente.get("/trafico").json()
         assert {c["id"] for c in trafico["calles"]} == {c["id"] for c in calles}
         assert {c["nivel"] for c in trafico["calles"]} <= {"libre", "fluido", "moderado", "congestionado"}
+
+
+AREA = os.path.join(RAIZ, "scenarios", "las_condes_providencia")
+
+
+@pytest.mark.skipif(not os.path.exists(os.path.join(AREA, "net.net.xml")), reason="falta las_condes_providencia")
+def test_area_elige_demanda_plan_y_recorridos():
+    """El área no trae routes.rou.xml: toma la demanda y el plan Webster del perfil
+    (punta tarde por defecto) y sus propios recorridos de demostración."""
+    from via_sim.simulacion import SimulacionEnVivo
+
+    sim = SimulacionEnVivo(AREA)
+    assert sim.perfil == "eod_punta_tarde"
+    assert sim.route_file.endswith(os.path.join("demand", "routes_eod_punta_tarde.rou.xml"))
+    assert sim.plan.endswith("webster_plan_eod_punta_tarde.json")
+    assert os.path.exists(sim.route_file) and os.path.exists(sim.plan)
+    assert len(sim.destinos_def) == 3 and sim.origen[0].startswith("Av. Providencia")
+    valle = SimulacionEnVivo(AREA, perfil="eod_valle")
+    assert valle.plan.endswith("webster_plan_eod_valle.json")

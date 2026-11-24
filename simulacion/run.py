@@ -20,7 +20,10 @@ TSC = os.environ.get("TSC_RAIZ", os.path.join(AQUI, "..", "tsc-thesis"))
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--escenario", default=os.path.join(TSC, "scenarios", "eje_comunal"))
+    ap.add_argument("--escenario", default=os.path.join(TSC, "scenarios", "las_condes_providencia"),
+                    help="carpeta del escenario (por defecto, Las Condes + Providencia)")
+    ap.add_argument("--perfil", default="",
+                    help="perfil de demanda del área (eod_valle, eod_punta_tarde); vacío = punta tarde")
     ap.add_argument("--velocidad", type=float, default=1.0, help="1 = tiempo real; 0 = sin pausa")
     ap.add_argument("--calentamiento", type=int, default=300, help="segundos simulados antes de abrir")
     ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 para exponerlo en la red (p. ej. en Docker)")
@@ -29,6 +32,7 @@ def main() -> None:
 
     os.environ["TSC_RAIZ"] = os.path.abspath(TSC)
     os.environ["TSC_ESCENARIO"] = args.escenario
+    os.environ["TSC_PERFIL"] = args.perfil
     os.environ["TSC_VELOCIDAD"] = str(args.velocidad)
     os.environ["TSC_CALENTAMIENTO"] = str(args.calentamiento)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")

@@ -30,6 +30,7 @@ def _simulacion_desde_entorno() -> SimulacionEnVivo:
         os.environ.get("TSC_ESCENARIO", str(RAIZ / "scenarios" / "eje_comunal")),
         velocidad=float(os.environ.get("TSC_VELOCIDAD", "1")),
         calentamiento=int(os.environ.get("TSC_CALENTAMIENTO", "300")),
+        perfil=os.environ.get("TSC_PERFIL") or None,
     )
 
 

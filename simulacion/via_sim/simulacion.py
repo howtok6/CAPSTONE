@@ -55,6 +55,23 @@ DESTINOS = [
     ("matucana", "Matucana", -70.67882, -33.45068),  # C11, al poniente
 ]
 
+# Recorridos por escenario (nombre de la carpeta). El del área parte en Providencia y
+# termina en cruces del inventario UOCT de ambas comunas (uoct_match.json).
+RECORRIDOS = {
+    "eje_comunal": (ORIGEN, DESTINOS),
+    "las_condes_providencia": (
+        ("Av. Providencia con Manuel Montt", -70.620355, -33.428811),  # J001121
+        [
+            ("apoquindo_tomas_moro", "Av. Apoquindo con Tomás Moro", -70.551794, -33.408396),  # J060141
+            ("padre_hurtado_las_condes", "Padre Hurtado con Av. Las Condes", -70.545483, -33.394198),  # J057251
+            ("tobalaba_bilbao", "Tobalaba con Bilbao", -70.584766, -33.431779),  # J005431
+        ],
+    ),
+}
+# Perfil de demanda del escenario del área cuando no se indica otro: la punta tarde es el
+# perfil validado con TomTom (la punta mañana también usa sus resultados, 24-nov-2026).
+PERFIL_POR_DEFECTO = "eod_punta_tarde"
+
 NOMBRES_CORTOS = {
     "Avenida Libertador Bernardo O'Higgins": "Alameda",
     "Avenida ": "Av. ",
@@ -162,11 +179,24 @@ class SimulacionEnVivo:
         fin: int = 3600,
         semilla: int = 0,
         plan: str | os.PathLike | None = None,
+        perfil: str | None = None,
     ):
         self.escenario = Path(escenario)
         self.net_file = str(self.escenario / "net.net.xml")
-        self.route_file = str(self.escenario / "routes.rou.xml")
-        self.plan = str(plan or self.escenario / "webster_plan.json")
+        # eje_comunal trae routes.rou.xml y webster_plan.json; el área, un archivo por perfil
+        # de demanda (demand/routes_<perfil>.rou.xml y webster_plan_<perfil>.json).
+        self.perfil = perfil
+        rutas = self.escenario / "routes.rou.xml"
+        if perfil or not rutas.exists():
+            self.perfil = perfil or PERFIL_POR_DEFECTO
+            rutas = self.escenario / "demand" / f"routes_{self.perfil}.rou.xml"
+        self.route_file = str(rutas)
+        if plan is None:
+            plan = self.escenario / "webster_plan.json"
+            if self.perfil and (self.escenario / f"webster_plan_{self.perfil}.json").exists():
+                plan = self.escenario / f"webster_plan_{self.perfil}.json"
+        self.plan = str(plan)
+        self.origen, self.destinos_def = RECORRIDOS.get(self.escenario.name, (ORIGEN, DESTINOS))
         self.velocidad = velocidad  # 1 = tiempo real; 0 = lo más rápido posible
         self.calentamiento = calentamiento
         self.fin = fin
@@ -221,9 +251,9 @@ class SimulacionEnVivo:
         return [
             {
                 "ruta": i,
-                "id": DESTINOS[i][0],
-                "nombre": DESTINOS[i][1],
-                "origen": ORIGEN[0],
+                "id": self.destinos_def[i][0],
+                "nombre": self.destinos_def[i][1],
+                "origen": self.origen[0],
                 "distancia_km": round(r["largo_m"] / 1000, 1),
                 "trazado": r.get("trazado", []),
                 "semaforos": [
@@ -242,8 +272,8 @@ class SimulacionEnVivo:
         ]
 
     def crear_viaje(self, ruta: int, esperar: float = 10.0) -> dict:
-        if not 0 <= ruta < len(DESTINOS):
-            raise ValueError(f"ruta debe estar entre 0 y {len(DESTINOS) - 1}")
+        if not 0 <= ruta < len(self.destinos_def):
+            raise ValueError(f"ruta debe estar entre 0 y {len(self.destinos_def) - 1}")
         futuro: Future = Future()
         self._ordenes.put(("crear", ruta, futuro))
         return futuro.result(timeout=esperar)
@@ -341,11 +371,11 @@ class SimulacionEnVivo:
             cerca = [(e, d) for e, d in cerca if e.allows("passenger") and e.getFunction() != "internal"]
             return [e.getID() for e, _ in sorted(cerca, key=lambda par: par[1])[:6]]
 
-        origenes = candidatos(ORIGEN[1], ORIGEN[2])
+        origenes = candidatos(self.origen[1], self.origen[2])
         if not origenes:
-            raise RuntimeError(f"el origen «{ORIGEN[0]}» queda fuera de la red")
+            raise RuntimeError(f"el origen «{self.origen[0]}» queda fuera de la red")
         rutas = []
-        for clave, nombre, lon, lat in DESTINOS:
+        for clave, nombre, lon, lat in self.destinos_def:
             mejor = None
             for o in origenes:
                 for d in candidatos(lon, lat):
@@ -554,7 +584,7 @@ class SimulacionEnVivo:
             "id": v.id,
             "estado": v.estado,
             "ruta": v.destino,
-            "destino": DESTINOS[v.destino][1],
+            "destino": self.destinos_def[v.destino][1],
             "tiempo_sim": sim.time,
             "distancia_total_m": round(v.largo_m),
         }
@@ -586,6 +616,7 @@ class SimulacionEnVivo:
             self._estado = {
                 "lista": True,
                 "escenario": self.escenario.name,
+            "perfil": self.perfil,
                 "controlador": "webster",
                 "tiempo_sim": sim.time,
                 "vehiculos": c.vehicle.getIDCount(),

@@ -1,11 +1,13 @@
 // Package historico estima cuánto demora un trazado según la franja horaria,
-// con la tabla de velocidades por calle que exporta la simulación del eje
-// (tsc-thesis/scripts/exportar_tiempos_app.py -> backend/datos/tiempos_eje.json).
+// con la tabla de velocidades por calle que exporta la simulación
+// (tsc-thesis/scripts/exportar_tiempos_app.py -> backend/datos/tiempos_area.json,
+// Las Condes + Providencia; tiempos_eje.json es la tabla anterior del eje).
 //
 // La tabla trae, por calle y franja, la velocidad media con el control actual
 // (Webster) y con el control adaptativo (agente IPPO). Son resultados de
 // simulación con demanda EOD calibrada, no mediciones en la calle, y solo
-// cubren la franja de 150 m a cada lado de Alameda-Providencia-Apoquindo.
+// cubren las calles de la red simulada. En la tabla del área la punta mañana
+// repite los valores de la punta tarde (la mañana no se pudo validar).
 package historico
 
 import (
