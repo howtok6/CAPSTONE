@@ -15,8 +15,7 @@ RUN pip install --no-cache-dir -r simulacion/requirements.txt
 
 # Solo lo que la simulación necesita de la tesis: el arnés, la red del área (Las Condes +
 # Providencia, escenario por defecto) con su demanda y planes Webster, y la red del eje.
-# Las rutas del área no están en git (routes_eod_*.rou.xml): se generan con
-# tsc-thesis/scripts/build_demand_area.py antes de construir la imagen.
+# Las rutas de valle y punta tarde del área están en git (escala 0,18, speedFactor 0,7).
 COPY tsc-thesis/src tsc-thesis/src
 COPY tsc-thesis/scenarios/las_condes_providencia/net.net.xml \
      tsc-thesis/scenarios/las_condes_providencia/webster_plan_eod_valle.json \

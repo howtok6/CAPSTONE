@@ -48,3 +48,6 @@ tsc-thesis/data/eod2012/
 tsc-thesis/results/tiempos_app/
 # Rutas de los perfiles EOD (~18 MB): se regeneran con scripts/build_demand_eod.py
 tsc-thesis/scenarios/*/demand/routes_eod_*.rou.xml
+# Excepción: la demanda validada del área la usa el servicio de simulación (y su imagen Docker)
+!tsc-thesis/scenarios/las_condes_providencia/demand/routes_eod_valle.rou.xml
+!tsc-thesis/scenarios/las_condes_providencia/demand/routes_eod_punta_tarde.rou.xml
