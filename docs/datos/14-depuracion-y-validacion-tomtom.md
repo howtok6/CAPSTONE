@@ -201,6 +201,72 @@ Mismo patrón que en punta tarde: todos superan al tiempo fijo con intervalos se
 Max-Pressure es el mejor en timeLoss y cola. Con la red original y n = 3, Webster, voraz y
 Max-Pressure no se distinguían entre sí.
 
+### Resultados finales de la tanda v2, todos en la red actual (24-nov)
+
+Todo lo que sigue corrió en la misma red (con la corrección de verdes inseguros) y con las mismas
+réplicas de demanda. Media ± IC95; p = Wilcoxon pareado por réplica; demora total =
+`delay_all` × vehículos considerados. Las secciones fechadas el 23-nov más abajo quedan como
+registro (mezclaban dos versiones de la red).
+
+**Valle (10 réplicas)**
+
+| Controlador | delay_all (s) | vs Webster | p | timeLoss (s) | Cola media | Terminados |
+|---|---:|---:|---:|---:|---:|---:|
+| Tiempo fijo | 335 ± 15 | +64,3 % | 0,002 | 259 ± 4 | 1.028 ± 28 | 14.521 |
+| **Webster** | **204 ± 13** | — | — | 157 ± 4 | 519 ± 28 | **15.771** |
+| Voraz | 254 ± 11 | +24,5 % | 0,002 | 141 ± 3 | 545 ± 33 | 15.015 |
+| Max-Pressure ajustado | 223 ± 12 | +9,5 % | 0,014 | **128 ± 2** | 473 ± 43 | 15.314 |
+| IPPO s0 | 241 ± 13 | +18,4 % | 0,002 | 150 ± 3 | 373 ± 29 | 15.223 |
+| IPPO s1 | 268 ± 19 | +31,7 % | 0,002 | 147 ± 4 | 436 ± 49 | 14.726 |
+| IPPO s2 | 249 ± 14 | +22,0 % | 0,002 | 139 ± 3 | **359 ± 31** | 15.030 |
+
+**Punta tarde (10 réplicas)**
+
+| Controlador | delay_all (s) | vs Webster | p | timeLoss (s) | Cola media | Terminados |
+|---|---:|---:|---:|---:|---:|---:|
+| Tiempo fijo | 631 ± 17 | +14,7 % | 0,002 | 292 ± 9 | 3.168 ± 93 | 18.486 |
+| **Webster** | **550 ± 17** | — | — | 225 ± 10 | 2.573 ± 82 | **19.765** |
+| Voraz | 598 ± 21 | +8,8 % | 0,006 | 205 ± 10 | 2.547 ± 116 | 18.450 |
+| Max-Pressure ajustado | 599 ± 19 | +8,9 % | 0,004 | 209 ± 11 | 2.627 ± 103 | 18.453 |
+| IPPO s0 | 572 ± 25 | +3,9 % | 0,193 | 190 ± 8 | 2.036 ± 123 | 18.960 |
+| IPPO s1 | 574 ± 16 | +4,3 % | 0,006 | **187 ± 7** | 2.012 ± 53 | 18.945 |
+| IPPO s2 | 553 ± 18 | +0,5 % | 0,846 | 189 ± 7 | **1.902 ± 100** | 19.414 |
+
+**H1 no se cumple:** el mejor IPPO (s2) empata con Webster en punta tarde (+0,5 %, p 0,85) y en
+valle todos los IPPO quedan 18–32 % por encima. IPPO gana en cola (−26 % en punta tarde, −31 % en
+valle con s2) y en timeLoss (−16 % en punta tarde), pero termina menos viajes que Webster.
+
+**H3: IPPO vs MAPPO controlando solo los 206 semáforos de Providencia** (el resto, tiempo fijo;
+3 semillas × 10 réplicas, comparación pareada por semilla y réplica, n = 30):
+
+| Perfil | IPPO | MAPPO | MAPPO vs IPPO | p | IPPO vs tiempo fijo | MAPPO vs tiempo fijo |
+|---|---:|---:|---:|---:|---:|---:|
+| Valle | 299 ± 7 | 325 ± 11 | +8,6 % | < 0,001 | −10,8 % (p 0,002) | −3,1 % (p 0,16) |
+| Punta tarde | 615 ± 7 | 616 ± 11 | +0,3 % | 0,79 | −2,6 % (p 0,02) | −2,3 % (p 0,19) |
+
+Por semilla, MAPPO vs IPPO: valle +9,0 % (p 0,006), −0,2 % (p 1,0) y +17,4 % (p 0,002); punta
+tarde +4,3 % (p 0,002), −1,8 % y −1,7 % (p 0,38). **H3 no se cumple:** el crítico centralizado no
+mejora a IPPO; en valle lo empeora y aumenta la variación entre semillas. Controlar solo Providencia
+deja a los dos lejos de Webster en toda el área (+12 % en punta tarde, +47–59 % en valle), lo que
+es esperable: Webster ajusta los 594 semáforos y aquí los agentes controlan 206.
+
+**Robustez: cierre de la pista central de autos de Av. Providencia** (sentido poniente, 9 tramos,
+629 m, desde los 900 s; 5 réplicas frente a la misma base en la red actual):
+
+| Controlador | delay_all base | Con cierre | Δ | p | En la red al final |
+|---|---:|---:|---:|---:|---:|
+| Tiempo fijo | 620 ± 13 | 652 ± 19 | +5,2 % | 0,06 | 15.496 |
+| Webster | 543 ± 19 | 573 ± 48 | +5,6 % | 0,06 | 14.417 |
+| Voraz | 592 ± 47 | 603 ± 43 | **+1,9 %** | 0,63 | 15.306 |
+| Max-Pressure ajustado | 611 ± 34 | 641 ± 29 | +4,9 % | 0,19 | 16.150 |
+| IPPO s0 | 558 ± 49 | 585 ± 38 | +4,7 % | 0,06 | 14.940 |
+| IPPO s1 | 570 ± 12 | 587 ± 26 | +2,9 % | 0,31 | 15.012 |
+| **IPPO s2** | 541 ± 32 | **570 ± 27** | +5,3 % | 0,06 | 14.616 |
+
+Con el cierre, IPPO s2 (570 s) y Webster (573 s) siguen empatados. El voraz es el que menos se
+degrada (+1,9 %), porque reacciona a las colas que forma el cierre; los demás pierden entre 3 y 6 %.
+Ninguna perturbación cambia el orden de los controladores (el alza del 30 % está más abajo).
+
 ### IPPO v2 frente a las líneas base (23-nov, 10 réplicas)
 
 Media ± IC95; p = Wilcoxon pareado por réplica contra Webster en `delay_all` (con n = 10 el mínimo
