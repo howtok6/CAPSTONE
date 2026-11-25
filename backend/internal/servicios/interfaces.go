@@ -31,6 +31,13 @@ type SimuladorViajes interface {
 	FinalizarViaje(ctx context.Context, id string) error
 }
 
+// AjustadorSimulacion lee y cambia la velocidad y el perfil de demanda de la
+// simulación (para las demos de la app).
+type AjustadorSimulacion interface {
+	Ajustes(ctx context.Context) (dominio.AjustesSimulacion, error)
+	CambiarAjustes(ctx context.Context, c dominio.CambioAjustes) (dominio.AjustesSimulacion, error)
+}
+
 // Enrutador calcula rutas en auto (OSRM).
 type Enrutador interface {
 	Rutas(ctx context.Context, paradas []geo.Punto, alternativas bool) ([]dominio.Ruta, error)

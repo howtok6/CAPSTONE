@@ -92,3 +92,44 @@ func TestViajeLibre(t *testing.T) {
 		t.Errorf("fuera del área: %v", err)
 	}
 }
+
+func TestAjustes(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/ajustes" {
+			w.WriteHeader(http.StatusTeapot)
+			return
+		}
+		if r.Method == http.MethodGet {
+			_, _ = w.Write([]byte(`{"velocidad":5.0,"perfil":"eod_punta_tarde","perfiles":["eod_punta_tarde","eod_valle"],"lista":true}`))
+			return
+		}
+		var c dominio.CambioAjustes
+		_ = json.NewDecoder(r.Body).Decode(&c)
+		if c.Perfil != nil && *c.Perfil == "eod_punta_manana" {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			_, _ = w.Write([]byte(`{"detail":"perfil desconocido: eod_punta_manana (disponibles: eod_punta_tarde, eod_valle)"}`))
+			return
+		}
+		if c.Velocidad == nil || *c.Velocidad != 3 {
+			t.Errorf("cambio = %+v", c)
+		}
+		_, _ = w.Write([]byte(`{"velocidad":3.0,"perfil":"eod_punta_tarde","perfiles":["eod_punta_tarde","eod_valle"],"lista":true}`))
+	}))
+	defer srv.Close()
+	c := Nuevo(srv.URL, time.Second)
+	ctx := context.Background()
+
+	a, err := c.Ajustes(ctx)
+	if err != nil || a.Velocidad != 5 || a.Perfil != "eod_punta_tarde" || len(a.Perfiles) != 2 || !a.Lista {
+		t.Fatalf("ajustes = %+v, %v", a, err)
+	}
+	tres := 3.0
+	if a, err = c.CambiarAjustes(ctx, dominio.CambioAjustes{Velocidad: &tres}); err != nil || a.Velocidad != 3 {
+		t.Fatalf("cambiar velocidad = %+v, %v", a, err)
+	}
+	manana := "eod_punta_manana"
+	_, err = c.CambiarAjustes(ctx, dominio.CambioAjustes{Perfil: &manana})
+	if !errors.Is(err, dominio.ErrInvalido) || !strings.Contains(err.Error(), "perfil desconocido") {
+		t.Errorf("perfil desconocido: %v", err)
+	}
+}

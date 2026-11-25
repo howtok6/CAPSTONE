@@ -61,6 +61,24 @@ func (sim) Viaje(context.Context, string) (dominio.ViajeSimulado, error) {
 }
 func (sim) FinalizarViaje(context.Context, string) error { return nil }
 
+type ajustador struct{ a *dominio.AjustesSimulacion }
+
+func (j ajustador) Ajustes(context.Context) (dominio.AjustesSimulacion, error) { return *j.a, nil }
+func (j ajustador) CambiarAjustes(_ context.Context, c dominio.CambioAjustes) (dominio.AjustesSimulacion, error) {
+	if c.Perfil != nil {
+		if *c.Perfil != "eod_valle" && *c.Perfil != "eod_punta_tarde" {
+			return dominio.AjustesSimulacion{}, fmt.Errorf("%w: perfil desconocido: %s", dominio.ErrInvalido, *c.Perfil)
+		}
+		if *c.Perfil != j.a.Perfil {
+			j.a.Perfil, j.a.Lista = *c.Perfil, false
+		}
+	}
+	if c.Velocidad != nil {
+		j.a.Velocidad = *c.Velocidad
+	}
+	return *j.a, nil
+}
+
 type enrutador struct{}
 
 func (enrutador) Rutas(_ context.Context, p []geo.Punto, _ bool) ([]dominio.Ruta, error) {
@@ -254,5 +272,40 @@ func TestCORS(t *testing.T) {
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent || resp.Header.Get("Access-Control-Allow-Origin") != "*" {
 		t.Errorf("preflight: %d %v", resp.StatusCode, resp.Header)
+	}
+}
+
+func TestAjustesDeLaSimulacion(t *testing.T) {
+	estado := &dominio.AjustesSimulacion{Velocidad: 1, Perfil: "eod_punta_tarde", Perfiles: []string{"eod_punta_tarde", "eod_valle"}, Lista: true}
+	nav := servicios.NuevaNavegacion(trafico{})
+	srv := httptest.NewServer(Nuevo(Dependencias{
+		Navegacion: nav, Rutas: servicios.NuevasRutas(enrutador{}, nav),
+		AjustesSimulacion: ajustador{estado},
+	}))
+	t.Cleanup(srv.Close)
+
+	st, obj, _ := pedir(t, srv, "GET", "/v1/simulacion/ajustes", "")
+	if st != 200 || obj["perfil"] != "eod_punta_tarde" || obj["velocidad"] != 1.0 || obj["lista"] != true {
+		t.Fatalf("ver ajustes: %d %v", st, obj)
+	}
+	st, obj, _ = pedir(t, srv, "POST", "/v1/simulacion/ajustes", `{"velocidad":3}`)
+	if st != 200 || obj["velocidad"] != 3.0 || obj["lista"] != true {
+		t.Errorf("velocidad: %d %v", st, obj)
+	}
+	st, obj, _ = pedir(t, srv, "POST", "/v1/simulacion/ajustes", `{"perfil":"eod_valle"}`)
+	if st != 200 || obj["perfil"] != "eod_valle" || obj["lista"] != false {
+		t.Errorf("perfil: %d %v", st, obj)
+	}
+	for _, cuerpo := range []string{`{}`, `{"velocidad":-2}`, `{"velocidad":80}`, `{"perfil":" "}`, `{"perfil":"eod_punta_manana"}`} {
+		if st, obj, _ = pedir(t, srv, "POST", "/v1/simulacion/ajustes", cuerpo); st != 400 || codigoError(obj) != "solicitud_invalida" {
+			t.Errorf("%s: %d %v", cuerpo, st, obj)
+		}
+	}
+
+	// Sin simulación configurada, el servicio no está disponible.
+	sinSim := httptest.NewServer(Nuevo(Dependencias{Navegacion: nav, Rutas: servicios.NuevasRutas(enrutador{}, nav)}))
+	t.Cleanup(sinSim.Close)
+	if st, obj, _ = pedir(t, sinSim, "GET", "/v1/simulacion/ajustes", ""); st != 503 {
+		t.Errorf("sin simulación: %d %v", st, obj)
 	}
 }

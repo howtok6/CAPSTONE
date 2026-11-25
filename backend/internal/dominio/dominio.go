@@ -165,6 +165,21 @@ type Viaje struct {
 	Recorrido *RecorridoSimulado `json:"recorrido,omitempty"`
 }
 
+// AjustesSimulacion: velocidad y perfil de demanda de la simulación en vivo.
+// Lista es false mientras la simulación se reinicia por un cambio de perfil.
+type AjustesSimulacion struct {
+	Velocidad float64  `json:"velocidad"` // 1 = tiempo real
+	Perfil    string   `json:"perfil"`    // eod_valle | eod_punta_tarde
+	Perfiles  []string `json:"perfiles"`  // perfiles disponibles
+	Lista     bool     `json:"lista"`
+}
+
+// CambioAjustes: lo que se quiere cambiar; los campos nil no cambian.
+type CambioAjustes struct {
+	Velocidad *float64 `json:"velocidad,omitempty"`
+	Perfil    *string  `json:"perfil,omitempty"`
+}
+
 // RecorridoSimulado: trazado y semáforos de un viaje simulado libre, tal como
 // los calcula la simulación.
 type RecorridoSimulado struct {

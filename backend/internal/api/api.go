@@ -19,6 +19,8 @@ type Dependencias struct {
 	Rutas          *servicios.Rutas
 	Navegacion     *servicios.Navegacion
 	Viajes         *servicios.Viajes
+	// Velocidad y horario de la simulación; nil si no hay simulación.
+	AjustesSimulacion servicios.AjustadorSimulacion
 	// Comprobaciones de salud de los servicios de los que depende, por nombre.
 	Salud   map[string]func(context.Context) (any, error)
 	Version string
@@ -39,6 +41,8 @@ func Nuevo(d Dependencias) http.Handler {
 	mux.HandleFunc("GET /v1/semaforos/{id}", m.semaforo)
 	mux.HandleFunc("GET /v1/trafico", m.trafico)
 	mux.HandleFunc("GET /v1/simulacion/destinos", m.destinosSimulados)
+	mux.HandleFunc("GET /v1/simulacion/ajustes", m.verAjustes)
+	mux.HandleFunc("POST /v1/simulacion/ajustes", m.cambiarAjustes)
 	mux.HandleFunc("POST /v1/viajes", m.crearViaje)
 	mux.HandleFunc("GET /v1/viajes/{id}", m.verViaje)
 	mux.HandleFunc("POST /v1/viajes/{id}/ubicacion", m.registrarUbicacion)
@@ -195,6 +199,62 @@ func (m *manejador) trafico(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	responder(w, http.StatusOK, t)
+}
+
+// --- ajustes de la simulación --------------------------------------------
+
+func (m *manejador) ajustador() (servicios.AjustadorSimulacion, error) {
+	if m.AjustesSimulacion == nil {
+		return nil, fmt.Errorf("%w: simulación no configurada", dominio.ErrProveedor)
+	}
+	return m.AjustesSimulacion, nil
+}
+
+func (m *manejador) verAjustes(w http.ResponseWriter, r *http.Request) {
+	a, err := m.ajustador()
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	v, err := a.Ajustes(r.Context())
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	responder(w, http.StatusOK, v)
+}
+
+// cambiarAjustes: {"velocidad": 3} cambia el ritmo al instante; {"perfil":
+// "eod_valle"} reinicia la simulación con esa demanda (unos segundos).
+func (m *manejador) cambiarAjustes(w http.ResponseWriter, r *http.Request) {
+	a, err := m.ajustador()
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	var c dominio.CambioAjustes
+	if err := leerJSON(r, &c); err != nil {
+		fallar(w, r, err)
+		return
+	}
+	switch {
+	case c.Velocidad == nil && c.Perfil == nil:
+		err = fmt.Errorf("%w: indica velocidad o perfil", dominio.ErrInvalido)
+	case c.Velocidad != nil && (*c.Velocidad < 0 || *c.Velocidad > 50):
+		err = fmt.Errorf("%w: velocidad debe estar entre 0 y 50", dominio.ErrInvalido)
+	case c.Perfil != nil && strings.TrimSpace(*c.Perfil) == "":
+		err = fmt.Errorf("%w: perfil vacío", dominio.ErrInvalido)
+	}
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	v, err := a.CambiarAjustes(r.Context(), c)
+	if err != nil {
+		fallar(w, r, err)
+		return
+	}
+	responder(w, http.StatusOK, v)
 }
 
 // --- viajes ------------------------------------------------------------

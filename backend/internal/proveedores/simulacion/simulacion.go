@@ -111,6 +111,12 @@ func (c *Cliente) CrearViajeLibre(ctx context.Context, origen, destino geo.Punto
 	cuerpo := map[string]any{"origen": origen, "destino": destino, "nombre_destino": nombreDestino}
 	var v dominio.ViajeSimulado
 	err := c.http.Hacer(ctx, servicio, http.MethodPost, c.base+"/viajes", cuerpo, &v)
+	return v, detalleInvalido(err)
+}
+
+// detalleInvalido: si la simulación rechazó la solicitud (422) con un mensaje
+// («detail» de FastAPI), lo devuelve como ErrInvalido con ese mensaje.
+func detalleInvalido(err error) error {
 	var eh *clientehttp.ErrorHTTP
 	if errors.As(err, &eh) && errors.Is(err, dominio.ErrInvalido) {
 		var r struct {
@@ -118,11 +124,26 @@ func (c *Cliente) CrearViajeLibre(ctx context.Context, origen, destino geo.Punto
 		}
 		if json.Unmarshal([]byte(eh.Cuerpo), &r) == nil {
 			if texto, ok := r.Detail.(string); ok && texto != "" {
-				return v, fmt.Errorf("%w: %s", dominio.ErrInvalido, texto)
+				return fmt.Errorf("%w: %s", dominio.ErrInvalido, texto)
 			}
 		}
 	}
-	return v, err
+	return err
+}
+
+// Ajustes: GET /ajustes (velocidad, perfil y si la simulación está lista).
+func (c *Cliente) Ajustes(ctx context.Context) (dominio.AjustesSimulacion, error) {
+	var a dominio.AjustesSimulacion
+	err := c.obtener(ctx, "/ajustes", &a)
+	return a, err
+}
+
+// CambiarAjustes: POST /ajustes. Un perfil desconocido vuelve como ErrInvalido
+// con la explicación de la simulación.
+func (c *Cliente) CambiarAjustes(ctx context.Context, cambio dominio.CambioAjustes) (dominio.AjustesSimulacion, error) {
+	var a dominio.AjustesSimulacion
+	err := c.http.Hacer(ctx, servicio, http.MethodPost, c.base+"/ajustes", cambio, &a)
+	return a, detalleInvalido(err)
 }
 
 // Viaje: GET /viajes/{id}.

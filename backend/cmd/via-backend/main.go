@@ -47,10 +47,11 @@ func main() {
 		slog.Info("tabla de tiempos cargada", "archivo", cfg.TiemposEje, "generado", tabla.Generado)
 	}
 	manejador := api.Nuevo(api.Dependencias{
-		Geocodificador: geocodificador,
-		Rutas:          rutas,
-		Navegacion:     nav,
-		Viajes:         servicios.NuevosViajes(nav, enrutador, sim, viajesGuardados),
+		Geocodificador:    geocodificador,
+		Rutas:             rutas,
+		Navegacion:        nav,
+		Viajes:            servicios.NuevosViajes(nav, enrutador, sim, viajesGuardados),
+		AjustesSimulacion: sim,
 		Salud: map[string]func(context.Context) (any, error){
 			"simulacion": func(ctx context.Context) (any, error) { return sim.Estado(ctx) },
 		},
