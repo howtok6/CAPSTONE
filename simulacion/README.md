@@ -44,7 +44,7 @@ La documentación interactiva queda en http://127.0.0.1:8000/docs.
 | GET | `/red/calles` | Calles con su geometría y velocidad libre (estático) |
 | GET | `/trafico` | Velocidad media, vehículos y nivel de servicio por calle (cada 5 s simulados) |
 | GET | `/destinos` | Destinos disponibles con su distancia desde el origen, el trazado `[lat, lon]` que sigue el vehículo y los semáforos que cruza, en orden |
-| POST | `/viajes` | Inicia un recorrido. Cuerpo: `{"ruta": 0}` |
+| POST | `/viajes` | Inicia un recorrido de demostración `{"ruta": 0}` o uno libre entre dos puntos del área `{"origen": {"lat": …, "lon": …}, "destino": {"lat": …, "lon": …}, "nombre_destino": "…"}`; el libre responde además `recorrido` (trazado, semáforos y distancia) |
 | GET | `/viajes/{id}` | Estado del recorrido y próximo semáforo |
 | DELETE | `/viajes/{id}` | Finaliza el recorrido y retira el vehículo |
 

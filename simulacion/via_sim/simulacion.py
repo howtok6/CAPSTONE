@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import html
 import itertools
+import json
 import logging
 import math
 import os
@@ -148,6 +149,46 @@ PRIORIDAD_DIRECCION = {"s": 0, "r": 1, "R": 1, "l": 2, "L": 2, "t": 3}
 
 CADA_TRAFICO_S = 5  # cada cuántos segundos simulados se recalcula el tráfico
 
+# Viajes con origen y destino libres (recorridos A → B elegidos en la app).
+RADIO_CALLE_M = 150  # un punto debe tener una calle para autos a esta distancia
+DISTANCIA_MINIMA_M = 200  # origen y destino más cerca que esto no forman un recorrido
+CANDIDATOS_POR_PUNTO = 4  # arcos cercanos que se prueban en cada extremo
+
+
+def dentro_de_poligono(lon: float, lat: float, anillo: list) -> bool:
+    """Prueba del rayo: si el punto (lon, lat) queda dentro del anillo [[lon, lat], ...]."""
+    dentro = False
+    n = len(anillo)
+    for i in range(n):
+        x0, y0 = anillo[i][0], anillo[i][1]
+        x1, y1 = anillo[(i + 1) % n][0], anillo[(i + 1) % n][1]
+        if (y0 > lat) != (y1 > lat):
+            x = x0 + (lat - y0) * (x1 - x0) / (y1 - y0)
+            if lon < x:
+                dentro = not dentro
+    return dentro
+
+
+def leer_comunas(escenario: Path) -> list[tuple[str, list]]:
+    """Polígonos de las comunas del escenario (comunas.geojson), si los trae.
+
+    Devuelve [(nombre, anillo_exterior)]. Sin el archivo, la lista queda vacía y
+    solo se exige que el punto esté cerca de una calle de la red.
+    """
+    archivo = escenario / "comunas.geojson"
+    if not archivo.exists():
+        return []
+    datos = json.loads(archivo.read_text(encoding="utf-8"))
+    comunas = []
+    for f in datos.get("features", []):
+        g = f.get("geometry") or {}
+        nombre = (f.get("properties") or {}).get("comuna", "")
+        poligonos = [g["coordinates"]] if g.get("type") == "Polygon" else g.get("coordinates", [])
+        for poligono in poligonos:
+            if poligono:
+                comunas.append((nombre, poligono[0]))
+    return comunas
+
 
 def acortar(nombre: str) -> str:
     # Algunos nombres de OSM llegan con entidades XML sin decodificar (O&apos;Higgins).
@@ -161,8 +202,9 @@ def acortar(nombre: str) -> str:
 class Viaje:
     id: str
     vehiculo: str
-    destino: int
+    destino: int | None  # índice del recorrido de demostración; None en un viaje libre
     largo_m: float
+    nombre_destino: str = ""
     estado: str = "esperando"  # esperando | en_ruta | llego | finalizado | reiniciado
     instantanea: dict = field(default_factory=dict)
 
@@ -197,6 +239,7 @@ class SimulacionEnVivo:
                 plan = self.escenario / f"webster_plan_{self.perfil}.json"
         self.plan = str(plan)
         self.origen, self.destinos_def = RECORRIDOS.get(self.escenario.name, (ORIGEN, DESTINOS))
+        self.comunas = leer_comunas(self.escenario)
         self.velocidad = velocidad  # 1 = tiempo real; 0 = lo más rápido posible
         self.calentamiento = calentamiento
         self.fin = fin
@@ -276,6 +319,29 @@ class SimulacionEnVivo:
             raise ValueError(f"ruta debe estar entre 0 y {len(self.destinos_def) - 1}")
         futuro: Future = Future()
         self._ordenes.put(("crear", ruta, futuro))
+        return futuro.result(timeout=esperar)
+
+    def crear_viaje_libre(
+        self,
+        origen: tuple[float, float],
+        destino: tuple[float, float],
+        nombre_destino: str = "",
+        esperar: float = 20.0,
+    ) -> dict:
+        """Viaje simulado entre dos puntos cualesquiera del área, dados como (lat, lon).
+
+        Devuelve lo mismo que `crear_viaje` más `recorrido`: el trazado que sigue el
+        vehículo, los semáforos que cruza y su largo. Lanza ValueError si un punto
+        queda fuera de las comunas o lejos de una calle, o si no hay ruta.
+        """
+        for nombre, (lat, lon) in (("origen", origen), ("destino", destino)):
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                raise ValueError(f"el {nombre} tiene coordenadas inválidas")
+            if self.comunas and not any(dentro_de_poligono(lon, lat, a) for _, a in self.comunas):
+                comunas = " y ".join(sorted({n.title() for n, _ in self.comunas}))
+                raise ValueError(f"el {nombre} queda fuera del área simulada ({comunas})")
+        futuro: Future = Future()
+        self._ordenes.put(("crear_libre", (origen, destino, nombre_destino), futuro))
         return futuro.result(timeout=esperar)
 
     def viaje(self, viaje_id: str) -> dict | None:
@@ -362,15 +428,16 @@ class SimulacionEnVivo:
                     programas[tid] = [(f.state, f.duration) for f in logica.phases]
         return programas
 
+    def _candidatos(self, lon: float, lat: float, cuantos: int = 6) -> list[str]:
+        """Arcos para autos más cercanos a un punto, a menos de RADIO_CALLE_M."""
+        x, y = self._red.convertLonLat2XY(lon, lat)
+        cerca = self._red.getNeighboringEdges(x, y, RADIO_CALLE_M)
+        cerca = [(e, d) for e, d in cerca if e.allows("passenger") and e.getFunction() != "internal"]
+        return [e.getID() for e, _ in sorted(cerca, key=lambda par: par[1])[:cuantos]]
+
     def _calcular_rutas(self, sim) -> list[dict]:
         """Ruta más rápida desde el origen a cada destino, a flujo libre."""
-
-        def candidatos(lon, lat):
-            x, y = self._red.convertLonLat2XY(lon, lat)
-            cerca = self._red.getNeighboringEdges(x, y, 150)
-            cerca = [(e, d) for e, d in cerca if e.allows("passenger") and e.getFunction() != "internal"]
-            return [e.getID() for e, _ in sorted(cerca, key=lambda par: par[1])[:6]]
-
+        candidatos = self._candidatos
         origenes = candidatos(self.origen[1], self.origen[2])
         if not origenes:
             raise RuntimeError(f"el origen «{self.origen[0]}» queda fuera de la red")
@@ -546,6 +613,8 @@ class SimulacionEnVivo:
                     raise RuntimeError("la simulación se está reiniciando; intenta de nuevo")
                 if orden == "crear":
                     futuro.set_result(self._crear(sim, arg))
+                elif orden == "crear_libre":
+                    futuro.set_result(self._crear_libre(sim, *arg))
                 elif orden == "finalizar":
                     futuro.set_result(self._finalizar(sim, arg))
             except Exception as exc:  # noqa: BLE001
@@ -558,11 +627,74 @@ class SimulacionEnVivo:
         sim.conn.route.add(ruta_sumo, self._rutas[ruta]["edges"])
         sim.conn.vehicle.add(vehiculo, ruta_sumo, typeID="DEFAULT_VEHTYPE", depart="now")
         sim.conn.vehicle.setColor(vehiculo, (245, 203, 69, 255))
-        v = Viaje(viaje_id, vehiculo, ruta, self._rutas[ruta]["largo_m"])
+        v = Viaje(viaje_id, vehiculo, ruta, self._rutas[ruta]["largo_m"], self.destinos_def[ruta][1])
         v.instantanea = self._base(v, sim)
         with self._candado:
             self._viajes[viaje_id] = v
         return dict(v.instantanea)
+
+    def _crear_libre(self, sim, origen, destino, nombre_destino: str) -> dict:
+        """Calcula la ruta más rápida entre dos puntos y pone un vehículo en ella."""
+        (lat0, lon0), (lat1, lon1) = origen, destino
+        x0, y0 = self._red.convertLonLat2XY(lon0, lat0)
+        x1, y1 = self._red.convertLonLat2XY(lon1, lat1)
+        if math.hypot(x1 - x0, y1 - y0) < DISTANCIA_MINIMA_M:
+            raise ValueError(f"el origen y el destino están a menos de {DISTANCIA_MINIMA_M} m")
+        desde = self._candidatos(lon0, lat0, CANDIDATOS_POR_PUNTO)
+        if not desde:
+            raise ValueError(f"el origen no tiene una calle de la red a menos de {RADIO_CALLE_M} m")
+        hasta = self._candidatos(lon1, lat1, CANDIDATOS_POR_PUNTO)
+        if not hasta:
+            raise ValueError(f"el destino no tiene una calle de la red a menos de {RADIO_CALLE_M} m")
+        mejor = None
+        for o in desde:
+            for d in hasta:
+                if o == d:
+                    continue
+                r = sim.conn.simulation.findRoute(o, d)
+                if r.edges and (mejor is None or r.travelTime < mejor.travelTime):
+                    mejor = r
+        if mejor is None:
+            raise ValueError("no hay ruta en auto entre esos puntos dentro de la red simulada")
+        arcos = list(mejor.edges)
+        trazado, semaforos = self._geometria_ruta(sim, arcos)
+        nombre = nombre_destino.strip() or self._nombre_de_arco(arcos[-1]) or "Destino elegido"
+
+        n = next(self._ids)
+        viaje_id, vehiculo = f"v{n}", f"app_{n}"
+        ruta_sumo = f"ruta_app_{n}"
+        sim.conn.route.add(ruta_sumo, arcos)
+        sim.conn.vehicle.add(vehiculo, ruta_sumo, typeID="DEFAULT_VEHTYPE", depart="now")
+        sim.conn.vehicle.setColor(vehiculo, (245, 203, 69, 255))
+        v = Viaje(viaje_id, vehiculo, None, mejor.length, nombre)
+        v.instantanea = self._base(v, sim)
+        with self._candado:
+            self._viajes[viaje_id] = v
+        log.info("viaje libre %s hacia %s: %.1f km, %d semáforos", viaje_id, nombre, mejor.length / 1000, len(semaforos))
+
+        por_id = {s["id"]: s for s in self._semaforos}
+        foto = dict(v.instantanea)
+        foto["recorrido"] = {
+            "distancia_km": round(mejor.length / 1000, 1),
+            "trazado": trazado,
+            "semaforos": [
+                {
+                    "id": tid,
+                    "nombre": por_id[tid]["nombre"],
+                    "lat": por_id[tid]["lat"],
+                    "lon": por_id[tid]["lon"],
+                    "distancia_desde_inicio_m": distancia,
+                }
+                for tid, distancia in semaforos
+                if tid in por_id
+            ],
+        }
+        return foto
+
+    def _nombre_de_arco(self, arco_id: str) -> str:
+        if not self._red.hasEdge(arco_id):
+            return ""
+        return acortar(self._red.getEdge(arco_id).getName() or "")
 
     def _finalizar(self, sim, viaje_id: str) -> bool:
         with self._candado:
@@ -584,7 +716,7 @@ class SimulacionEnVivo:
             "id": v.id,
             "estado": v.estado,
             "ruta": v.destino,
-            "destino": self.destinos_def[v.destino][1],
+            "destino": v.nombre_destino,
             "tiempo_sim": sim.time,
             "distancia_total_m": round(v.largo_m),
         }

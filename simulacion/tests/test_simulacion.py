@@ -4,6 +4,8 @@
 2. Con Webster cargado en SUMO, la predicción coincide con el cambio real.
 3. El servicio responde de punta a punta sobre la red del eje: viajes simulados
    y proveedor de tráfico (semáforos, estado por acceso, calles y tráfico).
+4. En el área (Las Condes + Providencia) se simulan viajes libres entre dos
+   puntos cualesquiera, y se rechazan los que quedan fuera del área.
 """
 import os
 import sys
@@ -18,6 +20,7 @@ from via_sim.simulacion import (  # noqa: E402
     RAIZ,
     acortar,
     categoria,
+    dentro_de_poligono,
     nivel_de_servicio,
     rumbo,
     segundos_visibles,
@@ -52,6 +55,13 @@ def test_rumbo_y_nivel_de_servicio():
     assert nivel_de_servicio(25, 50, 3) == "moderado"
     assert nivel_de_servicio(5, 50, 8) == "congestionado"
     assert nivel_de_servicio(0, 50, 0) == "libre"
+
+
+def test_dentro_de_poligono():
+    cuadrado = [[0, 0], [10, 0], [10, 10], [0, 10]]
+    assert dentro_de_poligono(5, 5, cuadrado)
+    assert not dentro_de_poligono(15, 5, cuadrado)
+    assert not dentro_de_poligono(5, -1, cuadrado)
 
 
 @pytest.mark.skipif(not os.path.exists(os.path.join(GRID, "webster_plan.json")), reason="falta grid4x4")
@@ -171,3 +181,66 @@ def test_area_elige_demanda_plan_y_recorridos():
     assert len(sim.destinos_def) == 3 and sim.origen[0].startswith("Av. Providencia")
     valle = SimulacionEnVivo(AREA, perfil="eod_valle")
     assert valle.plan.endswith("webster_plan_eod_valle.json")
+
+
+@pytest.mark.skipif(
+    not os.path.exists(os.path.join(AREA, "demand", "routes_eod_punta_tarde.rou.xml")),
+    reason="falta la demanda del área",
+)
+def test_viaje_libre_en_el_area(monkeypatch):
+    """Un recorrido A → B elegido en la app: la simulación calcula la ruta, pone un
+    vehículo en ella y entrega su trazado y semáforos; los puntos fuera del área o
+    demasiado juntos se rechazan con un mensaje claro."""
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("TSC_ESCENARIO", AREA)
+    monkeypatch.setenv("TSC_VELOCIDAD", "20")
+    monkeypatch.setenv("TSC_CALENTAMIENTO", "60")
+    from via_sim.main import app
+
+    costanera = {"lat": -33.4176, "lon": -70.6065}
+    escuela_militar = {"lat": -33.4140, "lon": -70.5847}
+    with TestClient(app) as cliente:
+        r = cliente.post("/viajes", json={
+            "origen": costanera, "destino": escuela_militar, "nombre_destino": "Escuela Militar",
+        })
+        assert r.status_code == 201, r.text
+        viaje = r.json()
+        assert viaje["ruta"] is None and viaje["destino"] == "Escuela Militar"
+        recorrido = viaje["recorrido"]
+        assert 1 < recorrido["distancia_km"] < 6
+        # El trazado parte cerca de A y llega cerca de B.
+        assert abs(recorrido["trazado"][0][0] - costanera["lat"]) < 0.003
+        assert abs(recorrido["trazado"][0][1] - costanera["lon"]) < 0.003
+        assert abs(recorrido["trazado"][-1][0] - escuela_militar["lat"]) < 0.003
+        assert abs(recorrido["trazado"][-1][1] - escuela_militar["lon"]) < 0.003
+        distancias = [s["distancia_desde_inicio_m"] for s in recorrido["semaforos"]]
+        assert distancias and distancias == sorted(distancias)
+
+        # El vehículo avanza y ve sus semáforos, igual que en un recorrido de demostración.
+        semaforo, limite = None, time.monotonic() + 60
+        while time.monotonic() < limite:
+            foto = cliente.get(f"/viajes/{viaje['id']}").json()
+            semaforo = foto.get("proximo_semaforo")
+            if foto["estado"] == "en_ruta" and semaforo:
+                break
+            time.sleep(0.2)
+        assert semaforo, f"sin próximo semáforo: {foto}"
+        assert semaforo["color"] in ("verde", "amarillo", "rojo")
+        assert "recorrido" not in foto  # el trazado solo viaja al crear
+        assert cliente.delete(f"/viajes/{viaje['id']}").status_code == 204
+
+        # Sin nombre, el destino toma el de la calle de llegada.
+        r = cliente.post("/viajes", json={"origen": escuela_militar, "destino": costanera})
+        assert r.status_code == 201 and r.json()["destino"]
+        cliente.delete(f"/viajes/{r.json()['id']}")
+
+        plaza_de_armas = {"lat": -33.4378, "lon": -70.6504}
+        r = cliente.post("/viajes", json={"origen": plaza_de_armas, "destino": escuela_militar})
+        assert r.status_code == 422 and "fuera del área" in r.json()["detail"]
+        r = cliente.post("/viajes", json={"origen": costanera, "destino": {"lat": -33.4177, "lon": -70.6066}})
+        assert r.status_code == 422 and "menos de" in r.json()["detail"]
+        r = cliente.post("/viajes", json={"origen": costanera})
+        assert r.status_code == 422 and "origen y destino" in r.json()["detail"]
+        # Los recorridos de demostración siguen igual.
+        assert cliente.post("/viajes", json={"ruta": 0}).status_code == 201

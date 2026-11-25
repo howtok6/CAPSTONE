@@ -21,8 +21,18 @@ from pydantic import BaseModel, Field
 from .simulacion import RAIZ, SimulacionEnVivo
 
 
+class Punto(BaseModel):
+    lat: float = Field(..., ge=-90, le=90)
+    lon: float = Field(..., ge=-180, le=180)
+
+
 class NuevoViaje(BaseModel):
+    """Un recorrido de demostración (`ruta`) o uno libre entre `origen` y `destino`."""
+
     ruta: int = Field(0, ge=0, description="Índice del destino (ver GET /destinos)")
+    origen: Punto | None = Field(None, description="Viaje libre: punto de partida")
+    destino: Punto | None = Field(None, description="Viaje libre: punto de llegada")
+    nombre_destino: str = Field("", max_length=200, description="Viaje libre: nombre para mostrar")
 
 
 def _simulacion_desde_entorno() -> SimulacionEnVivo:
@@ -58,7 +68,16 @@ def destinos():
 
 @app.post("/viajes", status_code=201)
 def crear_viaje(cuerpo: NuevoViaje):
+    libre = cuerpo.origen is not None or cuerpo.destino is not None
     try:
+        if libre:
+            if cuerpo.origen is None or cuerpo.destino is None:
+                raise ValueError("un viaje libre necesita origen y destino")
+            return app.state.sim.crear_viaje_libre(
+                (cuerpo.origen.lat, cuerpo.origen.lon),
+                (cuerpo.destino.lat, cuerpo.destino.lon),
+                cuerpo.nombre_destino,
+            )
         return app.state.sim.crear_viaje(cuerpo.ruta)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
