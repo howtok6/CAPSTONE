@@ -3,7 +3,9 @@ package servicios
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -79,6 +81,7 @@ func (t *traficoFalso) Trafico(context.Context) ([]dominio.EstadoCalle, error) {
 
 type simFalso struct {
 	finalizados []string
+	libres      [][2]geo.Punto
 }
 
 func (s *simFalso) Destinos(context.Context) ([]dominio.DestinoSimulado, error) {
@@ -93,6 +96,18 @@ func (s *simFalso) CrearViaje(_ context.Context, ruta int) (dominio.ViajeSimulad
 		return dominio.ViajeSimulado{}, dominio.ErrInvalido
 	}
 	return dominio.ViajeSimulado{ID: "v1", Estado: "esperando", Destino: "Av. General Bustamante", DistanciaTotalM: ptrInt(1665)}, nil
+}
+func (s *simFalso) CrearViajeLibre(_ context.Context, o, d geo.Punto, nombre string) (dominio.ViajeSimulado, error) {
+	if o.Lat < -33.43 {
+		return dominio.ViajeSimulado{}, fmt.Errorf("%w: el origen queda fuera del área simulada", dominio.ErrInvalido)
+	}
+	s.libres = append(s.libres, [2]geo.Punto{o, d})
+	return dominio.ViajeSimulado{ID: "v1", Estado: "esperando", Destino: nombre, DistanciaTotalM: ptrInt(2706),
+		Recorrido: &dominio.RecorridoSimulado{
+			DistanciaKm: 2.7,
+			Trazado:     [][2]float64{{o.Lat, o.Lon}, {d.Lat, d.Lon}},
+			Semaforos:   []dominio.SemaforoEnRuta{{ID: "S1"}, {ID: "S2"}, {ID: "S3"}},
+		}}, nil
 }
 func (s *simFalso) Viaje(_ context.Context, id string) (dominio.ViajeSimulado, error) {
 	if id != "v1" {
@@ -245,6 +260,43 @@ func TestViajeSimulado(t *testing.T) {
 	}
 	if err := viajes.Finalizar(ctx, v.ID); err != nil || len(sim.finalizados) != 1 || sim.finalizados[0] != "v1" {
 		t.Fatalf("finalizar: %v, %v", err, sim.finalizados)
+	}
+}
+
+func TestViajeSimuladoLibre(t *testing.T) {
+	_, sim, _, viajes := preparar()
+	ctx := context.Background()
+	a, parada, b := geo.Punto{Lat: -33.4176, Lon: -70.6065}, geo.Punto{Lat: -33.416, Lon: -70.60}, geo.Punto{Lat: -33.4140, Lon: -70.5847}
+	v, err := viajes.Crear(ctx, SolicitudViaje{Modo: "simulado", Paradas: []geo.Punto{a, parada, b}, NombreDestino: "Escuela Militar"})
+	if err != nil || v.Modo != "simulado" || v.Destino != "Escuela Militar" || v.SemaforosEnRuta != 3 {
+		t.Fatalf("crear libre = %+v, %v", v, err)
+	}
+	// La simulación recibe la primera y la última parada.
+	if len(sim.libres) != 1 || sim.libres[0] != [2]geo.Punto{a, b} {
+		t.Errorf("puntos enviados = %v", sim.libres)
+	}
+	// El recorrido viaja solo en la respuesta de creación.
+	if v.Recorrido == nil || len(v.Recorrido.Trazado) != 2 {
+		t.Fatalf("recorrido = %+v", v.Recorrido)
+	}
+	v, err = viajes.Obtener(ctx, v.ID)
+	if err != nil || v.Recorrido != nil || v.ProximoSemaforo == nil {
+		t.Fatalf("obtener = %+v, %v", v, err)
+	}
+	if err := viajes.Finalizar(ctx, v.ID); err != nil || len(sim.finalizados) != 1 {
+		t.Fatalf("finalizar: %v, %v", err, sim.finalizados)
+	}
+
+	if _, err := viajes.Crear(ctx, SolicitudViaje{Modo: "simulado", Paradas: []geo.Punto{a}}); !errors.Is(err, dominio.ErrInvalido) {
+		t.Errorf("una sola parada: %v", err)
+	}
+	if _, err := viajes.Crear(ctx, SolicitudViaje{Modo: "simulado", Paradas: []geo.Punto{a, {}}}); !errors.Is(err, dominio.ErrInvalido) {
+		t.Errorf("parada (0,0): %v", err)
+	}
+	fuera := geo.Punto{Lat: -33.4378, Lon: -70.6504}
+	_, err = viajes.Crear(ctx, SolicitudViaje{Modo: "simulado", Paradas: []geo.Punto{fuera, b}})
+	if !errors.Is(err, dominio.ErrInvalido) || !strings.Contains(err.Error(), "fuera del área") {
+		t.Errorf("fuera del área: %v", err)
 	}
 }
 

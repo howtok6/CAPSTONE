@@ -146,7 +146,10 @@ Dos modos:
 
 - **`gps`**: la app envía la ubicación real del celular. Se crea con la ruta elegida (`trazado`, tal como vino de
   `/v1/rutas`), con `paradas` para que el backend la calcule, o sin ruta (el próximo semáforo sale del rumbo).
-- **`simulado`**: un vehículo dentro de la simulación representa al usuario, para demos sin moverse.
+- **`simulado`**: un vehículo dentro de la simulación representa al usuario, para demos sin moverse. Con
+  `destino` recorre uno de los destinos de demostración; con `paradas` recorre la ruta más rápida entre la primera
+  y la última parada (ambas dentro de Las Condes y Providencia), y la respuesta de creación trae `recorrido` con el
+  trazado y los semáforos que sigue el vehículo.
 
 ```http
 POST /v1/viajes
@@ -154,6 +157,9 @@ POST /v1/viajes
 
 POST /v1/viajes
 {"modo": "simulado", "destino": 0}
+
+POST /v1/viajes
+{"modo": "simulado", "nombre_destino": "Escuela Militar", "paradas": [{"lat": -33.4176, "lon": -70.6065}, {"lat": -33.4140, "lon": -70.5847}]}
 ```
 
 ```http

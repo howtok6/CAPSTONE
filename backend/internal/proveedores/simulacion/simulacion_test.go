@@ -2,13 +2,16 @@ package simulacion
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
 	"via/backend/internal/dominio"
+	"via/backend/internal/geo"
 )
 
 func TestContratoConLaSimulacion(t *testing.T) {
@@ -49,5 +52,43 @@ func TestContratoConLaSimulacion(t *testing.T) {
 	srv.Close()
 	if _, err := c.Estado(ctx); !errors.Is(err, dominio.ErrProveedor) {
 		t.Errorf("servicio caído: %v", err)
+	}
+}
+
+func TestViajeLibre(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var cuerpo struct {
+			Origen        geo.Punto `json:"origen"`
+			Destino       geo.Punto `json:"destino"`
+			NombreDestino string    `json:"nombre_destino"`
+		}
+		if r.Method != http.MethodPost || r.URL.Path != "/viajes" || json.NewDecoder(r.Body).Decode(&cuerpo) != nil {
+			w.WriteHeader(http.StatusTeapot)
+			return
+		}
+		if cuerpo.Origen.Lat < -33.43 {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			_, _ = w.Write([]byte(`{"detail":"el origen queda fuera del área simulada (Las Condes y Providencia)"}`))
+			return
+		}
+		if cuerpo.Destino.Lon != -70.5847 || cuerpo.NombreDestino != "Escuela Militar" {
+			t.Errorf("cuerpo = %+v", cuerpo)
+		}
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{"id":"v2","estado":"esperando","ruta":null,"destino":"Escuela Militar","distancia_total_m":2706,
+			"recorrido":{"distancia_km":2.7,"trazado":[[-33.4165,-70.6070],[-33.4138,-70.5847]],
+			"semaforos":[{"id":"S1","nombre":"Av. Apoquindo × Tobalaba","lat":-33.416,"lon":-70.601,"distancia_desde_inicio_m":420}]}}`))
+	}))
+	defer srv.Close()
+	c := Nuevo(srv.URL, time.Second)
+	ctx := context.Background()
+
+	v, err := c.CrearViajeLibre(ctx, geo.Punto{Lat: -33.4176, Lon: -70.6065}, geo.Punto{Lat: -33.4140, Lon: -70.5847}, "Escuela Militar")
+	if err != nil || v.ID != "v2" || v.Recorrido == nil || len(v.Recorrido.Trazado) != 2 || v.Recorrido.Semaforos[0].ID != "S1" {
+		t.Fatalf("crear libre = %+v, %v", v, err)
+	}
+	_, err = c.CrearViajeLibre(ctx, geo.Punto{Lat: -33.4378, Lon: -70.6504}, geo.Punto{Lat: -33.4140, Lon: -70.5847}, "")
+	if !errors.Is(err, dominio.ErrInvalido) || !strings.Contains(err.Error(), "fuera del área") || strings.Contains(err.Error(), "detail") {
+		t.Errorf("fuera del área: %v", err)
 	}
 }

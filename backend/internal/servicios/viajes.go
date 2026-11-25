@@ -38,8 +38,8 @@ type ViajeInterno struct {
 type SolicitudViaje struct {
 	Modo          string       `json:"modo"`           // gps | simulado
 	Destino       *int         `json:"destino"`        // simulado: índice de GET /v1/simulacion/destinos
-	NombreDestino string       `json:"nombre_destino"` // gps: texto para mostrar
-	Paradas       []geo.Punto  `json:"paradas"`        // gps: el backend calcula la ruta
+	NombreDestino string       `json:"nombre_destino"` // texto para mostrar
+	Paradas       []geo.Punto  `json:"paradas"`        // gps: el backend calcula la ruta; simulado: origen y destino libres
 	Trazado       [][2]float64 `json:"trazado"`        // gps: ruta ya elegida en POST /v1/rutas
 }
 
@@ -87,8 +87,11 @@ func (v *Viajes) Crear(ctx context.Context, s SolicitudViaje) (dominio.Viaje, er
 }
 
 func (v *Viajes) crearSimulado(ctx context.Context, s SolicitudViaje) (dominio.Viaje, error) {
+	if len(s.Paradas) > 0 {
+		return v.crearSimuladoLibre(ctx, s)
+	}
 	if s.Destino == nil {
-		return dominio.Viaje{}, fmt.Errorf("%w: falta destino (ver GET /v1/simulacion/destinos)", dominio.ErrInvalido)
+		return dominio.Viaje{}, fmt.Errorf("%w: falta destino (ver GET /v1/simulacion/destinos) o paradas", dominio.ErrInvalido)
 	}
 	vs, err := v.sim.CrearViaje(ctx, *s.Destino)
 	if err != nil {
@@ -109,6 +112,34 @@ func (v *Viajes) crearSimulado(ctx context.Context, s SolicitudViaje) (dominio.V
 	}
 	v.almacen.Guardar(vi.Publico.ID, vi)
 	return vi.Publico, nil
+}
+
+// crearSimuladoLibre: un vehículo de la simulación recorre la ruta más rápida
+// entre la primera y la última parada. La respuesta incluye ese recorrido para
+// que la app lo dibuje; el viaje guardado no lo repite en cada consulta.
+func (v *Viajes) crearSimuladoLibre(ctx context.Context, s SolicitudViaje) (dominio.Viaje, error) {
+	if len(s.Paradas) < 2 {
+		return dominio.Viaje{}, fmt.Errorf("%w: un viaje simulado libre necesita origen y destino", dominio.ErrInvalido)
+	}
+	origen, destino := s.Paradas[0], s.Paradas[len(s.Paradas)-1]
+	if !origen.Valido() || !destino.Valido() {
+		return dominio.Viaje{}, fmt.Errorf("%w: las paradas tienen coordenadas inválidas", dominio.ErrInvalido)
+	}
+	vs, err := v.sim.CrearViajeLibre(ctx, origen, destino, s.NombreDestino)
+	if err != nil {
+		return dominio.Viaje{}, err
+	}
+	ahora := v.reloj()
+	vi := &ViajeInterno{IDSimulacion: vs.ID}
+	vi.Publico = dominio.Viaje{ID: nuevoID(), Modo: dominio.ModoSimulado, CreadoEn: ahora}
+	desdeSimulado(&vi.Publico, vs, ahora)
+	if vs.Recorrido != nil {
+		vi.Publico.SemaforosEnRuta = len(vs.Recorrido.Semaforos)
+	}
+	v.almacen.Guardar(vi.Publico.ID, vi)
+	respuesta := vi.Publico
+	respuesta.Recorrido = vs.Recorrido
+	return respuesta, nil
 }
 
 func (v *Viajes) crearGPS(ctx context.Context, s SolicitudViaje) (dominio.Viaje, error) {

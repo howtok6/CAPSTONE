@@ -7,6 +7,8 @@ package simulacion
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,6 +16,7 @@ import (
 	"time"
 
 	"via/backend/internal/dominio"
+	"via/backend/internal/geo"
 	"via/backend/internal/proveedores/clientehttp"
 )
 
@@ -98,6 +101,27 @@ func (c *Cliente) Destinos(ctx context.Context) ([]dominio.DestinoSimulado, erro
 func (c *Cliente) CrearViaje(ctx context.Context, ruta int) (dominio.ViajeSimulado, error) {
 	var v dominio.ViajeSimulado
 	err := c.http.Hacer(ctx, servicio, http.MethodPost, c.base+"/viajes", map[string]int{"ruta": ruta}, &v)
+	return v, err
+}
+
+// CrearViajeLibre: POST /viajes con origen y destino libres dentro del área.
+// Los rechazos de la simulación (punto fuera del área, sin ruta) vuelven como
+// ErrInvalido con su explicación.
+func (c *Cliente) CrearViajeLibre(ctx context.Context, origen, destino geo.Punto, nombreDestino string) (dominio.ViajeSimulado, error) {
+	cuerpo := map[string]any{"origen": origen, "destino": destino, "nombre_destino": nombreDestino}
+	var v dominio.ViajeSimulado
+	err := c.http.Hacer(ctx, servicio, http.MethodPost, c.base+"/viajes", cuerpo, &v)
+	var eh *clientehttp.ErrorHTTP
+	if errors.As(err, &eh) && errors.Is(err, dominio.ErrInvalido) {
+		var r struct {
+			Detail any `json:"detail"`
+		}
+		if json.Unmarshal([]byte(eh.Cuerpo), &r) == nil {
+			if texto, ok := r.Detail.(string); ok && texto != "" {
+				return v, fmt.Errorf("%w: %s", dominio.ErrInvalido, texto)
+			}
+		}
+	}
 	return v, err
 }
 

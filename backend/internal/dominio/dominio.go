@@ -160,6 +160,17 @@ type Viaje struct {
 	ProximoSemaforo    *ProximoSemaforo `json:"proximo_semaforo"`
 	CreadoEn           time.Time        `json:"creado_en"`
 	ActualizadoEn      time.Time        `json:"actualizado_en"`
+	// Solo al crear un viaje simulado libre (origen y destino elegidos): el camino
+	// que sigue el vehículo dentro de la simulación, para dibujarlo en el mapa.
+	Recorrido *RecorridoSimulado `json:"recorrido,omitempty"`
+}
+
+// RecorridoSimulado: trazado y semáforos de un viaje simulado libre, tal como
+// los calcula la simulación.
+type RecorridoSimulado struct {
+	DistanciaKm float64          `json:"distancia_km"`
+	Trazado     [][2]float64     `json:"trazado"` // [lat, lon]
+	Semaforos   []SemaforoEnRuta `json:"semaforos"`
 }
 
 // DestinoSimulado es un recorrido de demostración que ofrece la simulación,
@@ -195,4 +206,6 @@ type ViajeSimulado struct {
 		DistanciaM float64  `json:"distancia_m"`
 		EstadoAcceso
 	} `json:"proximo_semaforo"`
+	// Solo al crear un viaje libre.
+	Recorrido *RecorridoSimulado `json:"recorrido,omitempty"`
 }

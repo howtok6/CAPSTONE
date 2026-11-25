@@ -24,6 +24,9 @@ type ProveedorTrafico interface {
 type SimuladorViajes interface {
 	Destinos(ctx context.Context) ([]dominio.DestinoSimulado, error)
 	CrearViaje(ctx context.Context, ruta int) (dominio.ViajeSimulado, error)
+	// CrearViajeLibre pone un vehículo en la ruta más rápida entre dos puntos del
+	// área simulada; la respuesta trae el recorrido (trazado y semáforos).
+	CrearViajeLibre(ctx context.Context, origen, destino geo.Punto, nombreDestino string) (dominio.ViajeSimulado, error)
 	Viaje(ctx context.Context, id string) (dominio.ViajeSimulado, error)
 	FinalizarViaje(ctx context.Context, id string) error
 }

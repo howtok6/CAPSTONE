@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -46,6 +47,14 @@ func (sim) Destinos(context.Context) ([]dominio.DestinoSimulado, error) {
 }
 func (sim) CrearViaje(context.Context, int) (dominio.ViajeSimulado, error) {
 	return dominio.ViajeSimulado{ID: "s1", Estado: "esperando"}, nil
+}
+func (sim) CrearViajeLibre(_ context.Context, o, d geo.Punto, nombre string) (dominio.ViajeSimulado, error) {
+	if o.Lat < -33.43 {
+		return dominio.ViajeSimulado{}, fmt.Errorf("%w: el origen queda fuera del área simulada", dominio.ErrInvalido)
+	}
+	return dominio.ViajeSimulado{ID: "s2", Estado: "esperando", Destino: nombre, Recorrido: &dominio.RecorridoSimulado{
+		DistanciaKm: 2.7, Trazado: [][2]float64{{o.Lat, o.Lon}, {d.Lat, d.Lon}},
+	}}, nil
 }
 func (sim) Viaje(context.Context, string) (dominio.ViajeSimulado, error) {
 	return dominio.ViajeSimulado{ID: "s1", Estado: "en_ruta"}, nil
@@ -205,6 +214,16 @@ func TestConsultas(t *testing.T) {
 	estado, obj, _ = pedir(t, srv, "POST", "/v1/viajes", `{"modo":"simulado","destino":0}`)
 	if estado != 201 || obj["modo"] != "simulado" {
 		t.Errorf("viaje simulado: %d %v", estado, obj)
+	}
+	estado, obj, _ = pedir(t, srv, "POST", "/v1/viajes",
+		`{"modo":"simulado","nombre_destino":"Escuela Militar","paradas":[{"lat":-33.4176,"lon":-70.6065},{"lat":-33.4140,"lon":-70.5847}]}`)
+	if estado != 201 || obj["destino"] != "Escuela Militar" || obj["recorrido"] == nil {
+		t.Errorf("viaje simulado libre: %d %v", estado, obj)
+	}
+	estado, obj, _ = pedir(t, srv, "POST", "/v1/viajes",
+		`{"modo":"simulado","paradas":[{"lat":-33.4378,"lon":-70.6504},{"lat":-33.4140,"lon":-70.5847}]}`)
+	if estado != 400 || codigoError(obj) != "solicitud_invalida" {
+		t.Errorf("viaje libre fuera del área: %d %v", estado, obj)
 	}
 }
 
