@@ -189,7 +189,33 @@ class ViaApi {
     String destino = '',
   }) => _crear({'modo': 'gps', 'trazado': trazado, 'nombre_destino': destino});
 
-  Future<EstadoViaje> _crear(Map<String, Object> cuerpo) async {
+  /// Viaje simulado entre dos puntos elegidos por el usuario: un vehículo de
+  /// la simulación recorre la ruta más rápida de [origen] a [destino] (ambos
+  /// dentro del área simulada). Devuelve el viaje y el recorrido que sigue el
+  /// vehículo, para dibujarlo en el mapa; el recorrido es null si la
+  /// simulación no lo entregó. Un punto fuera del área responde 400.
+  Future<(EstadoViaje, RutaPropuesta?)> crearViajeSimuladoLibre({
+    required Lugar origen,
+    required Lugar destino,
+  }) async {
+    final j = await _crearJson({
+      'modo': 'simulado',
+      'nombre_destino': destino.nombre,
+      'paradas': [
+        {'lat': origen.punto.latitude, 'lon': origen.punto.longitude},
+        {'lat': destino.punto.latitude, 'lon': destino.punto.longitude},
+      ],
+    });
+    return (
+      EstadoViaje.fromJson(j),
+      recorridoDesdeJson(j['recorrido'], origen: origen, destino: destino),
+    );
+  }
+
+  Future<EstadoViaje> _crear(Map<String, Object> cuerpo) async =>
+      EstadoViaje.fromJson(await _crearJson(cuerpo));
+
+  Future<Map<String, dynamic>> _crearJson(Map<String, Object> cuerpo) async {
     final r = await _http
         .post(
           base.resolve('/v1/viajes'),
@@ -198,7 +224,7 @@ class ViaApi {
         )
         .timeout(const Duration(seconds: 15));
     _revisar(r);
-    return EstadoViaje.fromJson(_json(r) as Map<String, dynamic>);
+    return _json(r) as Map<String, dynamic>;
   }
 
   /// Envía la ubicación del GPS; devuelve el viaje con su próximo semáforo.
@@ -238,12 +264,57 @@ class ViaApi {
   }
 }
 
+/// El recorrido de un viaje simulado libre (`recorrido` en `POST /v1/viajes`)
+/// como ruta para el mapa: A y B, trazado y semáforos. null si no viene o no
+/// tiene trazado.
+RutaPropuesta? recorridoDesdeJson(
+  Object? datos, {
+  required Lugar origen,
+  required Lugar destino,
+}) {
+  if (datos is! Map<String, dynamic>) return null;
+  final trazado = trazadoDesdeJson(datos['trazado']);
+  if (trazado.length < 2) return null;
+  return RutaPropuesta(
+    nombre: '${origen.nombre} → ${destino.nombre}',
+    paradas: [
+      Lugar(origen.nombre, trazado.first),
+      Lugar(destino.nombre, trazado.last),
+    ],
+    distanciaKm: (datos['distancia_km'] as num?)?.toDouble() ?? 0,
+    duracionMin: 0,
+    trazado: trazado,
+    pasos: const [],
+    semaforos: [
+      for (final s in datos['semaforos'] as List? ?? const [])
+        SemaforoEnRuta.fromJson(s as Map<String, dynamic>),
+    ],
+  );
+}
+
 /// Error HTTP del backend, con el código y el detalle que devolvió
 /// (`{"error": {"codigo", "mensaje"}}`).
 class ViaApiException implements Exception {
   ViaApiException(this.status, this.detalle);
   final int status;
   final String detalle;
+
+  /// El mensaje del backend para mostrar al usuario, sin el prefijo
+  /// «solicitud inválida:»; si el cuerpo no trae uno, el detalle tal cual.
+  String get mensaje {
+    try {
+      final j = jsonDecode(detalle);
+      final error = j is Map ? j['error'] : null;
+      final m = error is Map ? error['mensaje'] : null;
+      if (m is String && m.isNotEmpty) {
+        return m.replaceFirst(RegExp(r'^solicitud inválida:\s*'), '');
+      }
+    } on FormatException {
+      // No es JSON: se usa el detalle.
+    }
+    return detalle;
+  }
+
   @override
   String toString() => 'API $status: $detalle';
 }

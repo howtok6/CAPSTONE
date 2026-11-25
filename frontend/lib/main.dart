@@ -20,6 +20,9 @@
 // - Viaje GPS: el usuario elige una ruta real (lib/proponer_ruta.dart) y la app
 //   envía la ubicación del celular (lib/ubicacion.dart); el backend responde
 //   el próximo semáforo. Sin permiso de ubicación se recorre en demo.
+// - Viaje simulado libre: con «Simular recorrido» activado, la ruta propuesta
+//   la hace un vehículo de la simulación de A a B (dentro de Las Condes y
+//   Providencia), para mostrar la app sin moverse.
 
 import 'dart:async';
 import 'dart:math' as math;
@@ -143,19 +146,30 @@ class _MobilityPageState extends State<MobilityPage> {
   RutaPropuesta? get propuesta =>
       route >= primeraPropuesta ? propuestas[route - primeraPropuesta] : null;
 
+  /// Con «Simular recorrido», la ruta propuesta la recorre un vehículo de la
+  /// simulación en vez del GPS del celular.
+  bool simularPropuesta = false;
+
+  /// Camino que sigue el vehículo en un viaje simulado libre, tal como lo
+  /// calculó la simulación (puede diferir un poco de la ruta propuesta).
+  RutaPropuesta? recorridoSimulado;
+
   /// Destino de la simulación elegido en el selector, si lo hay.
   Destino? get destinoSimulado =>
       propuesta == null && destinos != null && route < destinos!.length
       ? destinos![route]
       : null;
 
-  /// La ruta que se dibuja en el mapa: la propuesta elegida o el recorrido del
-  /// destino de la simulación (el mismo camino que hará el vehículo simulado).
-  RutaPropuesta? get rutaEnMapa => propuesta ?? destinoSimulado?.comoRuta;
+  /// La ruta que se dibuja en el mapa: el camino del vehículo en un viaje
+  /// simulado libre, la propuesta elegida o el recorrido del destino de la
+  /// simulación (el mismo camino que hará el vehículo simulado).
+  RutaPropuesta? get rutaEnMapa =>
+      recorridoSimulado ?? propuesta ?? destinoSimulado?.comoRuta;
 
   /// Distancia del recorrido elegido, en km. Prioridad: ruta propuesta,
   /// destino de la simulación y, si no hay API, los valores fijos del demo.
   double get distance =>
+      recorridoSimulado?.distanciaKm ??
       propuesta?.distanciaKm ??
       (destinos != null && route < destinos!.length
           ? destinos![route].distanciaKm
@@ -441,8 +455,9 @@ class _MobilityPageState extends State<MobilityPage> {
   /// Acción del botón Iniciar / Finalizar recorrido.
   ///
   /// Al finalizar, deja de seguir el GPS y termina el viaje sin esperar
-  /// respuesta. Al iniciar: una ruta propuesta va como viaje GPS; un destino de
-  /// la simulación, como viaje simulado; sin backend, en demo.
+  /// respuesta. Al iniciar: una ruta propuesta va como viaje GPS (o simulado,
+  /// con «Simular recorrido»); un destino de la simulación, como viaje
+  /// simulado; sin backend, en demo.
   Future<void> alternarRecorrido() async {
     if (navigating) {
       final actual = viaje;
@@ -450,6 +465,7 @@ class _MobilityPageState extends State<MobilityPage> {
       setState(() {
         navigating = false;
         viaje = null;
+        recorridoSimulado = null;
       });
       if (actual != null) {
         unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
@@ -460,7 +476,11 @@ class _MobilityPageState extends State<MobilityPage> {
     setState(() => navigating = true);
     recentrar();
     final ruta = propuesta;
-    if (ruta != null) return iniciarViajeGps(ruta);
+    if (ruta != null) {
+      return simularPropuesta
+          ? iniciarViajeSimuladoLibre(ruta)
+          : iniciarViajeGps(ruta);
+    }
     if (destinos == null) return; // modo demo
     // Crear el viaje puede tardar varios segundos. Si mientras tanto se finaliza
     // el recorrido, o se inicia otro, este viaje ya no corresponde: se retira de
@@ -481,6 +501,51 @@ class _MobilityPageState extends State<MobilityPage> {
           content: Text('Sin conexión con la simulación: modo demo'),
         ),
       );
+    }
+  }
+
+  /// Viaje simulado por la ruta propuesta: un vehículo de la simulación va de
+  /// A a B por la ruta más rápida (las paradas intermedias no se usan). Si un
+  /// punto queda fuera del área simulada, el recorrido no empieza y se explica
+  /// por qué; sin backend, sigue en demo.
+  Future<void> iniciarViajeSimuladoLibre(RutaPropuesta ruta) async {
+    final intento = ++_intentoViaje;
+    bool vigente() => mounted && navigating && intento == _intentoViaje;
+    void aviso(String texto) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(texto)));
+    }
+
+    if (ruta.paradas.length > 2) {
+      aviso('La simulación va directo de A a B, sin las paradas intermedias');
+    }
+    try {
+      final (nuevo, recorrido) = await api.crearViajeSimuladoLibre(
+        origen: ruta.paradas.first,
+        destino: ruta.paradas.last,
+      );
+      if (!vigente()) {
+        unawaited(api.finalizarViaje(nuevo.id).catchError((_) {}));
+        return;
+      }
+      setState(() {
+        viaje = nuevo;
+        recorridoSimulado = recorrido;
+      });
+      recentrar();
+    } on ViaApiException catch (e) {
+      if (!vigente()) return;
+      if (e.status == 400) {
+        // El backend explica por qué no se puede (p. ej. fuera del área).
+        setState(() => navigating = false);
+        recentrar();
+        aviso('No se puede simular: ${e.mensaje}');
+      } else {
+        aviso('Sin conexión con la simulación: modo demo');
+      }
+    } catch (_) {
+      if (vigente()) aviso('Sin conexión con la simulación: modo demo');
     }
   }
 
@@ -1293,6 +1358,37 @@ class _MobilityPageState extends State<MobilityPage> {
     );
   }
 
+  /// Interruptor «Simular recorrido» de las rutas propuestas: con él, un
+  /// vehículo de la simulación hace el recorrido de A a B en vez del GPS. No se
+  /// cambia con un recorrido en curso.
+  Widget interruptorSimular() => SizedBox(
+    height: 34,
+    child: Row(
+      children: [
+        const Icon(Icons.directions_car_outlined, color: subdued, size: 16),
+        const SizedBox(width: 8),
+        const Expanded(
+          child: Text(
+            'Simular recorrido',
+            style: TextStyle(fontSize: 11, color: subdued),
+          ),
+        ),
+        Transform.scale(
+          scale: .7,
+          alignment: Alignment.centerRight,
+          child: Switch(
+            key: const Key('simulate-route'),
+            value: simularPropuesta,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            onChanged: navigating
+                ? null
+                : (v) => setState(() => simularPropuesta = v),
+          ),
+        ),
+      ],
+    ),
+  );
+
   /// Controles inferiores: selector de recorrido (destinos demo o de la
   /// simulación, más las rutas propuestas marcadas con ★), botón para proponer
   /// una ruta, tiempo estimado y botón Iniciar / Finalizar.
@@ -1363,6 +1459,7 @@ class _MobilityPageState extends State<MobilityPage> {
             ),
           ],
         ),
+        if (propuesta != null) interruptorSimular(),
         const SizedBox(height: 7),
         Align(
           alignment: Alignment.centerLeft,

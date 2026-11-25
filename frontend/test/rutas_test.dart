@@ -406,4 +406,190 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  testWidgets(
+    'Simular recorrido: la ruta propuesta la hace un vehículo de la simulación',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final llamadas = <String>[];
+      final cuerpos = <Map<String, dynamic>>[];
+      var fueraDelArea = true;
+      final mapa = MapaFalso();
+      final backend = MockClient((req) async {
+        final clave = '${req.method} ${req.url.path}';
+        llamadas.add(clave);
+        switch (clave) {
+          case 'GET /v1/simulacion/destinos':
+            return _json([
+              {'ruta': 0, 'nombre': 'Av. General Bustamante', 'distancia_km': 1.7},
+            ]);
+          case 'GET /v1/lugares':
+            return _json([
+              {'nombre': 'Cerro Santa Lucía', 'lat': -33.4372, 'lon': -70.6275},
+            ]);
+          case 'POST /v1/rutas':
+            return _json(_rutas);
+          case 'POST /v1/viajes':
+            cuerpos.add(jsonDecode(req.body) as Map<String, dynamic>);
+            if (fueraDelArea) {
+              return _json({
+                'error': {
+                  'codigo': 'solicitud_invalida',
+                  'mensaje':
+                      'solicitud inválida: el origen queda fuera del área '
+                      'simulada (Las Condes y Providencia)',
+                },
+              }, 400);
+            }
+            return _json({
+              'id': 'vs',
+              'modo': 'simulado',
+              'estado': 'esperando',
+              'destino': 'Cerro Santa Lucía',
+              'semaforos_en_ruta': 1,
+              'proximo_semaforo': null,
+              // El camino que calculó la simulación: distinto del propuesto.
+              'recorrido': {
+                'distancia_km': 4.4,
+                'trazado': [
+                  [-33.4380, -70.6500],
+                  [-33.4400, -70.6420],
+                  [-33.4390, -70.6350],
+                  [-33.4370, -70.6280],
+                ],
+                'semaforos': [
+                  {
+                    'id': 'GS_9',
+                    'nombre': 'Alameda × Santa Rosa',
+                    'lat': -33.4400,
+                    'lon': -70.6420,
+                    'distancia_desde_inicio_m': 800,
+                  },
+                ],
+              },
+            }, 201);
+          case 'GET /v1/viajes/vs':
+            return _json({
+              'id': 'vs',
+              'modo': 'simulado',
+              'estado': 'en_ruta',
+              'destino': 'Cerro Santa Lucía',
+              'ubicacion': {'lat': -33.4390, 'lon': -70.6470},
+              'proximo_semaforo': {
+                'id': 'GS_9',
+                'nombre': 'Alameda × Santa Rosa',
+                'distancia_m': 230,
+                'color': 'rojo',
+                'segundos_para_cambio': 21,
+                'siguiente_color': 'verde',
+                'exacto': true,
+              },
+            });
+        }
+        return http.Response('', 204);
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MobilityPage(
+            api: ViaApi(baseUrl: 'http://api.test', client: backend),
+            buscador: BuscadorLugares(
+              baseUrl: 'http://api.test',
+              client: backend,
+            ),
+            enrutador: Enrutador(baseUrl: 'http://api.test', client: backend),
+            ubicacion: GpsFalso(resultado: ResultadoPermiso.denegado),
+            constructorMapa: mapa.construir,
+          ),
+        ),
+      );
+      await tester.pump();
+      // Sin ruta propuesta no hay interruptor: los destinos de demostración
+      // siguen igual.
+      expect(find.byKey(const Key('simulate-route')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('propose-route')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('place-search')),
+        'Santa Lucía',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cerro Santa Lucía').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('confirm-route')));
+      await tester.pumpAndSettle();
+      expect(mapa.ultimo!.trazados.single, hasLength(2)); // la ruta propuesta
+
+      expect(find.text('Simular recorrido'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('simulate-route')));
+      await tester.pump();
+
+      // Un punto fuera del área: no empieza y se explica por qué.
+      await tester.tap(find.text('Iniciar recorrido'));
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.text(
+          'No se puede simular: el origen queda fuera del área simulada '
+          '(Las Condes y Providencia)',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Iniciar recorrido'), findsOneWidget);
+      expect(find.text('DEMO'), findsOneWidget);
+      // Se cierra el aviso para que no tape los botones de abajo.
+      ScaffoldMessenger.of(
+        tester.element(find.text('Iniciar recorrido')),
+      ).removeCurrentSnackBar();
+      await tester.pump();
+
+      // Dentro del área: un vehículo de la simulación va de A a B, sin GPS.
+      fueraDelArea = false;
+      await tester.tap(find.text('Iniciar recorrido'));
+      await tester.pump();
+      await tester.pump();
+      final pedido = cuerpos.last;
+      expect(pedido['modo'], 'simulado');
+      expect(pedido['nombre_destino'], 'Cerro Santa Lucía');
+      expect(pedido['paradas'], [
+        {'lat': -33.4378, 'lon': -70.6504},
+        {'lat': -33.4372, 'lon': -70.6275},
+      ]);
+      expect(find.text('EN VIVO'), findsOneWidget);
+      expect(
+        find.text('Recorrido en curso · Simulación en vivo'),
+        findsOneWidget,
+      );
+      expect(find.text('Entrando a la vía…'), findsOneWidget);
+      // El mapa dibuja el camino del vehículo y sus semáforos.
+      expect(mapa.ultimo!.trazados.single, hasLength(4));
+      expect(mapa.ultimo!.semaforos.single.id, 'GS_9');
+      expect(mapa.ultimo!.paradas.map((p) => p.etiqueta), ['A', 'B']);
+      // Con un recorrido en curso el interruptor no se puede cambiar.
+      expect(
+        tester.widget<Switch>(find.byKey(const Key('simulate-route'))).onChanged,
+        isNull,
+      );
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(find.text('Alameda × Santa Rosa'), findsOneWidget);
+      expect(find.text('21s'), findsOneWidget);
+      expect(find.text('Rojo → verde · a 230 m'), findsOneWidget);
+      expect(mapa.ultimo!.posicion!.vehiculo, isTrue);
+      expect(mapa.ultimo!.posicion!.punto, const LatLng(-33.4390, -70.6470));
+      expect(llamadas, isNot(contains('POST /v1/viajes/vs/ubicacion')));
+
+      await tester.tap(find.text('Finalizar recorrido'));
+      await tester.pump();
+      expect(llamadas, contains('DELETE /v1/viajes/vs'));
+      expect(find.text('DEMO'), findsOneWidget);
+      expect(mapa.ultimo!.trazados.single, hasLength(2)); // vuelve la propuesta
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 }
