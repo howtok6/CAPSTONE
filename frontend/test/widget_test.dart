@@ -419,4 +419,132 @@ void main() {
     expect(find.text('Iniciar recorrido'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets('Ajustes de simulación: velocidad y horario antes del recorrido', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final cambios = <Map<String, dynamic>>[];
+    var ajustes = <String, dynamic>{
+      'velocidad': 5.0,
+      'perfil': 'eod_punta_tarde',
+      'perfiles': ['eod_punta_tarde', 'eod_valle'],
+      'lista': true,
+    };
+    var consultasReiniciando = 0;
+    final cliente = MockClient((req) async {
+      switch ('${req.method} ${req.url.path}') {
+        case 'GET /v1/simulacion/destinos':
+          return _json([
+            {'ruta': 0, 'nombre': 'Av. General Bustamante', 'distancia_km': 1.7},
+          ]);
+        case 'GET /v1/simulacion/ajustes':
+          // Tras un cambio de horario, la primera consulta aún reinicia.
+          if (ajustes['lista'] == false && consultasReiniciando++ > 0) {
+            ajustes = {...ajustes, 'lista': true};
+          }
+          return _json(ajustes);
+        case 'POST /v1/simulacion/ajustes':
+          final c = jsonDecode(req.body) as Map<String, dynamic>;
+          cambios.add(c);
+          ajustes = {
+            ...ajustes,
+            if (c['velocidad'] != null) 'velocidad': c['velocidad'],
+            if (c['perfil'] != null) ...{'perfil': c['perfil'], 'lista': false},
+          };
+          return _json(ajustes);
+        case 'POST /v1/viajes':
+          return _json({
+            'id': 'v1',
+            'modo': 'simulado',
+            'estado': 'esperando',
+            'destino': 'Av. General Bustamante',
+          }, 201);
+        case 'GET /v1/viajes/v1':
+          return _json({
+            'id': 'v1',
+            'modo': 'simulado',
+            'estado': 'esperando',
+            'destino': 'Av. General Bustamante',
+          });
+      }
+      return http.Response('', 204);
+    });
+    await tester.pumpWidget(
+      _app(api: ViaApi(baseUrl: 'http://api.test', client: cliente)),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Ajustes de simulación'), findsOneWidget);
+    expect(find.text('5x · Punta tarde'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('sim-settings')));
+    await tester.pumpAndSettle();
+    expect(find.text('Velocidad'), findsOneWidget);
+    expect(find.text('1x'), findsOneWidget);
+    expect(find.text('3x'), findsOneWidget);
+
+    // La velocidad se aplica al instante.
+    await tester.tap(find.byKey(const Key('velocidad-3')));
+    await tester.pumpAndSettle();
+    expect(cambios.last, {'velocidad': 3.0});
+
+    // Punta mañana usa los datos de punta tarde: no reinicia la simulación.
+    await tester.tap(find.byKey(const Key('horario-punta_manana')));
+    await tester.pumpAndSettle();
+    expect(cambios, hasLength(1));
+    expect(find.text('Usa los datos de punta tarde'), findsOneWidget);
+
+    // Valle sí cambia el perfil y reinicia la simulación.
+    await tester.tap(find.byKey(const Key('horario-valle')));
+    await tester.pump();
+    await tester.pump();
+    expect(cambios.last, {'perfil': 'eod_valle'});
+    expect(
+      find.text('Reiniciando la simulación con el nuevo horario…'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('sim-settings-close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Reiniciando…'), findsOneWidget);
+
+    // Mientras se reinicia no se puede iniciar un recorrido simulado.
+    await tester.tap(find.text('Iniciar recorrido'));
+    await tester.pump();
+    expect(find.text('Iniciar recorrido'), findsOneWidget);
+    expect(
+      find.text('La simulación está cambiando de horario: espera unos segundos'),
+      findsOneWidget,
+    );
+    ScaffoldMessenger.of(
+      tester.element(find.text('Iniciar recorrido')),
+    ).removeCurrentSnackBar();
+
+    // El reloj consulta hasta que la simulación queda lista.
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    expect(find.text('3x · Valle'), findsOneWidget);
+
+    // Con un recorrido en curso los ajustes quedan fijos.
+    await tester.tap(find.text('Iniciar recorrido'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Finalizar recorrido'), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+    await tester.tap(find.byKey(const Key('sim-settings')));
+    await tester.pumpAndSettle();
+    expect(find.text('Velocidad'), findsNothing);
+    expect(cambios, hasLength(2));
+
+    await tester.tap(find.text('Finalizar recorrido'));
+    await tester.pump();
+    expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

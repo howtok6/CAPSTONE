@@ -155,6 +155,29 @@ class EstadoViaje {
   }
 }
 
+/// Velocidad y perfil de demanda de la simulación (`/v1/simulacion/ajustes`).
+/// [lista] es false mientras la simulación se reinicia por un cambio de perfil.
+class AjustesSimulacion {
+  const AjustesSimulacion({
+    required this.velocidad,
+    required this.perfil,
+    this.perfiles = const [],
+    this.lista = true,
+  });
+  final double velocidad; // 1 = tiempo real
+  final String perfil; // eod_valle | eod_punta_tarde
+  final List<String> perfiles;
+  final bool lista;
+
+  factory AjustesSimulacion.fromJson(Map<String, dynamic> j) =>
+      AjustesSimulacion(
+        velocidad: (j['velocidad'] as num).toDouble(),
+        perfil: j['perfil'] as String? ?? '',
+        perfiles: [for (final p in j['perfiles'] as List? ?? const []) '$p'],
+        lista: j['lista'] as bool? ?? true,
+      );
+}
+
 /// Cliente HTTP del backend. Cada método lanza una excepción si el backend no
 /// responde o devuelve error; quien llama decide si pasar a demo.
 class ViaApi {
@@ -225,6 +248,32 @@ class ViaApi {
         .timeout(const Duration(seconds: 15));
     _revisar(r);
     return _json(r) as Map<String, dynamic>;
+  }
+
+  /// Velocidad y horario vigentes de la simulación.
+  Future<AjustesSimulacion> ajustes() async {
+    final r = await _http
+        .get(base.resolve('/v1/simulacion/ajustes'))
+        .timeout(_espera);
+    _revisar(r);
+    return AjustesSimulacion.fromJson(_json(r) as Map<String, dynamic>);
+  }
+
+  /// Cambia la velocidad (al instante) o el perfil de demanda (reinicia la
+  /// simulación por unos segundos).
+  Future<AjustesSimulacion> cambiarAjustes({
+    double? velocidad,
+    String? perfil,
+  }) async {
+    final r = await _http
+        .post(
+          base.resolve('/v1/simulacion/ajustes'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'velocidad': ?velocidad, 'perfil': ?perfil}),
+        )
+        .timeout(_espera);
+    _revisar(r);
+    return AjustesSimulacion.fromJson(_json(r) as Map<String, dynamic>);
   }
 
   /// Envía la ubicación del GPS; devuelve el viaje con su próximo semáforo.

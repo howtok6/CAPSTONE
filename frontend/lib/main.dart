@@ -23,6 +23,10 @@
 // - Viaje simulado libre: con «Simular recorrido» activado, la ruta propuesta
 //   la hace un vehículo de la simulación de A a B (dentro de Las Condes y
 //   Providencia), para mostrar la app sin moverse.
+//
+// Antes de un recorrido simulado, «Ajustes de simulación» elige la velocidad
+// (1x, 3x, 5x) y el horario (valle, punta mañana, punta tarde). Durante el
+// recorrido quedan fijos.
 
 import 'dart:async';
 import 'dart:math' as math;
@@ -41,6 +45,32 @@ import 'via_api.dart';
 const yellow = Color(0xFFF5CB45);
 const surface = Color(0xF01C2027);
 const subdued = Color(0xFFB1B6C0);
+
+/// Horario que se puede elegir para la simulación y el perfil de demanda que
+/// usa. La punta mañana usa los datos de la punta tarde: la demanda de la
+/// mañana no está validada (docs/datos/14-depuracion-y-validacion-tomtom.md,
+/// sección 9).
+class HorarioSimulacion {
+  const HorarioSimulacion(this.id, this.nombre, this.perfil, {this.nota = ''});
+  final String id;
+  final String nombre;
+  final String perfil;
+  final String nota;
+}
+
+const horariosSimulacion = [
+  HorarioSimulacion('valle', 'Valle', 'eod_valle'),
+  HorarioSimulacion(
+    'punta_manana',
+    'Punta mañana',
+    'eod_punta_tarde',
+    nota: 'Usa los datos de punta tarde',
+  ),
+  HorarioSimulacion('punta_tarde', 'Punta tarde', 'eod_punta_tarde'),
+];
+
+/// Velocidades que se ofrecen para la simulación (veces el tiempo real).
+const velocidadesSimulacion = [1.0, 3.0, 5.0];
 
 /// Punto de entrada de la app.
 void main() => runApp(const MyApp());
@@ -154,6 +184,29 @@ class _MobilityPageState extends State<MobilityPage> {
   /// calculó la simulación (puede diferir un poco de la ruta propuesta).
   RutaPropuesta? recorridoSimulado;
 
+  // --- Ajustes de la simulación (velocidad y horario) ------------------------
+  /// null = la simulación no responde: el panel no se muestra.
+  AjustesSimulacion? ajustesSim;
+
+  /// Horario elegido en el panel. Se guarda aparte del perfil porque punta
+  /// mañana y punta tarde usan el mismo.
+  String horarioElegido = 'punta_tarde';
+
+  /// true desde que se pide un cambio de horario hasta que la simulación
+  /// termina de reiniciarse.
+  bool reiniciandoSim = false;
+
+  /// Avisa al panel abierto que cambiaron los ajustes, para que se redibuje.
+  final ajustesCambiaron = ValueNotifier<int>(0);
+
+  HorarioSimulacion get horarioActual =>
+      horariosSimulacion.firstWhere((h) => h.id == horarioElegido);
+
+  /// El próximo recorrido corre en la simulación: un destino de demostración o
+  /// una ruta propuesta con «Simular recorrido».
+  bool get proximoSimulado =>
+      destinoSimulado != null || (propuesta != null && simularPropuesta);
+
   /// Destino de la simulación elegido en el selector, si lo hay.
   Destino? get destinoSimulado =>
       propuesta == null && destinos != null && route < destinos!.length
@@ -244,6 +297,7 @@ class _MobilityPageState extends State<MobilityPage> {
     // Un solo reloj de 1 s: en vivo consulta el viaje; en demo avanza el ciclo
     // del semáforo (verde 30 s, amarillo 5 s, rojo 25 s).
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (reiniciandoSim) unawaited(cargarAjustes());
       if (enVivo) {
         actualizarViaje();
         return;
@@ -426,9 +480,72 @@ class _MobilityPageState extends State<MobilityPage> {
       if (mounted && lista.isNotEmpty) {
         setState(() => destinos = lista);
         recentrar(); // muestra el recorrido de demostración elegido
+        unawaited(cargarAjustes());
       }
     } catch (_) {
       // Sin API: la app sigue en modo demo.
+    }
+  }
+
+  /// Lee la velocidad y el horario de la simulación. Si el perfil no
+  /// corresponde al horario elegido (p. ej. otro usuario lo cambió), el panel
+  /// muestra el que corresponde; punta mañana y punta tarde comparten perfil.
+  Future<void> cargarAjustes() async {
+    try {
+      final a = await api.ajustes();
+      if (!mounted) return;
+      setState(() {
+        ajustesSim = a;
+        reiniciandoSim = !a.lista;
+        if (horarioActual.perfil != a.perfil) {
+          horarioElegido = horariosSimulacion
+              .firstWhere(
+                (h) => h.perfil == a.perfil,
+                orElse: () => horarioActual,
+              )
+              .id;
+        }
+      });
+      ajustesCambiaron.value++;
+    } catch (_) {
+      // Sin ajustes: el panel no se muestra o conserva lo último conocido.
+    }
+  }
+
+  /// Cambia la velocidad o el horario. Solo sin recorrido en curso. Elegir
+  /// punta mañana con la simulación en punta tarde (o al revés) no reinicia
+  /// nada: usan los mismos datos.
+  Future<void> cambiarAjustesSim({double? velocidad, HorarioSimulacion? horario}) async {
+    if (navigating) return;
+    final actual = ajustesSim;
+    final perfil = horario != null && horario.perfil != actual?.perfil
+        ? horario.perfil
+        : null;
+    if (horario != null) {
+      setState(() => horarioElegido = horario.id);
+      ajustesCambiaron.value++;
+    }
+    if (velocidad == null && perfil == null) return;
+    try {
+      final a = await api.cambiarAjustes(velocidad: velocidad, perfil: perfil);
+      if (!mounted) return;
+      setState(() {
+        ajustesSim = a;
+        reiniciandoSim = !a.lista;
+      });
+      ajustesCambiaron.value++;
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is ViaApiException
+                ? 'No se pudo cambiar: ${e.mensaje}'
+                : 'Sin conexión con la simulación',
+          ),
+        ),
+      );
+      unawaited(cargarAjustes());
     }
   }
 
@@ -471,6 +588,14 @@ class _MobilityPageState extends State<MobilityPage> {
         unawaited(api.finalizarViaje(actual.id).catchError((_) {}));
       }
       recentrar();
+      return;
+    }
+    if (reiniciandoSim && proximoSimulado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La simulación está cambiando de horario: espera unos segundos'),
+        ),
+      );
       return;
     }
     setState(() => navigating = true);
@@ -654,6 +779,7 @@ class _MobilityPageState extends State<MobilityPage> {
   void dispose() {
     // Al salir, detiene el reloj y retira el vehículo si quedaba un viaje activo.
     timer.cancel();
+    ajustesCambiaron.dispose();
     _detenerUbicacion();
     final actual = viaje;
     if (actual != null && actual.activo) {
@@ -1389,6 +1515,138 @@ class _MobilityPageState extends State<MobilityPage> {
     ),
   );
 
+  /// Texto de una velocidad: «3x».
+  static String textoVelocidad(double v) =>
+      '${v == v.roundToDouble() ? v.round() : v}x';
+
+  /// Fila «Ajustes de simulación» con la velocidad y el horario vigentes. Al
+  /// tocarla abre el panel para cambiarlos; durante un recorrido quedan fijos.
+  Widget filaAjustesSim() {
+    final a = ajustesSim!;
+    final resumen = reiniciandoSim
+        ? 'Reiniciando…'
+        : '${textoVelocidad(a.velocidad)} · ${horarioActual.nombre}';
+    return InkWell(
+      key: const Key('sim-settings'),
+      onTap: navigating ? null : abrirAjustesSim,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 30,
+        child: Row(
+          children: [
+            const Icon(Icons.tune_rounded, color: subdued, size: 16),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Ajustes de simulación',
+                style: TextStyle(fontSize: 11, color: subdued),
+              ),
+            ),
+            Text(
+              resumen,
+              key: const Key('sim-settings-summary'),
+              style: const TextStyle(fontSize: 11, color: yellow),
+            ),
+            Icon(
+              navigating ? Icons.lock_outline_rounded : Icons.chevron_right_rounded,
+              color: subdued,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Panel «Ajustes de simulación»: velocidad (1x, 3x, 5x) y horario (valle,
+  /// punta mañana, punta tarde). Los cambios se aplican al instante; el de
+  /// horario reinicia la simulación por unos segundos.
+  Future<void> abrirAjustesSim() => showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: const Color(0xFF1C2027),
+    builder: (hoja) => ValueListenableBuilder<int>(
+      // La hoja se redibuja cada vez que cambian los ajustes de la página.
+      valueListenable: ajustesCambiaron,
+      builder: (hoja, _, _) {
+        void cambiar({double? velocidad, HorarioSimulacion? horario}) =>
+            unawaited(cambiarAjustesSim(velocidad: velocidad, horario: horario));
+        final a = ajustesSim;
+        Widget titulo(String t) => Padding(
+          padding: const EdgeInsets.only(top: 14, bottom: 6),
+          child: Text(
+            t,
+            style: const TextStyle(fontSize: 12, color: subdued),
+          ),
+        );
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Ajustes de simulación',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Se aplican a la simulación completa. Durante un recorrido '
+                  'quedan fijos.',
+                  style: TextStyle(fontSize: 11, color: subdued),
+                ),
+                titulo('Velocidad'),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    for (final v in velocidadesSimulacion)
+                      ChoiceChip(
+                        key: Key('velocidad-${v.round()}'),
+                        label: Text(textoVelocidad(v)),
+                        selected: a?.velocidad == v,
+                        onSelected: a == null ? null : (_) => cambiar(velocidad: v),
+                      ),
+                  ],
+                ),
+                titulo('Horario'),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    for (final h in horariosSimulacion)
+                      ChoiceChip(
+                        key: Key('horario-${h.id}'),
+                        label: Text(h.nombre),
+                        selected: horarioElegido == h.id,
+                        onSelected: a == null || reiniciandoSim
+                            ? null
+                            : (_) => cambiar(horario: h),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  reiniciandoSim
+                      ? 'Reiniciando la simulación con el nuevo horario…'
+                      : horarioActual.nota,
+                  key: const Key('sim-settings-note'),
+                  style: const TextStyle(fontSize: 11, color: subdued),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    key: const Key('sim-settings-close'),
+                    onPressed: () => Navigator.pop(hoja),
+                    child: const Text('Listo'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
+
   /// Controles inferiores: selector de recorrido (destinos demo o de la
   /// simulación, más las rutas propuestas marcadas con ★), botón para proponer
   /// una ruta, tiempo estimado y botón Iniciar / Finalizar.
@@ -1460,6 +1718,7 @@ class _MobilityPageState extends State<MobilityPage> {
           ],
         ),
         if (propuesta != null) interruptorSimular(),
+        if (ajustesSim != null && proximoSimulado) filaAjustesSim(),
         const SizedBox(height: 7),
         Align(
           alignment: Alignment.centerLeft,
