@@ -527,6 +527,13 @@ void main() {
       expect(find.text('Simular recorrido'), findsOneWidget);
       await tester.tap(find.byKey(const Key('simulate-route')));
       await tester.pump();
+      // Con el interruptor, el panel crece y el botón de recentrar sube con él.
+      expect(
+        tester.getRect(find.byKey(const Key('recenter'))).bottom,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const Key('route-controls'))).top,
+        ),
+      );
 
       // Un punto fuera del área: no empieza y se explica por qué.
       await tester.tap(find.text('Iniciar recorrido'));

@@ -481,6 +481,13 @@ void main() {
     await tester.pump();
     expect(find.text('Ajustes de simulación'), findsOneWidget);
     expect(find.text('5x · Punta tarde'), findsOneWidget);
+    // El botón de recentrar queda encima del panel de recorrido, sin taparlo.
+    expect(
+      tester.getRect(find.byKey(const Key('recenter'))).bottom,
+      lessThanOrEqualTo(
+        tester.getRect(find.byKey(const Key('route-controls'))).top,
+      ),
+    );
 
     await tester.tap(find.byKey(const Key('sim-settings')));
     await tester.pumpAndSettle();

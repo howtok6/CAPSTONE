@@ -936,8 +936,23 @@ class _MobilityPageState extends State<MobilityPage> {
           width: panelWidth,
           child: energyPanel(),
         ),
-        Positioned(bottom: 16, left: 14, right: 14, child: routeControls()),
-        Positioned(bottom: 156, right: 14, child: botonRecentrar()),
+        // El botón de recentrar va siempre justo encima del panel de recorrido,
+        // que crece con «Simular recorrido» y «Ajustes de simulación»: así
+        // nunca tapa sus opciones.
+        Positioned(
+          bottom: 16,
+          left: 14,
+          right: 14,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(alignment: Alignment.centerRight, child: botonRecentrar()),
+              const SizedBox(height: 10),
+              routeControls(),
+            ],
+          ),
+        ),
       ],
     );
   }
