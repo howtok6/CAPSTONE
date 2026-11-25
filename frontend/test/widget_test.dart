@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mockup/main.dart';
+import 'package:mockup/rutas_osm.dart';
 import 'package:mockup/via_api.dart';
 
 import 'apoyo.dart';
@@ -417,6 +418,77 @@ void main() {
     expect(llamadas, contains('DELETE /v1/viajes/v9'));
     expect(find.text('DEMO'), findsOneWidget);
     expect(find.text('Iniciar recorrido'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('En pantallas anchas todo se abre dentro del marco de teléfono', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final cliente = MockClient((req) async {
+      switch ('${req.method} ${req.url.path}') {
+        case 'GET /v1/simulacion/destinos':
+          return _json([
+            {'ruta': 0, 'nombre': 'Av. General Bustamante', 'distancia_km': 1.7},
+          ]);
+        case 'GET /v1/simulacion/ajustes':
+          return _json({
+            'velocidad': 1.0,
+            'perfil': 'eod_punta_tarde',
+            'perfiles': ['eod_punta_tarde', 'eod_valle'],
+            'lista': true,
+          });
+      }
+      return http.Response('', 204);
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MarcoTelefono(child: child!),
+        home: MobilityPage(
+          api: ViaApi(baseUrl: 'http://api.test', client: cliente),
+          buscador: BuscadorLugares(baseUrl: 'http://api.test', client: cliente),
+          enrutador: Enrutador(baseUrl: 'http://api.test', client: cliente),
+          ubicacion: sinGps(),
+          constructorMapa: MapaFalso().construir,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    final marco = tester.getRect(find.byKey(const Key('marco-telefono')));
+    expect(marco.width, 430);
+    expect(marco.center.dx, 720); // centrado en la ventana
+    bool dentro(Rect r) =>
+        r.left >= marco.left - .5 &&
+        r.right <= marco.right + .5 &&
+        r.top >= marco.top - .5 &&
+        r.bottom <= marco.bottom + .5;
+    expect(dentro(tester.getRect(find.byKey(const Key('driving-view')))), isTrue);
+
+    // El panel de ajustes se abre dentro del marco, no a lo ancho de Chrome.
+    await tester.tap(find.byKey(const Key('sim-settings')));
+    await tester.pumpAndSettle();
+    expect(dentro(tester.getRect(find.byType(BottomSheet))), isTrue);
+    await tester.tap(find.byKey(const Key('sim-settings-close')));
+    await tester.pumpAndSettle();
+
+    // Proponer ruta también.
+    await tester.tap(find.byKey(const Key('propose-route')));
+    await tester.pumpAndSettle();
+    expect(find.text('Elige el destino'), findsOneWidget);
+    final pantalla = tester.getRect(
+      find.ancestor(
+        of: find.text('Elige el destino'),
+        matching: find.byType(Scaffold),
+      ),
+    );
+    expect(dentro(pantalla), isTrue);
+    expect(pantalla.width, 430);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
 

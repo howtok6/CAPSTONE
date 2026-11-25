@@ -95,7 +95,49 @@ class MyApp extends StatelessWidget {
       ),
       fontFamily: 'Segoe UI',
     ),
+    // Todas las pantallas y paneles (Proponer ruta, Ajustes de simulación,
+    // ubicación) se abren dentro del marco de teléfono.
+    builder: (context, child) => MarcoTelefono(child: child!),
     home: const MobilityPage(),
+  );
+}
+
+/// Marco con forma de teléfono para pantallas anchas (Chrome de escritorio):
+/// hasta 430 px de ancho y 900 de alto, centrado y con bordes redondeados. Va
+/// alrededor del navegador de la app, así que las pantallas que se abren
+/// encima (rutas, hojas inferiores, avisos) quedan dentro del marco y no
+/// ocupan toda la ventana. En un celular no hace nada.
+class MarcoTelefono extends StatelessWidget {
+  const MarcoTelefono({super.key, required this.child});
+  final Widget child;
+
+  static const anchoMaximo = 430.0;
+  static const altoMaximo = 900.0;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, ventana) {
+      if (ventana.maxWidth <= 500) return child;
+      final ancho = math.min(ventana.maxWidth, anchoMaximo);
+      final alto = math.max(1.0, math.min(ventana.maxHeight - 32, altoMaximo));
+      return ColoredBox(
+        color: const Color(0xFF0C0E12),
+        child: Center(
+          child: SizedBox(
+            key: const Key('marco-telefono'),
+            width: ancho,
+            height: alto,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(size: Size(ancho, alto)),
+                child: child,
+              ),
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
 
