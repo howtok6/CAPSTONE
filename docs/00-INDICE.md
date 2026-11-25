@@ -32,6 +32,7 @@ Importancia: ★★★ esencial · ★★ referencia de trabajo · ★ consulta 
 |---|---|---|
 | `integracion-app/avance-2026-11-03.md` | Etapa 1: API de simulación en vivo, panel «Próximo semáforo» de la app, verificación y hallazgo de conectividad de la red. | ★★ |
 | `integracion-app/endpoints.md` | Lista de endpoints que usa la app, con ejemplos ejecutables, respuestas esperadas y columna para anotar resultados. Script de humo en `backend/pruebas/`. | ★★ |
+| `integracion-app/simular-recorrido-y-ajustes.md` | Simular recorridos A → B y ajustes de simulación (velocidad y horario) para la demo: qué se hizo, decisiones, limitaciones y cómo correrlo en Mac (24 y 25-nov). | ★★ |
 
 ## Decisiones registradas — `decisiones/`
 
