@@ -39,6 +39,8 @@ La documentación interactiva queda en http://127.0.0.1:8000/docs.
 | Método | Ruta | Qué hace |
 |---|---|---|
 | GET | `/estado` | Tiempo simulado, vehículos en la red, controlador y viajes activos |
+| GET | `/ajustes` | Velocidad y perfil de demanda vigentes, perfiles disponibles y si la simulación está lista |
+| POST | `/ajustes` | Cambia la velocidad (al instante) o el perfil `{"velocidad": 3, "perfil": "eod_valle"}`; cambiar el perfil reinicia la simulación y los viajes en curso quedan `reiniciado` |
 | GET | `/semaforos` | Semáforos: ubicación, calles y accesos con su rumbo de llegada (estático) |
 | GET | `/semaforos/estado?ids=` | Color, segundos para el cambio y color siguiente de cada acceso |
 | GET | `/red/calles` | Calles con su geometría y velocidad libre (estático) |

@@ -244,3 +244,52 @@ def test_viaje_libre_en_el_area(monkeypatch):
         assert r.status_code == 422 and "origen y destino" in r.json()["detail"]
         # Los recorridos de demostración siguen igual.
         assert cliente.post("/viajes", json={"ruta": 0}).status_code == 201
+
+
+@pytest.mark.skipif(
+    not all(
+        os.path.exists(os.path.join(AREA, "demand", f"routes_{p}.rou.xml"))
+        for p in ("eod_punta_tarde", "eod_valle")
+    ),
+    reason="falta la demanda del área",
+)
+def test_ajustes_de_velocidad_y_horario(monkeypatch):
+    """La velocidad cambia al instante; el perfil reinicia la simulación con su
+    demanda, y los viajes en curso quedan «reiniciado»."""
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("TSC_ESCENARIO", AREA)
+    monkeypatch.setenv("TSC_VELOCIDAD", "5")
+    monkeypatch.setenv("TSC_CALENTAMIENTO", "30")
+    monkeypatch.setenv("TSC_PERFIL", "")
+    from via_sim.main import app
+
+    with TestClient(app) as cliente:
+        ajustes = cliente.get("/ajustes").json()
+        assert ajustes == {
+            "velocidad": 5.0, "perfil": "eod_punta_tarde",
+            "perfiles": ["eod_punta_tarde", "eod_valle"], "lista": True,
+        }
+        r = cliente.post("/ajustes", json={"velocidad": 3})
+        assert r.status_code == 200 and r.json()["velocidad"] == 3.0
+        assert cliente.get("/estado").json()["perfil"] == "eod_punta_tarde"
+
+        # Elegir el perfil vigente no reinicia nada.
+        assert cliente.post("/ajustes", json={"perfil": "eod_punta_tarde"}).json()["lista"] is True
+
+        viaje = cliente.post("/viajes", json={"ruta": 0}).json()
+        r = cliente.post("/ajustes", json={"perfil": "eod_valle"})
+        assert r.status_code == 200 and r.json()["perfil"] == "eod_valle" and r.json()["lista"] is False
+        limite = time.monotonic() + 120
+        while time.monotonic() < limite and not cliente.get("/ajustes").json()["lista"]:
+            time.sleep(0.5)
+        assert cliente.get("/ajustes").json()["lista"] is True
+        estado = cliente.get("/estado").json()
+        assert estado["perfil"] == "eod_valle" and estado["velocidad"] == 3.0
+        assert cliente.get(f"/viajes/{viaje['id']}").json()["estado"] == "reiniciado"
+        # Tras el reinicio se pueden crear viajes con normalidad.
+        assert cliente.post("/viajes", json={"ruta": 0}).status_code == 201
+
+        r = cliente.post("/ajustes", json={"perfil": "eod_punta_manana"})
+        assert r.status_code == 422 and "perfil desconocido" in r.json()["detail"]
+        assert cliente.post("/ajustes", json={"velocidad": -1}).status_code == 422

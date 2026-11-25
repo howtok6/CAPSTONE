@@ -35,6 +35,13 @@ class NuevoViaje(BaseModel):
     nombre_destino: str = Field("", max_length=200, description="Viaje libre: nombre para mostrar")
 
 
+class Ajustes(BaseModel):
+    """Ajustes de la simulación en vivo; los campos ausentes no cambian."""
+
+    velocidad: float | None = Field(None, ge=0, le=50, description="1 = tiempo real; 0 = sin pausa")
+    perfil: str | None = Field(None, max_length=60, description="perfil de demanda (ver GET /ajustes)")
+
+
 def _simulacion_desde_entorno() -> SimulacionEnVivo:
     return SimulacionEnVivo(
         os.environ.get("TSC_ESCENARIO", str(RAIZ / "scenarios" / "eje_comunal")),
@@ -59,6 +66,22 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.get("/estado")
 def estado():
     return app.state.sim.estado()
+
+
+@app.get("/ajustes")
+def ver_ajustes():
+    """Velocidad y perfil de demanda vigentes, perfiles disponibles y si está lista."""
+    return app.state.sim.ajustes()
+
+
+@app.post("/ajustes")
+def cambiar_ajustes(cuerpo: Ajustes):
+    """Cambia la velocidad al instante; cambiar el perfil reinicia la simulación
+    (unos segundos, y los viajes en curso quedan «reiniciado»)."""
+    try:
+        return app.state.sim.cambiar_ajustes(cuerpo.velocidad, cuerpo.perfil)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/destinos")

@@ -234,9 +234,7 @@ class SimulacionEnVivo:
             rutas = self.escenario / "demand" / f"routes_{self.perfil}.rou.xml"
         self.route_file = str(rutas)
         if plan is None:
-            plan = self.escenario / "webster_plan.json"
-            if self.perfil and (self.escenario / f"webster_plan_{self.perfil}.json").exists():
-                plan = self.escenario / f"webster_plan_{self.perfil}.json"
+            plan = self._plan_de(self.perfil)
         self.plan = str(plan)
         self.origen, self.destinos_def = RECORRIDOS.get(self.escenario.name, (ORIGEN, DESTINOS))
         self.comunas = leer_comunas(self.escenario)
@@ -254,6 +252,11 @@ class SimulacionEnVivo:
         self._viajes: dict[str, Viaje] = {}
         self._estado: dict = {"lista": False}
         self._error: BaseException | None = None
+        # Ajustes en vivo: la velocidad se aplica en el paso siguiente; un cambio de
+        # perfil termina el episodio y el siguiente arranca con la nueva demanda.
+        self._reanclar = False
+        self._reiniciar = threading.Event()
+        self._reiniciando = False
 
         self._red = None
         self._nombres: dict[str, list] = {}
@@ -286,6 +289,61 @@ class SimulacionEnVivo:
     def estado(self) -> dict:
         with self._candado:
             return dict(self._estado)
+
+    # ---------------------------------------------------------- ajustes
+    def _plan_de(self, perfil: str | None) -> Path:
+        plan = self.escenario / "webster_plan.json"
+        if perfil and (self.escenario / f"webster_plan_{perfil}.json").exists():
+            plan = self.escenario / f"webster_plan_{perfil}.json"
+        return plan
+
+    def perfiles_disponibles(self) -> list[str]:
+        """Perfiles de demanda con archivo de rutas en demand/ (vacío en el eje)."""
+        if (self.escenario / "routes.rou.xml").exists() and not self.perfil:
+            return []
+        carpeta = self.escenario / "demand"
+        return sorted(
+            f.name[len("routes_"):-len(".rou.xml")]
+            for f in carpeta.glob("routes_*.rou.xml")
+        ) if carpeta.exists() else []
+
+    def ajustes(self) -> dict:
+        """Velocidad y perfil de demanda vigentes, y si la simulación está lista
+        (false mientras se reinicia por un cambio de perfil)."""
+        with self._candado:
+            lista = bool(self._estado.get("lista")) and not self._reiniciando
+        return {
+            "velocidad": self.velocidad,
+            "perfil": self.perfil,
+            "perfiles": self.perfiles_disponibles(),
+            "lista": lista,
+        }
+
+    def cambiar_ajustes(self, velocidad: float | None = None, perfil: str | None = None) -> dict:
+        """Cambia la velocidad (al instante) y el perfil de demanda.
+
+        Cambiar el perfil reinicia la simulación con su demanda y su plan Webster:
+        tarda unos segundos y los viajes en curso quedan «reiniciado». Elegir el
+        perfil vigente no reinicia nada.
+        """
+        if velocidad is not None:
+            if not 0 <= velocidad <= 50:
+                raise ValueError("velocidad debe estar entre 0 y 50")
+            self.velocidad = float(velocidad)
+            self._reanclar = True
+        if perfil is not None and perfil != self.perfil:
+            disponibles = self.perfiles_disponibles()
+            if perfil not in disponibles:
+                raise ValueError(f"perfil desconocido: {perfil} (disponibles: {', '.join(disponibles) or 'ninguno'})")
+            self.route_file = str(self.escenario / "demand" / f"routes_{perfil}.rou.xml")
+            self.plan = str(self._plan_de(perfil))
+            self.perfil = perfil
+            with self._candado:
+                self._reiniciando = True
+                self._estado["lista"] = False
+            self._reiniciar.set()
+            log.info("cambio de perfil a %s: se reinicia la simulación", perfil)
+        return self.ajustes()
 
     def destinos(self) -> list[dict]:
         """Recorridos de demostración, con el trazado que sigue el vehículo
@@ -385,6 +443,7 @@ class SimulacionEnVivo:
             self._lista.set()
 
     def _correr_episodio(self, semilla: int) -> None:
+        self._reiniciar.clear()
         sim = SumoSimulation(self.net_file, self.route_file, end=self.fin, seed=semilla)
         with sim:
             controlador = WebsterController(self.plan)
@@ -398,13 +457,22 @@ class SimulacionEnVivo:
             sim.step(self.calentamiento)
             self._trafico = {"tiempo_sim": None, "calles": []}
             self._actualizar(sim)
+            with self._candado:
+                # Si mientras calentaba llegó otro cambio de perfil, sigue reiniciándose.
+                self._reiniciando = self._reiniciar.is_set()
             self._lista.set()
 
             reloj0, t0 = time.monotonic(), sim.time
             while not self._detener.is_set() and sim.time < self.fin:
+                if self._reiniciar.is_set():
+                    break
                 self._atender_ordenes(sim)
                 sim.step()
                 self._actualizar(sim)
+                if self._reanclar:
+                    # Nueva velocidad: el ritmo se mide desde ahora.
+                    reloj0, t0 = time.monotonic(), sim.time
+                    self._reanclar = False
                 if self.velocidad > 0:
                     objetivo = reloj0 + (sim.time - t0) / self.velocidad
                     pausa = objetivo - time.monotonic()
@@ -746,7 +814,7 @@ class SimulacionEnVivo:
             if trafico is not None:
                 self._trafico = trafico
             self._estado = {
-                "lista": True,
+                "lista": not self._reiniciando,
                 "escenario": self.escenario.name,
             "perfil": self.perfil,
                 "controlador": "webster",
