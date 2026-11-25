@@ -58,6 +58,7 @@ tocando el indicador de ubicación. Si el permiso quedó negado de forma permane
 |---|---|---|---|
 | **Demo** | El backend no responde | Simulados en la app: ciclo verde 30 s, amarillo 5 s y rojo 25 s; destinos fijos (Bustamante y Forestal) | DEMO |
 | **Viaje simulado** | Se inicia un recorrido hacia un destino de la simulación | Un vehículo de la simulación recorre el destino; la app consulta cada segundo su próximo semáforo | EN VIVO |
+| **Viaje simulado libre** | Se inicia una ruta propuesta (★) con «Simular recorrido» activado | Un vehículo de la simulación recorre la ruta más rápida de A a B dentro de Las Condes y Providencia; el mapa dibuja ese camino | EN VIVO |
 | **Viaje GPS** | Se inicia una ruta propuesta (★) con permiso de ubicación | La app envía la ubicación del celular al backend, que responde el próximo semáforo de la ruta y su acceso | EN VIVO |
 
 La app nunca se bloquea por falta de conexión: si el backend no está, o no hay permiso de ubicación, todo sigue en
@@ -83,6 +84,22 @@ tiempo estimado y su primera maniobra en la indicación de la ruta.
 | Mapa 3D low poly | Teselas vectoriales de **OpenFreeMap** (datos de OpenStreetMap) con MapLibre y un estilo propio: edificios como bloques de color plano según su altura, sin íconos ni comercios | `lib/mapa_low_poly.dart` |
 | Buscar lugares y nombrar el punto tocado | Backend `GET /v1/lugares` (Nominatim) | `lib/rutas_osm.dart` |
 | Rutas, alternativas, indicaciones y semáforos de cada ruta | Backend `POST /v1/rutas` (OSRM) | `lib/rutas_osm.dart` |
+
+### Simular un recorrido y ajustes de simulación
+
+Para mostrar la app sin moverse (por ejemplo en una presentación):
+
+1. Propón una ruta con A y B **dentro de Las Condes o Providencia** (Plaza de Armas, el origen por defecto, queda
+   fuera del área).
+2. Activa **«Simular recorrido»**, bajo el selector: la ruta la hará un auto de la simulación en vez del GPS.
+3. En **«Ajustes de simulación»** elige la velocidad (1x, 3x, 5x) y el horario (Valle, Punta mañana, Punta tarde).
+   Punta mañana usa los datos de punta tarde, porque la demanda de la mañana no está validada. Cambiar entre valle y
+   punta reinicia la simulación por unos segundos.
+4. «Iniciar recorrido». Durante el recorrido los ajustes quedan fijos (candado).
+
+En punta tarde el auto puede quedar detenido en un taco bloqueado (Av. Tobalaba); para la demo conviene el horario
+valle. El detalle de este desarrollo, sus decisiones y pendientes está en
+`docs/integracion-app/simular-recorrido-y-ajustes.md` de la rama `simular-ruta-ab`.
 
 ## Cómo ejecutarla
 
@@ -196,6 +213,8 @@ Cada clase y función tiene un comentario que explica qué hace y por qué.
 | 4-nov-2026 | Gabriel Cárdenas | Mapa navegable en la pantalla principal en lugar de los dibujos fijos: ruta elegida con sus semáforos, próximo semáforo con su color, usuario o vehículo simulado, cámara que sigue y botón de recentrar. Ubicación exacta o por rango (250 m, 500 m, 1 km) elegida al abrir la app y guardada; el origen de «Proponer ruta» parte en la ubicación del usuario. 7 pruebas nuevas |
 | 4-nov-2026 | Benjamín Quiroz | Todo el proyecto Flutter pasa a la carpeta `frontend/` del repositorio, junto con su `.gitignore`; en la raíz queda solo un `.gitignore` para la configuración local del editor. Se movió con `git mv`, así que el historial de cada archivo se conserva (`git log --follow`) |
 | 5-nov-2026 | Gabriel Cárdenas | Los destinos de la simulación también se dibujan en el mapa: `GET /v1/simulacion/destinos` trae el trazado que sigue el vehículo simulado y los semáforos que cruza, así que al elegir un destino se ve la línea de la ruta y, durante el viaje simulado, el próximo semáforo con su color |
+
+| 25-nov-2026 | Benjamín Quiroz (con Claude) | «Simular recorrido»: una ruta propuesta la recorre un auto de la simulación de A a B. Panel «Ajustes de simulación» con velocidad (1x, 3x, 5x) y horario (valle, punta mañana, punta tarde). El botón de recentrar va siempre sobre el panel de recorrido y, en pantallas anchas, Proponer ruta y los paneles se abren dentro del marco de teléfono. Requiere la simulación y el backend de la rama `simular-ruta-ab` |
 
 ## Limitaciones conocidas y pendientes
 
