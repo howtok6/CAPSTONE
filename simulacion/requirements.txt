@@ -1,6 +1,7 @@
 # Servicio de simulación (entorno de pruebas). Importa el arnés de ../tsc-thesis/src.
 # SUMO fijado en la misma versión con que se validó la tesis.
 eclipse-sumo==1.27.1
+sumo-data==1.27.1   # sin fijar, en Mac se instala la 1.28 y SUMO no arranca
 libsumo==1.27.1
 sumolib==1.27.1
 traci==1.27.1

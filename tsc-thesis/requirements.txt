@@ -6,6 +6,7 @@
 # invocable a un módulo. No subir esa pin sin correr `make test` después.
 
 eclipse-sumo==1.27.1
+sumo-data==1.27.1   # sin fijar, en Mac se instala la 1.28 y SUMO no arranca
 traci>=1.27
 sumolib>=1.27
 libsumo>=1.27

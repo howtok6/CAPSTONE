@@ -79,8 +79,8 @@ simulada…») y no inicia el recorrido.
   cae ahí queda detenido para siempre. Reproducido con Guillermo Acuña → Martín de Zamora. En valle casi no pasa.
   **Pendiente (sin implementar):** que solo el auto de la app calcule la ruta con los tacos actuales y, si queda
   detenido mucho rato, se adelante al tramo libre siguiente. No afectaría los resultados de la tesis.
-- **`sumo-data` sin versión fija.** `simulacion/requirements.txt` fija `eclipse-sumo==1.27.1` pero no `sumo-data`;
-  en Mac se instala la 1.28 y SUMO no arranca (falta `libproj`). Arreglo: agregar `sumo-data==1.27.1`.
+- **`sumo-data` fijado (resuelto el 26-nov).** `simulacion/requirements.txt` ahora fija `sumo-data==1.27.1`;
+  antes, en Mac se instalaba la 1.28 y SUMO no arrancaba (faltaba `libproj`).
 - **Docker.** `comunas.geojson` no se copia a la imagen de la simulación; ahí solo se exige que el punto esté cerca
   de una calle de la red (que cubre el área más 400 m).
 - **Fin de la hora simulada.** Al llegar a 3600 s la simulación vuelve a empezar y los viajes quedan
@@ -97,7 +97,6 @@ Requisitos: Python 3.12, Go 1.25 o superior y Flutter (`brew install python@3.12
 cd simulacion
 python3.12 -m venv .venv && source .venv/bin/activate   # solo la primera vez
 pip install -r requirements.txt                          # solo la primera vez
-pip install --force-reinstall --no-deps "sumo-data==1.27.1"   # solo la primera vez, en Mac
 python run.py
 ```
 
