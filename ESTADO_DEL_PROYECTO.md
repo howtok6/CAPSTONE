@@ -2,10 +2,10 @@
 
 **Proyecto:** Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente  
 **Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en una red a nivel comunal de Santiago de Chile  
-**Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/decisiones/07-decision-escenario.md`.  
-**Autor:** Gabriel Ignacio Cárdenas Valdés y Benjamin Quiroz 
+**Alcance del MVP:** comunas completas de Las Condes y Providencia: 594 semáforos en la red depurada, ubicados con el inventario UOCT 2023 (decisión del 17-nov-2026, validada el 18-nov). MAPPO se evalúa solo en Providencia (206 semáforos). El eje Alameda → Providencia → Apoquindo (`docs/decisiones/07-decision-escenario.md`) fue el escenario anterior; sus resultados se conservan en §6. Detalle del escenario actual: `docs/datos/13-escenario-las-condes-providencia.md` y `docs/datos/14-depuracion-y-validacion-tomtom.md` (rama `escenario-las-condes-providencia`, pendiente de fusión a `master`).  
+**Autores:** Gabriel Ignacio Cárdenas Valdés y Benjamín Quiroz  
 **Programa:** Ingeniería en Informática, DUOC UC  
-**Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre); §6.6 y las filas de entrenamiento actualizadas el 5 de noviembre  
+**Fecha de corte del informe:** encabezado actualizado el 26 de noviembre de 2026. El cuerpo (§1–§8) mantiene el corte del 22 de octubre de 2026 (revisión del informe del 14 de octubre), con §6.6 y las filas de entrenamiento actualizadas el 5 de noviembre, y todavía describe el eje como MVP. Los resultados finales del escenario actual (10 réplicas, hipótesis H1 y H3, robustez) están en `docs/datos/14-depuracion-y-validacion-tomtom.md`.  
 **Entorno de ejecución:** Windows 11 nativo (Python 3.13 / SUMO 1.27.1 / libsumo / PyTorch 2.8.0 / PyG 2.8.0)  
 
 > **Nota de revisión (22-oct-2026).** Esta versión corrige afirmaciones del informe del 14-oct que el código y los
