@@ -3,7 +3,7 @@
 **Proyecto:** Control adaptativo de semáforos mediante aprendizaje por refuerzo multi-agente  
 **Subtítulo:** Evaluación comparativa frente a estrategias clásicas de control en una red a nivel comunal de Santiago de Chile  
 **Alcance del MVP:** eje Alameda → Providencia → Apoquindo, limitado a las comunas de Santiago, Providencia y Las Condes (de Matucana al término de Av. Apoquindo, ~13,5 km, ~86 puntos semaforizados). Ver `docs/decisiones/07-decision-escenario.md`.  
-**Autor:** Gabriel Ignacio Cárdenas Valdés  
+**Autor:** Gabriel Ignacio Cárdenas Valdés y Benjamin Quiroz 
 **Programa:** Ingeniería en Informática, DUOC UC  
 **Fecha de corte del informe:** 22 de octubre de 2026 (revisión del informe del 14 de octubre); §6.6 y las filas de entrenamiento actualizadas el 5 de noviembre  
 **Entorno de ejecución:** Windows 11 nativo (Python 3.13 / SUMO 1.27.1 / libsumo / PyTorch 2.8.0 / PyG 2.8.0)  
